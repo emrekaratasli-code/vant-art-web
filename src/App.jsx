@@ -46,8 +46,8 @@ function AppContent() {
         }}>
           <div className="social-links" style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'center', gap: '1.5rem' }}>
             {/* Social Icons - Using simple text/emoji for demo, ideally replaced with SVG icons or FontAwesome */}
-            <a href="https://instagram.com" target="_blank" rel="noreferrer" style={{ fontSize: '1.5rem', textDecoration: 'none', color: 'var(--color-accent)' }}>📸</a>
-            <a href="https://pinterest.com" target="_blank" rel="noreferrer" style={{ fontSize: '1.5rem', textDecoration: 'none', color: 'var(--color-accent)' }}>📌</a>
+            <a href="https://instagram.com/vantartonline" target="_blank" rel="noreferrer" style={{ fontSize: '1.5rem', textDecoration: 'none', color: 'var(--color-accent)' }}>📸</a>
+            <a href="https://tiktok.com/@vant.taki.aksesuar" target="_blank" rel="noreferrer" style={{ fontSize: '1.5rem', textDecoration: 'none', color: 'var(--color-accent)' }}>🎵</a>
             <a href="https://whatsapp.com" target="_blank" rel="noreferrer" style={{ fontSize: '1.5rem', textDecoration: 'none', color: 'var(--color-accent)' }}>💬</a>
           </div>
 

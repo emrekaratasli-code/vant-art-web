@@ -2,19 +2,19 @@ import logo from '../assets/VANT.png';
 import { useLanguage } from '../context/LanguageContext';
 
 export default function Hero() {
-    const { t } = useLanguage();
+  const { t } = useLanguage();
 
-    return (
-        <section className="hero">
-            <div className="hero-content">
-                <img src={logo} alt="VANT ART" className="hero-logo" />
-                {/* Title removed as requested, using Logo only */}
-                <p className="hero-subtitle">{t('heroSubtitle')}</p>
-                <div className="hero-actions">
-                    <a href="#shop" className="hero-cta">{t('heroCta')}</a>
-                </div>
-            </div>
-            <style>{`
+  return (
+    <section className="hero">
+      <div className="hero-content">
+        <img src={logo} alt="VANT ART" className="hero-logo" />
+        {/* Title removed as requested, using Logo only */}
+        <p className="hero-subtitle">{t('heroSubtitle')}</p>
+        <div className="hero-actions">
+          <a href="#shop" className="hero-cta">{t('heroCta')}</a>
+        </div>
+      </div>
+      <style>{`
         .hero {
           height: 90vh;
           background-image: url('https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?q=80&w=2000&auto=format&fit=crop');
@@ -50,7 +50,7 @@ export default function Hero() {
         }
         
         .hero-logo {
-          height: 200px; /* Increased massively to replace the title text */
+          height: 300px; /* Increased massively */
           margin-bottom: var(--spacing-md);
           animation: fadeUp 1.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
           width: auto;
@@ -90,9 +90,9 @@ export default function Hero() {
         }
 
         @media (max-width: 768px) {
-          .hero-logo { height: 120px; }
+          .hero-logo { height: 200px; }
         }
       `}</style>
-        </section>
-    );
+    </section>
+  );
 }

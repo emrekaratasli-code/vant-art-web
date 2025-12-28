@@ -18,7 +18,7 @@ export default function Contact() {
                 <div className="content-wrapper">
                     <div className="contact-info">
                         <h3>{t('getInTouch')}</h3>
-                        <p>info@vantart.com</p>
+                        <p>iletisim@vantonline.com</p>
                         <p>+90 212 555 0123</p>
                         <p>Abdi İpekçi Cad. No:42<br />Nişantaşı, İstanbul</p>
                     </div>

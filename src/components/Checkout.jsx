@@ -10,6 +10,8 @@ export default function Checkout() {
     const [orderPlaced, setOrderPlaced] = useState(false);
     const [loading, setLoading] = useState(false);
 
+    const [isReviewing, setIsReviewing] = useState(false);
+
     // Form inputs state
     const [formData, setFormData] = useState({
         cardHolder: '',
@@ -37,8 +39,12 @@ export default function Checkout() {
         setFormData(prev => ({ ...prev, expiry: value }));
     };
 
-    const handleSubmit = (e) => {
+    const handleReview = (e) => {
         e.preventDefault();
+        setIsReviewing(true);
+    };
+
+    const handleSubmit = () => {
         setLoading(true);
         // Simulate order processing
         setTimeout(() => {
@@ -84,108 +90,135 @@ export default function Checkout() {
     return (
         <section className="checkout-section">
             <div className="container">
-                <h2 className="section-title">{t('checkout')}</h2>
+                <h2 className="section-title">{isReviewing ? t('reviewOrder') : t('checkout')}</h2>
 
                 <div className="checkout-grid">
                     <div className="checkout-form-container">
-                        <form onSubmit={handleSubmit} id="checkout-form">
-                            {/* Contact & Shipping */}
-                            <div className="form-block">
-                                <h3 className="form-section-title">
-                                    <span className="step-number">1</span>
-                                    {t('contactInfo')}
-                                </h3>
-                                <div className="form-group">
-                                    <label>{t('fullName')}</label>
-                                    <input type="text" required placeholder={t('phName')} />
-                                </div>
-                                <div className="form-row">
+                        {!isReviewing ? (
+                            <form onSubmit={handleReview} id="checkout-form">
+                                {/* Contact & Shipping */}
+                                <div className="form-block">
+                                    <h3 className="form-section-title">
+                                        <span className="step-number">1</span>
+                                        {t('contactInfo')}
+                                    </h3>
                                     <div className="form-group">
-                                        <label>{t('email')}</label>
-                                        <input type="email" required placeholder={t('phEmail')} />
-                                    </div>
-                                    <div className="form-group">
-                                        <label>{t('phone')}</label>
-                                        <input type="tel" required placeholder={t('phPhone')} />
-                                    </div>
-                                </div>
-                                <div className="form-group">
-                                    <label>{t('address')}</label>
-                                    <input type="text" required placeholder={t('phAddress')} />
-                                </div>
-                            </div>
-
-                            {/* Payment Section - Iyzico Style */}
-                            <div className="form-block" style={{ marginTop: '3rem' }}>
-                                <h3 className="form-section-title">
-                                    <span className="step-number">2</span>
-                                    {t('paymentDetails')}
-                                </h3>
-
-                                <div className="credit-card-form">
-                                    <div className="card-visual">
-                                        <div className="card-chip"></div>
-                                        <div className="card-logo">VISA</div>
-                                        <div className="card-number-display">{formData.cardNumber || '**** **** **** ****'}</div>
-                                        <div className="card-meta">
-                                            <span>{formData.cardHolder || 'CARD HOLDER'}</span>
-                                            <span>{formData.expiry || 'MM/YY'}</span>
-                                        </div>
-                                    </div>
-
-                                    <div className="form-group">
-                                        <label>{t('cardHolder')}</label>
-                                        <input
-                                            type="text"
-                                            name="cardHolder"
-                                            value={formData.cardHolder}
-                                            onChange={handleInputChange}
-                                            required
-                                            placeholder={t('phCardName')}
-                                        />
-                                    </div>
-                                    <div className="form-group">
-                                        <label>{t('cardNumber')}</label>
-                                        <input
-                                            type="text"
-                                            name="cardNumber"
-                                            value={formData.cardNumber}
-                                            onChange={handleCardNumberChange}
-                                            maxLength="19"
-                                            required
-                                            placeholder="0000 0000 0000 0000"
-                                            style={{ fontFamily: 'monospace', letterSpacing: '2px' }}
-                                        />
+                                        <label>{t('fullName')}</label>
+                                        <input type="text" required placeholder={t('phName')} />
                                     </div>
                                     <div className="form-row">
                                         <div className="form-group">
-                                            <label>{t('expiryDate')}</label>
+                                            <label>{t('email')}</label>
+                                            <input type="email" required placeholder={t('phEmail')} />
+                                        </div>
+                                        <div className="form-group">
+                                            <label>{t('phone')}</label>
+                                            <input type="tel" required placeholder={t('phPhone')} />
+                                        </div>
+                                    </div>
+                                    <div className="form-group">
+                                        <label>{t('address')}</label>
+                                        <input type="text" required placeholder={t('phAddress')} />
+                                    </div>
+                                </div>
+
+                                {/* Payment Section - Iyzico Style */}
+                                <div className="form-block" style={{ marginTop: '3rem' }}>
+                                    <h3 className="form-section-title">
+                                        <span className="step-number">2</span>
+                                        {t('paymentDetails')}
+                                    </h3>
+
+                                    <div className="credit-card-form">
+                                        <div className="card-visual">
+                                            <div className="card-chip"></div>
+                                            <div className="card-logo">VISA</div>
+                                            <div className="card-number-display">{formData.cardNumber || '**** **** **** ****'}</div>
+                                            <div className="card-meta">
+                                                <span>{formData.cardHolder || 'CARD HOLDER'}</span>
+                                                <span>{formData.expiry || 'MM/YY'}</span>
+                                            </div>
+                                        </div>
+
+                                        <div className="form-group">
+                                            <label>{t('cardHolder')}</label>
                                             <input
                                                 type="text"
-                                                name="expiry"
-                                                value={formData.expiry}
-                                                onChange={handleExpiryChange}
-                                                maxLength="5"
+                                                name="cardHolder"
+                                                value={formData.cardHolder}
+                                                onChange={handleInputChange}
                                                 required
-                                                placeholder="MM/YY"
+                                                placeholder={t('phCardName')}
                                             />
                                         </div>
                                         <div className="form-group">
-                                            <label>{t('cvc')}</label>
+                                            <label>{t('cardNumber')}</label>
                                             <input
                                                 type="text"
-                                                name="cvc"
-                                                value={formData.cvc}
-                                                onChange={handleInputChange}
-                                                maxLength="3"
+                                                name="cardNumber"
+                                                value={formData.cardNumber}
+                                                onChange={handleCardNumberChange}
+                                                maxLength="19"
                                                 required
-                                                placeholder="123"
+                                                placeholder="0000 0000 0000 0000"
+                                                style={{ fontFamily: 'monospace', letterSpacing: '2px' }}
                                             />
+                                        </div>
+                                        <div className="form-row">
+                                            <div className="form-group">
+                                                <label>{t('expiryDate')}</label>
+                                                <input
+                                                    type="text"
+                                                    name="expiry"
+                                                    value={formData.expiry}
+                                                    onChange={handleExpiryChange}
+                                                    maxLength="5"
+                                                    required
+                                                    placeholder="MM/YY"
+                                                />
+                                            </div>
+                                            <div className="form-group">
+                                                <label>{t('cvc')}</label>
+                                                <input
+                                                    type="text"
+                                                    name="cvc"
+                                                    value={formData.cvc}
+                                                    onChange={handleInputChange}
+                                                    maxLength="3"
+                                                    required
+                                                    placeholder="123"
+                                                />
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
+                            </form>
+                        ) : (
+                            <div className="review-block">
+                                <div className="form-block">
+                                    <h3 className="form-section-title">{t('paymentDetails')}</h3>
+                                    <div className="review-details">
+                                        <p><strong>{t('cardHolder')}:</strong> {formData.cardHolder}</p>
+                                        <p><strong>{t('cardNumber')}:</strong> {formData.cardNumber}</p>
+                                        <p><strong>{t('expiryDate')}:</strong> {formData.expiry}</p>
+                                    </div>
+                                    <button
+                                        className="text-btn"
+                                        onClick={() => setIsReviewing(false)}
+                                        style={{
+                                            marginTop: '1rem',
+                                            background: 'transparent',
+                                            border: 'none',
+                                            color: 'var(--color-accent)',
+                                            textDecoration: 'underline',
+                                            cursor: 'pointer'
+                                        }}
+                                    >
+                                        {t('backToEdit')}
+                                    </button>
+                                </div>
                             </div>
-                        </form>
+                        )}
                     </div>
 
                     <div className="order-summary-container">
@@ -210,14 +243,25 @@ export default function Checkout() {
                                 <span>{t('subtotal')}</span>
                                 <span>{formatPrice(cartTotal)}</span>
                             </div>
-                            <button
-                                type="submit"
-                                form="checkout-form"
-                                className={`submit-btn ${loading ? 'loading' : ''}`}
-                                disabled={loading}
-                            >
-                                {loading ? 'Processing...' : `${t('paySecurely')} • ${formatPrice(cartTotal)}`}
-                            </button>
+
+                            {!isReviewing ? (
+                                <button
+                                    type="submit"
+                                    form="checkout-form"
+                                    className="submit-btn"
+                                >
+                                    {t('reviewOrder')}
+                                </button>
+                            ) : (
+                                <button
+                                    onClick={handleSubmit}
+                                    className={`submit-btn ${loading ? 'loading' : ''}`}
+                                    disabled={loading}
+                                >
+                                    {loading ? 'Processing...' : t('confirmOrder')}
+                                </button>
+                            )}
+
                             <div className="secure-badge">
                                 <span className="lock-icon">🔒</span> {t('secureBadge')}
                             </div>
