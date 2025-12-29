@@ -1,23 +1,26 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useCart } from '../context/CartContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useNavigate } from 'react-router-dom';
 
 export default function Checkout() {
     const { cartItems, cartTotal, clearCart } = useCart();
-    const { t, formatPrice } = useLanguage();
+    const { t, formatPrice, language } = useLanguage();
     const navigate = useNavigate();
-    const [orderPlaced, setOrderPlaced] = useState(false);
-    const [loading, setLoading] = useState(false);
 
-    const [isReviewing, setIsReviewing] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const [iyzicoContent, setIyzicoContent] = useState(null);
 
     // Form inputs state
     const [formData, setFormData] = useState({
-        cardHolder: '',
-        cardNumber: '',
-        expiry: '',
-        cvc: ''
+        fullName: '',
+        email: '',
+        phone: '',
+        address: '',
+        city: 'Istanbul',
+        country: 'Turkey',
+        zipCode: '34732'
     });
 
     const handleInputChange = (e) => {
@@ -25,36 +28,63 @@ export default function Checkout() {
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    const handleCardNumberChange = (e) => {
-        let value = e.target.value.replace(/\D/g, '').substring(0, 16);
-        value = value.replace(/(\d{4})(?=\d)/g, '$1 ');
-        setFormData(prev => ({ ...prev, cardNumber: value }));
-    };
-
-    const handleExpiryChange = (e) => {
-        let value = e.target.value.replace(/\D/g, '').substring(0, 4);
-        if (value.length >= 3) {
-            value = `${value.substring(0, 2)}/${value.substring(2)}`;
-        }
-        setFormData(prev => ({ ...prev, expiry: value }));
-    };
-
-    const handleReview = (e) => {
+    const handlePayment = async (e) => {
         e.preventDefault();
-        setIsReviewing(true);
-    };
-
-    const handleSubmit = () => {
         setLoading(true);
-        // Simulate order processing
-        setTimeout(() => {
-            clearCart();
-            setOrderPlaced(true);
+        setError(null);
+
+        try {
+            const response = await fetch('/api/checkout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    cartItems,
+                    userDetails: formData,
+                    totalPrice: cartTotal,
+                    currency: language
+                }),
+            });
+
+            const data = await response.json();
+
+            if (data.status === 'success') {
+                setIyzicoContent(data.checkoutFormContent);
+                // The cart will be cleared effectively after successful payment callback handling
+                // For this demo/sandbox, we perform the view transition here
+            } else {
+                setError(data.errorMessage || 'Payment initialization failed');
+            }
+        } catch (err) {
+            console.error('Checkout error:', err);
+            setError('An error occurred. Please try again.');
+        } finally {
             setLoading(false);
-        }, 2000);
+        }
     };
 
-    if (cartItems.length === 0 && !orderPlaced) {
+    // Effect to run script tags from Iyzico HTML content
+    useEffect(() => {
+        if (iyzicoContent) {
+            // Create a temporary container to parse the HTML string
+            const div = document.createElement('div');
+            div.innerHTML = iyzicoContent;
+
+            // Find and execute scripts
+            const scripts = div.getElementsByTagName('script');
+            Array.from(scripts).forEach(script => {
+                const newScript = document.createElement('script');
+                Array.from(script.attributes).forEach(attr => {
+                    newScript.setAttribute(attr.name, attr.value);
+                });
+                newScript.appendChild(document.createTextNode(script.innerHTML));
+                document.body.appendChild(newScript);
+            });
+        }
+    }, [iyzicoContent]);
+
+    if (cartItems.length === 0) {
         return (
             <div className="container" style={{ padding: '8rem 0', textAlign: 'center' }}>
                 <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '2rem', marginBottom: '1rem' }}>{t('emptyBag')}</h2>
@@ -65,37 +95,40 @@ export default function Checkout() {
         );
     }
 
-    if (orderPlaced) {
-        return (
-            <div className="container" style={{ padding: '8rem 0', textAlign: 'center' }}>
-                <div style={{
-                    fontSize: '5rem',
-                    color: 'var(--color-accent)',
-                    marginBottom: '2rem',
-                    animation: 'scaleIn 0.5s ease'
-                }}>✓</div>
-                <h2 style={{
-                    color: 'var(--color-accent)',
-                    fontFamily: 'var(--font-heading)',
-                    fontSize: '2.5rem',
-                    marginBottom: '1rem'
-                }}>{t('orderSuccess')}</h2>
-                <button className="cta-btn" onClick={() => navigate('/')} style={{ marginTop: '2rem', maxWidth: '300px', margin: '2rem auto' }}>
-                    {t('heroCta')}
-                </button>
-            </div>
-        );
-    }
-
     return (
         <section className="checkout-section">
             <div className="container">
-                <h2 className="section-title">{isReviewing ? t('reviewOrder') : t('checkout')}</h2>
+                <h2 className="section-title">{t('checkout')}</h2>
 
                 <div className="checkout-grid">
                     <div className="checkout-form-container">
-                        {!isReviewing ? (
-                            <form onSubmit={handleReview} id="checkout-form">
+                        {/* Error Message */}
+                        {error && (
+                            <div style={{
+                                padding: '1rem',
+                                background: 'rgba(255, 0, 0, 0.1)',
+                                border: '1px solid red',
+                                color: 'red',
+                                marginBottom: '2rem'
+                            }}>
+                                {error}
+                            </div>
+                        )}
+
+                        {/* If Iyzico content is present, show the payment form container */}
+                        {iyzicoContent ? (
+                            <div className="iyzico-container">
+                                <h3 style={{ fontFamily: 'var(--font-heading)', marginBottom: '1.5rem', color: 'var(--color-accent)' }}>
+                                    {t('paySecurely')}
+                                </h3>
+                                <div id="iyzipay-checkout-form" className="responsive"></div>
+                                {/* We hide the dangerouslySetInnerHTML because we only need the structure for the script to target, 
+                                    but usually the script inserts into the id above. 
+                                    However, if the HTML content contains the form structure itself: */}
+                                <div dangerouslySetInnerHTML={{ __html: iyzicoContent }} />
+                            </div>
+                        ) : (
+                            <form onSubmit={handlePayment} id="checkout-form">
                                 {/* Contact & Shipping */}
                                 <div className="form-block">
                                     <h3 className="form-section-title">
@@ -104,120 +137,80 @@ export default function Checkout() {
                                     </h3>
                                     <div className="form-group">
                                         <label>{t('fullName')}</label>
-                                        <input type="text" required placeholder={t('phName')} />
+                                        <input
+                                            type="text"
+                                            name="fullName"
+                                            value={formData.fullName}
+                                            onChange={handleInputChange}
+                                            required
+                                            placeholder={t('phName')}
+                                        />
                                     </div>
                                     <div className="form-row">
                                         <div className="form-group">
                                             <label>{t('email')}</label>
-                                            <input type="email" required placeholder={t('phEmail')} />
+                                            <input
+                                                type="email"
+                                                name="email"
+                                                value={formData.email}
+                                                onChange={handleInputChange}
+                                                required
+                                                placeholder={t('phEmail')}
+                                            />
                                         </div>
                                         <div className="form-group">
                                             <label>{t('phone')}</label>
-                                            <input type="tel" required placeholder={t('phPhone')} />
+                                            <input
+                                                type="tel"
+                                                name="phone"
+                                                value={formData.phone}
+                                                onChange={handleInputChange}
+                                                required
+                                                placeholder={t('phPhone')}
+                                            />
                                         </div>
                                     </div>
                                     <div className="form-group">
                                         <label>{t('address')}</label>
-                                        <input type="text" required placeholder={t('phAddress')} />
+                                        <input
+                                            type="text"
+                                            name="address"
+                                            value={formData.address}
+                                            onChange={handleInputChange}
+                                            required
+                                            placeholder={t('phAddress')}
+                                        />
+                                    </div>
+                                    <div className="form-row">
+                                        <div className="form-group">
+                                            <label>City</label>
+                                            <input
+                                                type="text"
+                                                name="city"
+                                                value={formData.city}
+                                                onChange={handleInputChange}
+                                                placeholder="Istanbul"
+                                            />
+                                        </div>
+                                        <div className="form-group">
+                                            <label>Zip Code</label>
+                                            <input
+                                                type="text"
+                                                name="zipCode"
+                                                value={formData.zipCode}
+                                                onChange={handleInputChange}
+                                                placeholder="34732"
+                                            />
+                                        </div>
                                     </div>
                                 </div>
 
-                                {/* Payment Section - Iyzico Style */}
-                                <div className="form-block" style={{ marginTop: '3rem' }}>
-                                    <h3 className="form-section-title">
-                                        <span className="step-number">2</span>
-                                        {t('paymentDetails')}
-                                    </h3>
-
-                                    <div className="credit-card-form">
-                                        <div className="card-visual">
-                                            <div className="card-chip"></div>
-                                            <div className="card-logo">VISA</div>
-                                            <div className="card-number-display">{formData.cardNumber || '**** **** **** ****'}</div>
-                                            <div className="card-meta">
-                                                <span>{formData.cardHolder || 'CARD HOLDER'}</span>
-                                                <span>{formData.expiry || 'MM/YY'}</span>
-                                            </div>
-                                        </div>
-
-                                        <div className="form-group">
-                                            <label>{t('cardHolder')}</label>
-                                            <input
-                                                type="text"
-                                                name="cardHolder"
-                                                value={formData.cardHolder}
-                                                onChange={handleInputChange}
-                                                required
-                                                placeholder={t('phCardName')}
-                                            />
-                                        </div>
-                                        <div className="form-group">
-                                            <label>{t('cardNumber')}</label>
-                                            <input
-                                                type="text"
-                                                name="cardNumber"
-                                                value={formData.cardNumber}
-                                                onChange={handleCardNumberChange}
-                                                maxLength="19"
-                                                required
-                                                placeholder="0000 0000 0000 0000"
-                                                style={{ fontFamily: 'monospace', letterSpacing: '2px' }}
-                                            />
-                                        </div>
-                                        <div className="form-row">
-                                            <div className="form-group">
-                                                <label>{t('expiryDate')}</label>
-                                                <input
-                                                    type="text"
-                                                    name="expiry"
-                                                    value={formData.expiry}
-                                                    onChange={handleExpiryChange}
-                                                    maxLength="5"
-                                                    required
-                                                    placeholder="MM/YY"
-                                                />
-                                            </div>
-                                            <div className="form-group">
-                                                <label>{t('cvc')}</label>
-                                                <input
-                                                    type="text"
-                                                    name="cvc"
-                                                    value={formData.cvc}
-                                                    onChange={handleInputChange}
-                                                    maxLength="3"
-                                                    required
-                                                    placeholder="123"
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
+                                <div className="form-block" style={{ marginTop: '2rem', textAlign: 'center', padding: '3rem' }}>
+                                    <p style={{ color: 'var(--color-text-muted)', marginBottom: '1rem' }}>
+                                        Proceed to complete your payment securely with Iyzico.
+                                    </p>
                                 </div>
                             </form>
-                        ) : (
-                            <div className="review-block">
-                                <div className="form-block">
-                                    <h3 className="form-section-title">{t('paymentDetails')}</h3>
-                                    <div className="review-details">
-                                        <p><strong>{t('cardHolder')}:</strong> {formData.cardHolder}</p>
-                                        <p><strong>{t('cardNumber')}:</strong> {formData.cardNumber}</p>
-                                        <p><strong>{t('expiryDate')}:</strong> {formData.expiry}</p>
-                                    </div>
-                                    <button
-                                        className="text-btn"
-                                        onClick={() => setIsReviewing(false)}
-                                        style={{
-                                            marginTop: '1rem',
-                                            background: 'transparent',
-                                            border: 'none',
-                                            color: 'var(--color-accent)',
-                                            textDecoration: 'underline',
-                                            cursor: 'pointer'
-                                        }}
-                                    >
-                                        {t('backToEdit')}
-                                    </button>
-                                </div>
-                            </div>
                         )}
                     </div>
 
@@ -244,26 +237,22 @@ export default function Checkout() {
                                 <span>{formatPrice(cartTotal)}</span>
                             </div>
 
-                            {!isReviewing ? (
+                            {!iyzicoContent && (
                                 <button
                                     type="submit"
                                     form="checkout-form"
-                                    className="submit-btn"
-                                >
-                                    {t('reviewOrder')}
-                                </button>
-                            ) : (
-                                <button
-                                    onClick={handleSubmit}
                                     className={`submit-btn ${loading ? 'loading' : ''}`}
                                     disabled={loading}
                                 >
-                                    {loading ? 'Processing...' : t('confirmOrder')}
+                                    {loading ? 'Initializing...' : t('checkout')}
                                 </button>
                             )}
 
                             <div className="secure-badge">
                                 <span className="lock-icon">🔒</span> {t('secureBadge')}
+                            </div>
+                            <div style={{ textAlign: 'center', marginTop: '1rem' }}>
+                                <img src="https://sandbox-st.iyzipay.com/assets/images/iyzipay-logo.png" alt="Iyzico" style={{ height: '30px', opacity: 0.8 }} />
                             </div>
                         </div>
                     </div>
@@ -348,62 +337,6 @@ export default function Checkout() {
             border-color: var(--color-accent);
             background: rgba(255,255,255,0.05);
             outline: none;
-        }
-
-        /* Credit Card Visual */
-        .credit-card-form {
-            background: rgba(255,255,255,0.02);
-            padding: 2rem;
-            border-radius: 8px;
-            border: 1px solid var(--color-border);
-        }
-        .card-visual {
-            width: 100%;
-            max-width: 350px;
-            height: 200px;
-            background: linear-gradient(135deg, #2c2c2c, #111);
-            border: 1px solid var(--color-accent);
-            border-radius: 12px;
-            margin: 0 auto 2rem;
-            padding: 2rem;
-            position: relative;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-        }
-        .card-chip {
-            width: 40px;
-            height: 30px;
-            background: linear-gradient(135deg, #d4af37, #f9f295);
-            border-radius: 4px;
-            position: absolute;
-            top: 50px;
-            left: 30px;
-        }
-        .card-logo {
-            position: absolute;
-            top: 20px;
-            right: 30px;
-            font-weight: 900;
-            font-style: italic;
-            font-size: 1.5rem;
-            color: rgba(255,255,255,0.8);
-        }
-        .card-number-display {
-            font-family: monospace;
-            font-size: 1.4rem;
-            letter-spacing: 2px;
-            color: #fff;
-            margin-bottom: 1.5rem;
-            text-shadow: 0 2px 2px rgba(0,0,0,0.5);
-        }
-        .card-meta {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            color: rgba(255,255,255,0.7);
         }
 
         /* Order Summary */
@@ -493,10 +426,14 @@ export default function Checkout() {
             justify-content: center;
             gap: 0.5rem;
         }
-
-        @keyframes scaleIn {
-            from { transform: scale(0); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
+        
+        /* Iyzico Styles */
+        .iyzico-container {
+            animation: fadeIn 0.5s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
       `}</style>
         </section>
