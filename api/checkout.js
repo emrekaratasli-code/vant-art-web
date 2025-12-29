@@ -19,15 +19,21 @@ module.exports = async (req, res) => {
         return res.status(405).json({ error: 'Method Not Allowed' });
     }
 
+    // --- CONFIGURATION ---
+    // Option 1: Vercel Environment Variables (Recommended for production)
+    // Option 2: Hardcode here for testing (Uncomment and paste your keys)
+
+    // TODO: PASTE YOUR KEYS HERE IF TESTING LOCALLY OR IF NOT SETTING ENV VARS
+    const API_KEY = process.env.IYZICO_API_KEY || 'PASTE_YOUR_SANDBOX_API_KEY_HERE';
+    const SECRET_KEY = process.env.IYZICO_SECRET_KEY || 'PASTE_YOUR_SANDBOX_SECRET_KEY_HERE';
+    const BASE_URL = process.env.IYZICO_BASE_URL || 'https://sandbox-api.iyzipay.com';
+
     const { cartItems, userDetails, totalPrice, currency } = req.body;
 
-    // Initialize Iyzico
-    // NOTE: In production, these should be environment variables (process.env.IYZICO_API_KEY)
-    // For now, we use placeholders as requested.
     const iyzipay = new Iyzipay({
-        apiKey: process.env.IYZICO_API_KEY || 'sandbox-api-key-placeholder',
-        secretKey: process.env.IYZICO_SECRET_KEY || 'sandbox-secret-key-placeholder',
-        uri: process.env.IYZICO_BASE_URL || 'https://sandbox-api.iyzipay.com'
+        apiKey: API_KEY,
+        secretKey: SECRET_KEY,
+        uri: BASE_URL
     });
 
     // Create a unique conversation ID
@@ -83,18 +89,24 @@ module.exports = async (req, res) => {
         basketItems: basketItems
     };
 
-    console.log('Iyzico Request:', request);
+    console.log('Iyzico Init Request:', { ...request, apiKey: '***HIDDEN***' });
 
     iyzipay.checkoutFormInitialize.create(request, (err, result) => {
         if (err) {
-            console.error('Iyzico Error:', err);
-            return res.status(500).json({ error: err.message });
+            console.error('Iyzico Connection Error:', err);
+            return res.status(500).json({ status: 'failure', errorMessage: err.message });
         }
 
-        console.log('Iyzico Result:', result);
+        console.log('Iyzico API Response:', result);
 
         if (result.status !== 'success') {
-            return res.status(400).json({ status: 'failure', errorMessage: result.errorMessage });
+            // Return the exact error message from Iyzico (e.g., "api key validation failed")
+            return res.status(400).json({
+                status: 'failure',
+                errorMessage: result.errorMessage,
+                errorCode: result.errorCode,
+                errorGroup: result.errorGroup
+            });
         }
 
         res.status(200).json(result);
