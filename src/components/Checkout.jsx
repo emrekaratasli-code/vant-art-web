@@ -58,7 +58,7 @@ export default function Checkout() {
             }
         } catch (err) {
             console.error('Checkout error:', err);
-            setError('An error occurred. Please try again.');
+            setError(t('paymentError'));
         } finally {
             setLoading(false);
         }
@@ -183,7 +183,7 @@ export default function Checkout() {
                                     </div>
                                     <div className="form-row">
                                         <div className="form-group">
-                                            <label>City</label>
+                                            <label>{t('city')}</label>
                                             <input
                                                 type="text"
                                                 name="city"
@@ -193,7 +193,7 @@ export default function Checkout() {
                                             />
                                         </div>
                                         <div className="form-group">
-                                            <label>Zip Code</label>
+                                            <label>{t('zipCode')}</label>
                                             <input
                                                 type="text"
                                                 name="zipCode"

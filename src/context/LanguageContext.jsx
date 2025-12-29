@@ -77,7 +77,10 @@ const translations = {
         storyP2: "We believe that jewelry is more than just an accessory; it is an expression of individuality and a celebration of life's most precious moments.",
         legalReturnPolicy: "Return Policy",
         legalPrivacyPolicy: "Privacy Policy",
-        legalSalesAgreement: "Distance Sales Agreement"
+        legalSalesAgreement: "Distance Sales Agreement",
+        city: "City",
+        zipCode: "Zip Code",
+        paymentError: "An error occurred. Please check your details and try again."
     },
     TR: {
         collection: "Koleksiyon",
@@ -151,7 +154,10 @@ const translations = {
         storyP2: "Mücevherin sadece bir aksesuar olmadığına; bireyselliğin bir ifadesi ve hayatın en değerli anlarının bir kutlaması olduğuna inanıyoruz.",
         legalReturnPolicy: "İade Politikası",
         legalPrivacyPolicy: "Gizlilik Politikası",
-        legalSalesAgreement: "Mesafeli Satış Sözleşmesi"
+        legalSalesAgreement: "Mesafeli Satış Sözleşmesi",
+        city: "Şehir",
+        zipCode: "Posta Kodu",
+        paymentError: "Lütfen bilgilerinizi kontrol edip tekrar deneyiniz."
     }
 };
 

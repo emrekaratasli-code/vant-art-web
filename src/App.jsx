@@ -57,12 +57,39 @@ function AppContent() {
           </div>
 
           <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'center', gap: '2rem', flexWrap: 'wrap' }}>
-            <a href="#" style={{ color: 'var(--color-text-muted)', textDecoration: 'none' }}>{t('legalReturnPolicy')}</a>
-            <a href="#" style={{ color: 'var(--color-text-muted)', textDecoration: 'none' }}>{t('legalPrivacyPolicy')}</a>
-            <a href="#" style={{ color: 'var(--color-text-muted)', textDecoration: 'none' }}>{t('legalSalesAgreement')}</a>
+            <a href="#" className="legal-link">{t('legalReturnPolicy')}</a>
+            <a href="#" className="legal-link">{t('legalPrivacyPolicy')}</a>
+            <a href="#" className="legal-link">{t('legalSalesAgreement')}</a>
           </div>
           &copy; 2025 VANT ART. {t('footerCopyright')}
         </footer>
+        <style>{`
+          .legal-link {
+            color: var(--color-text-muted);
+            text-decoration: none;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            transition: color 0.3s;
+            position: relative;
+          }
+          .legal-link:hover {
+            color: var(--color-accent);
+          }
+          .legal-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 1px;
+            bottom: -2px;
+            left: 0;
+            background-color: var(--color-accent);
+            transition: width 0.3s;
+          }
+          .legal-link:hover::after {
+            width: 100%;
+          }
+        `}</style>
       </div>
     </Router>
   );
