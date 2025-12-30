@@ -53,13 +53,19 @@ export default async function handler(req, res) {
     const iyzipayConfig = {
         apiKey: API_KEY,
         secretKey: SECRET_KEY,
-        uri: BASE_URL
+        uri: BASE_URL,
+        // Defensive: Add snake_case aliases just in case specific library version expects them
+        api_key: API_KEY,
+        secret_key: SECRET_KEY,
+        sandbox: true // Explicitly enable sandbox mode if supported
     };
 
     console.log('Iyzipay Constructor Config:', {
         ...iyzipayConfig,
-        apiKey: '***MASKED***', // Do not log full keys
-        secretKey: '***MASKED***'
+        apiKey: '***MASKED***',
+        secretKey: '***MASKED***',
+        api_key: '***MASKED***',
+        secret_key: '***MASKED***'
     });
 
     const iyzipay = new Iyzipay(iyzipayConfig);
