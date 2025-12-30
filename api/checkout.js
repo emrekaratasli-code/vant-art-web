@@ -22,34 +22,47 @@ export default async function handler(req, res) {
     // --- CONFIGURATION ---
     // --- CONFIGURATION ---
     // User provided Sandbox Keys (Fallbacks if Env Vars are missing)
-    const API_KEY = process.env.IYZICO_API_KEY || 'sandbox-MXKXqHwU299kZjL1Un2qKvsklLNyW7XD';
-    const SECRET_KEY = process.env.IYZICO_SECRET_KEY || 'sandbox-yqUC6FplVjzaYL8k4U0aZ7Tz8KGi4YsR';
-    const BASE_URL = process.env.IYZICO_BASE_URL || 'https://sandbox-api.iyzipay.com';
+    // IMPORTANT: Using .trim() to remove any accidental whitespace from environment variables
+    const rawApiKey = process.env.IYZICO_API_KEY || 'sandbox-MXKXqHwU299kZjL1Un2qKvsklLNyW7XD';
+    const rawSecretKey = process.env.IYZICO_SECRET_KEY || 'sandbox-yqUC6FplVjzaYL8k4U0aZ7Tz8KGi4YsR';
+    const rawBaseUrl = process.env.IYZICO_BASE_URL || 'https://sandbox-api.iyzipay.com';
 
-    // DEBUG: Print first few chars of keys to verify they exist (don't log full keys)
-    console.log('Iyzico Config Check:', {
-        apiKeyExists: !!API_KEY,
-        apiKeyPrefix: API_KEY ? API_KEY.substring(0, 4) + '...' : 'MISSING',
-        secretKeyExists: !!SECRET_KEY,
+    const API_KEY = rawApiKey.trim();
+    const SECRET_KEY = rawSecretKey.trim();
+    const BASE_URL = rawBaseUrl.trim();
+
+    // DEBUG: Print details about the keys being used to initialize Iyzipay
+    console.log('Iyzico Initialization Details:', {
+        apiKeyLength: API_KEY.length,
+        apiKeyPrefix: API_KEY.substring(0, 12) + '...', // Show a bit more to be sure
+        secretKeyLength: SECRET_KEY.length,
         baseUrl: BASE_URL
     });
 
     if (!API_KEY || !SECRET_KEY) {
-        console.error('CRITICAL: Missing Iyzico API Keys in Environment Variables.');
+        console.error('CRITICAL: Missing Iyzico API Keys.');
         return res.status(500).json({
             status: 'failure',
-            errorMessage: 'Server Configuration Error: Iyzico keys not found. Check Vercel Environment Variables.',
+            errorMessage: 'Server Configuration Error: Iyzico keys missing.',
             errorCode: '1001'
         });
     }
 
     const { cartItems, userDetails, totalPrice, currency } = req.body;
 
-    const iyzipay = new Iyzipay({
+    const iyzipayConfig = {
         apiKey: API_KEY,
         secretKey: SECRET_KEY,
         uri: BASE_URL
+    };
+
+    console.log('Iyzipay Constructor Config:', {
+        ...iyzipayConfig,
+        apiKey: '***MASKED***', // Do not log full keys
+        secretKey: '***MASKED***'
     });
+
+    const iyzipay = new Iyzipay(iyzipayConfig);
 
     // Create a unique conversation ID
     const conversationId = '123456789';
