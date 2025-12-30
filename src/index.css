@@ -1,6 +1,6 @@
 :root {
-  --font-heading: 'Playfair Display', serif;
-  --font-body: 'Lato', sans-serif;
+  --font-heading: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
 
   /* VANT ART Luxury Palette: Black & Gold */
   --color-bg: #121212;
@@ -20,8 +20,11 @@
   --shadow-sm: 0 4px 6px rgba(0, 0, 0, 0.3);
   --shadow-md: 0 8px 16px rgba(0, 0, 0, 0.4);
 
-  --radius-sm: 0px;
-  /* Sharper edges for luxury fee el */
+  --radius-sm: 8px;
+  /* Softer, more modern edges */
+  --radius-md: 12px;
+  --radius-lg: 24px;
+  /* For rounded buttons */
 }
 
 * {

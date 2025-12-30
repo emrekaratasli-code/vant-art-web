@@ -20,13 +20,26 @@ export default async function handler(req, res) {
     }
 
     // --- CONFIGURATION ---
-    // Option 1: Vercel Environment Variables (Recommended for production)
-    // Option 2: Hardcode here for testing (Uncomment and paste your keys)
-
-    // TODO: PASTE YOUR KEYS HERE IF TESTING LOCALLY OR IF NOT SETTING ENV VARS
-    const API_KEY = process.env.IYZICO_API_KEY || 'PASTE_YOUR_SANDBOX_API_KEY_HERE';
-    const SECRET_KEY = process.env.IYZICO_SECRET_KEY || 'PASTE_YOUR_SANDBOX_SECRET_KEY_HERE';
+    const API_KEY = process.env.IYZICO_API_KEY;
+    const SECRET_KEY = process.env.IYZICO_SECRET_KEY;
     const BASE_URL = process.env.IYZICO_BASE_URL || 'https://sandbox-api.iyzipay.com';
+
+    // DEBUG: Print first few chars of keys to verify they exist (don't log full keys)
+    console.log('Iyzico Config Check:', {
+        apiKeyExists: !!API_KEY,
+        apiKeyPrefix: API_KEY ? API_KEY.substring(0, 4) + '...' : 'MISSING',
+        secretKeyExists: !!SECRET_KEY,
+        baseUrl: BASE_URL
+    });
+
+    if (!API_KEY || !SECRET_KEY) {
+        console.error('CRITICAL: Missing Iyzico API Keys in Environment Variables.');
+        return res.status(500).json({
+            status: 'failure',
+            errorMessage: 'Server Configuration Error: Iyzico keys not found. Check Vercel Environment Variables.',
+            errorCode: '1001'
+        });
+    }
 
     const { cartItems, userDetails, totalPrice, currency } = req.body;
 
