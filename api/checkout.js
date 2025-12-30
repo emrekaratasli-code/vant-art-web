@@ -128,10 +128,10 @@ export default async function handler(req, res) {
         console.log('Iyzico API Response:', result);
 
         if (result.status !== 'success') {
-            // Return the exact error message from Iyzico (e.g., "api key validation failed")
+            // Return the exact error message from Iyzico with a DEBUG marker to prove new code is running
             return res.status(400).json({
                 status: 'failure',
-                errorMessage: result.errorMessage,
+                errorMessage: 'DEBUG_ACTIVE: ' + result.errorMessage,
                 errorCode: result.errorCode,
                 errorGroup: result.errorGroup
             });
