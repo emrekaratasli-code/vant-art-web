@@ -20,8 +20,10 @@ export default async function handler(req, res) {
     }
 
     // --- CONFIGURATION ---
-    const API_KEY = process.env.IYZICO_API_KEY;
-    const SECRET_KEY = process.env.IYZICO_SECRET_KEY;
+    // --- CONFIGURATION ---
+    // User provided Sandbox Keys (Fallbacks if Env Vars are missing)
+    const API_KEY = process.env.IYZICO_API_KEY || 'sandbox-MXKXqHwU299kZjL1Un2qKvsklLNyW7XD';
+    const SECRET_KEY = process.env.IYZICO_SECRET_KEY || 'sandbox-yqUC6FplVjzaYL8k4U0aZ7Tz8KGi4YsR';
     const BASE_URL = process.env.IYZICO_BASE_URL || 'https://sandbox-api.iyzipay.com';
 
     // DEBUG: Print first few chars of keys to verify they exist (don't log full keys)
