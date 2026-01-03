@@ -29,7 +29,7 @@ const UserIcon = () => (
 );
 
 export default function BottomNav() {
-    const { totalItems } = useCart();
+    const { cartCount } = useCart();
     const location = useLocation();
 
     const isActive = (path) => location.pathname === path;
@@ -47,7 +47,7 @@ export default function BottomNav() {
                 <div className="icon-container">
                     <div className="icon-wrapper">
                         <ShoppingBagIcon />
-                        {totalItems > 0 && <span className="badge">{totalItems}</span>}
+                        {cartCount > 0 && <span className="badge">{cartCount}</span>}
                     </div>
                     {isActive('/cart') && <div className="active-line" />}
                 </div>
