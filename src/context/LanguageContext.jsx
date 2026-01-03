@@ -78,6 +78,7 @@ const translations = {
         legalReturnPolicy: "Return Policy",
         legalPrivacyPolicy: "Privacy Policy",
         legalSalesAgreement: "Distance Sales Agreement",
+        legalKvkk: "GDPR Notice",
         city: "City",
         zipCode: "Zip Code",
         paymentError: "An error occurred. Please check your details and try again."
@@ -155,6 +156,7 @@ const translations = {
         legalReturnPolicy: "İade Politikası",
         legalPrivacyPolicy: "Gizlilik Politikası",
         legalSalesAgreement: "Mesafeli Satış Sözleşmesi",
+        legalKvkk: "KVKK Aydınlatma Metni",
         city: "Şehir",
         zipCode: "Posta Kodu",
         paymentError: "Lütfen bilgilerinizi kontrol edip tekrar deneyiniz."

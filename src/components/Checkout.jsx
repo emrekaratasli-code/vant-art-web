@@ -1,16 +1,167 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 import { useCart } from '../context/CartContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useNavigate } from 'react-router-dom';
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
+
+// Initialize Stripe - using test publishable key
+const stripePromise = loadStripe('pk_test_51QY9ZkP9fJ8rH2mT1d2e3f4g5h6i7j8k9l0m1n2o3p4q5r6s7t8u9v0w1x2y3z4');
+
+function PaymentForm({ formData, cartTotal }) {
+    const stripe = useStripe();
+    const elements = useElements();
+    const { clearCart } = useCart();
+    const { t } = useLanguage();
+    const navigate = useNavigate();
+
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const [success, setSuccess] = useState(false);
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        if (!stripe || !elements) {
+            return;
+        }
+
+        setLoading(true);
+        setError(null);
+
+        const { error: submitError } = await elements.submit();
+        if (submitError) {
+            setError(submitError.message);
+            setLoading(false);
+            return;
+        }
+
+        const result = await stripe.confirmPayment({
+            elements,
+            confirmParams: {
+                return_url: window.location.origin + '/success',
+            },
+            redirect: 'if_required'
+        });
+
+        if (result.error) {
+            setError(result.error.message);
+            setLoading(false);
+        } else {
+            setSuccess(true);
+            clearCart();
+            setTimeout(() => navigate('/'), 3000);
+        }
+    };
+
+    if (success) {
+        return (
+            <div style={{
+                padding: '3rem',
+                textAlign: 'center',
+                background: 'rgba(0, 255, 0, 0.1)',
+                border: '1px solid #00ff00',
+                borderRadius: '4px'
+            }}>
+                <h3 style={{ color: 'var(--color-accent)', marginBottom: '1rem', fontFamily: 'var(--font-heading)' }}>
+                    ✓ Payment Successful!
+                </h3>
+                <p>Thank you for your order. Redirecting to home page...</p>
+            </div>
+        );
+    }
+
+    return (
+        <form onSubmit={handleSubmit} style={{ marginTop: '2rem' }}>
+            {error && (
+                <div style={{
+                    padding: '1rem',
+                    background: 'rgba(255, 0, 0, 0.1)',
+                    border: '1px solid red',
+                    color: 'red',
+                    marginBottom: '2rem',
+                    borderRadius: '4px'
+                }}>
+                    {error}
+                </div>
+            )}
+
+            <div style={{
+                background: 'var(--color-surface)',
+                padding: '2rem',
+                border: '1px solid var(--color-border)',
+                marginBottom: '2rem'
+            }}>
+                <h3 style={{
+                    fontFamily: 'var(--font-heading)',
+                    fontSize: '1.5rem',
+                    marginBottom: '1.5rem',
+                    color: 'var(--color-accent)'
+                }}>
+                    <span className="step-number" style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: '30px',
+                        height: '30px',
+                        background: 'var(--color-accent)',
+                        color: 'var(--color-bg)',
+                        borderRadius: '50%',
+                        fontSize: '1rem',
+                        fontWeight: '700',
+                        marginRight: '1rem'
+                    }}>2</span>
+                    {t('paymentInfo') || 'Payment Information'}
+                </h3>
+
+                <PaymentElement />
+            </div>
+
+            <button
+                type="submit"
+                disabled={!stripe || loading}
+                style={{
+                    width: '100%',
+                    padding: '1.25rem',
+                    background: loading ? '#666' : 'var(--color-accent)',
+                    color: 'var(--color-bg)',
+                    fontWeight: '700',
+                    fontSize: '1rem',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.1em',
+                    border: 'none',
+                    cursor: loading ? 'not-allowed' : 'pointer',
+                    transition: '0.3s',
+                    opacity: loading ? 0.7 : 1
+                }}
+            >
+                {loading ? t('processing') || 'Processing...' : t('payNow') || `Pay ${cartTotal.toFixed(2)}`}
+            </button>
+
+            <div style={{
+                marginTop: '1.5rem',
+                textAlign: 'center',
+                fontSize: '0.8rem',
+                color: 'var(--color-text-muted)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.5rem'
+            }}>
+                <span>🔒</span> {t('secureBadge') || 'Secure Payment with Stripe'}
+            </div>
+        </form>
+    );
+}
 
 export default function Checkout() {
-    const { cartItems, cartTotal, clearCart } = useCart();
+    const { cartItems, cartTotal } = useCart();
     const { t, formatPrice, language } = useLanguage();
     const navigate = useNavigate();
 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
-    const [iyzicoContent, setIyzicoContent] = useState(null);
+    const [clientSecret, setClientSecret] = useState(null);
 
     // Form inputs state
     const [formData, setFormData] = useState({
@@ -28,7 +179,7 @@ export default function Checkout() {
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    const handlePayment = async (e) => {
+    const handleContactSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
         setError(null);
@@ -49,40 +200,18 @@ export default function Checkout() {
 
             const data = await response.json();
 
-            if (data.status === 'success') {
-                setIyzicoContent(data.checkoutFormContent);
-                // The cart will be cleared effectively after successful payment callback handling
-                // For this demo/sandbox, we perform the view transition here
+            if (data.clientSecret) {
+                setClientSecret(data.clientSecret);
             } else {
-                setError(data.errorMessage || 'Payment initialization failed');
+                setError(data.error || 'Payment initialization failed');
             }
         } catch (err) {
             console.error('Checkout error:', err);
-            setError(t('paymentError'));
+            setError(t('paymentError') || 'An error occurred');
         } finally {
             setLoading(false);
         }
     };
-
-    // Effect to run script tags from Iyzico HTML content
-    useEffect(() => {
-        if (iyzicoContent) {
-            // Create a temporary container to parse the HTML string
-            const div = document.createElement('div');
-            div.innerHTML = iyzicoContent;
-
-            // Find and execute scripts
-            const scripts = div.getElementsByTagName('script');
-            Array.from(scripts).forEach(script => {
-                const newScript = document.createElement('script');
-                Array.from(script.attributes).forEach(attr => {
-                    newScript.setAttribute(attr.name, attr.value);
-                });
-                newScript.appendChild(document.createTextNode(script.innerHTML));
-                document.body.appendChild(newScript);
-            });
-        }
-    }, [iyzicoContent]);
 
     if (cartItems.length === 0) {
         return (
@@ -94,6 +223,19 @@ export default function Checkout() {
             </div>
         );
     }
+
+    const appearance = {
+        theme: 'night',
+        variables: {
+            colorPrimary: '#d4af37',
+            colorBackground: '#1a1a1a',
+            colorText: '#ffffff',
+            colorDanger: '#df1b41',
+            fontFamily: 'system-ui, sans-serif',
+            spacingUnit: '4px',
+            borderRadius: '0px',
+        },
+    };
 
     return (
         <section className="checkout-section">
@@ -115,21 +257,9 @@ export default function Checkout() {
                             </div>
                         )}
 
-                        {/* If Iyzico content is present, show the payment form container */}
-                        {iyzicoContent ? (
-                            <div className="iyzico-container">
-                                <h3 style={{ fontFamily: 'var(--font-heading)', marginBottom: '1.5rem', color: 'var(--color-accent)' }}>
-                                    {t('paySecurely')}
-                                </h3>
-                                <div id="iyzipay-checkout-form" className="responsive"></div>
-                                {/* We hide the dangerouslySetInnerHTML because we only need the structure for the script to target, 
-                                    but usually the script inserts into the id above. 
-                                    However, if the HTML content contains the form structure itself: */}
-                                <div dangerouslySetInnerHTML={{ __html: iyzicoContent }} />
-                            </div>
-                        ) : (
-                            <form onSubmit={handlePayment} id="checkout-form">
-                                {/* Contact & Shipping */}
+                        {/* Contact Form */}
+                        {!clientSecret ? (
+                            <form onSubmit={handleContactSubmit} id="contact-form">
                                 <div className="form-block">
                                     <h3 className="form-section-title">
                                         <span className="step-number">1</span>
@@ -204,13 +334,11 @@ export default function Checkout() {
                                         </div>
                                     </div>
                                 </div>
-
-                                <div className="form-block" style={{ marginTop: '2rem', textAlign: 'center', padding: '3rem' }}>
-                                    <p style={{ color: 'var(--color-text-muted)', marginBottom: '1rem' }}>
-                                        Proceed to complete your payment securely with Iyzico.
-                                    </p>
-                                </div>
                             </form>
+                        ) : (
+                            <Elements stripe={stripePromise} options={{ clientSecret, appearance }}>
+                                <PaymentForm formData={formData} cartTotal={cartTotal} />
+                            </Elements>
                         )}
                     </div>
 
@@ -237,27 +365,29 @@ export default function Checkout() {
                                 <span>{formatPrice(cartTotal)}</span>
                             </div>
 
-                            {!iyzicoContent && (
+                            {!clientSecret && (
                                 <button
                                     type="submit"
-                                    form="checkout-form"
+                                    form="contact-form"
                                     className={`submit-btn ${loading ? 'loading' : ''}`}
                                     disabled={loading}
                                 >
-                                    {loading ? 'Initializing...' : t('checkout')}
+                                    {loading ? 'Initializing...' : t('continue') || 'Continue to Payment'}
                                 </button>
                             )}
 
-                            <div className="secure-badge">
-                                <span className="lock-icon">🔒</span> {t('secureBadge')}
-                            </div>
-                            <div style={{ textAlign: 'center', marginTop: '1rem' }}>
-                                <img src="https://sandbox-st.iyzipay.com/assets/images/iyzipay-logo.png" alt="Iyzico" style={{ height: '30px', opacity: 0.8 }} />
+                            <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
+                                <img
+                                    src="https://stripe.com/img/v3/newsroom/social.png"
+                                    alt="Powered by Stripe"
+                                    style={{ height: '30px', opacity: 0.6, filter: 'grayscale(100%)' }}
+                                />
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+
             <style>{`
         .checkout-section {
           padding: 4rem 0;
@@ -415,25 +545,6 @@ export default function Checkout() {
         .submit-btn:disabled {
             opacity: 0.7;
             cursor: not-allowed;
-        }
-        .secure-badge {
-            margin-top: 1.5rem;
-            text-align: center;
-            font-size: 0.8rem;
-            color: var(--color-text-muted);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-        }
-        
-        /* Iyzico Styles */
-        .iyzico-container {
-            animation: fadeIn 0.5s ease;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
         }
       `}</style>
         </section>
