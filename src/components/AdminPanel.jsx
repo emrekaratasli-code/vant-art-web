@@ -25,11 +25,45 @@ export default function AdminPanel() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
 
-  const stats = useMemo(() => getStats() || {}, [getStats]);
+  // MOCK NOTIFICATIONS
+  const notifications = [
+    { id: 1, text: 'Yeni sipariş: #ORD-9921', time: '5 dk önce' },
+    { id: 2, text: 'Stok uyarısı: Zultanit Yüzük', time: '1 saat önce' },
+    { id: 3, text: 'Günlük rapor hazır', time: 'Bugün' }
+  ];
+
+  const handleViewSite = () => {
+    window.open('/', '_blank');
+  };
+
+  const toggleNotifications = () => setNotificationsOpen(!notificationsOpen);
+  const [formData, setFormData] = useState({ name: '', price: '', category: '', image: '', description: '', material: '' });
+
+  // --- SAFETY CHECK ---
+  if (!products || !orders) {
+    return (
+      <div className="admin-loading" style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f4f5f7' }}>
+        <div style={{ textAlign: 'center' }}>
+          <h3>Panel Yükleniyor...</h3>
+          <p style={{ color: '#666', fontSize: '0.9rem' }}>Veriler hazırlanıyor.</p>
+        </div>
+      </div>
+    );
+  }
+
+  const stats = useMemo(() => {
+    try {
+      return (getStats && typeof getStats === 'function') ? (getStats() || {}) : {};
+    } catch (e) {
+      console.error("Stats Error:", e);
+      return {};
+    }
+  }, [getStats]);
 
   // Chart Data - Safe Access
   const activityData = stats.activityData || [];
   const categoryData = Object.entries(stats.categoryClicks || {}).map(([name, value]) => ({ name, value }));
+  const COLORS = ['#d4af37', '#2a2a2a', '#999', '#555'];
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -151,21 +185,26 @@ export default function AdminPanel() {
                 <div className="main-charts">
                   <div className="chart-box">
                     <h3>Gelir & Trafik Analizi</h3>
-                    <ResponsiveContainer width="100%" height={300}>
-                      <AreaChart data={activityData}>
-                        <defs>
-                          <linearGradient id="colorVis" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#d4af37" stopOpacity={0.8} />
-                            <stop offset="95%" stopColor="#d4af37" stopOpacity={0} />
-                          </linearGradient>
-                        </defs>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-                        <XAxis dataKey="time" axisLine={false} tickLine={false} />
-                        <YAxis axisLine={false} tickLine={false} />
-                        <Tooltip contentStyle={{ background: '#000', color: '#fff', border: 'none', borderRadius: '4px' }} />
-                        <Area type="monotone" dataKey="visitors" stroke="#d4af37" fillOpacity={1} fill="url(#colorVis)" />
-                      </AreaChart>
-                    </ResponsiveContainer>
+                    {/* SAFE CHART: Only render if data exists and is valid */}
+                    <div style={{ width: '100%', height: 300 }}>
+                      {activityData && activityData.length > 0 ? (
+                        <ResponsiveContainer width="100%" height="100%">
+                          <AreaChart data={activityData}>
+                            <defs>
+                              <linearGradient id="colorVis" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="#d4af37" stopOpacity={0.8} />
+                                <stop offset="95%" stopColor="#d4af37" stopOpacity={0} />
+                              </linearGradient>
+                            </defs>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                            <XAxis dataKey="time" axisLine={false} tickLine={false} />
+                            <YAxis axisLine={false} tickLine={false} />
+                            <Tooltip contentStyle={{ background: '#000', color: '#fff', border: 'none', borderRadius: '4px' }} />
+                            <Area type="monotone" dataKey="visitors" stroke="#d4af37" fillOpacity={1} fill="url(#colorVis)" />
+                          </AreaChart>
+                        </ResponsiveContainer>
+                      ) : <div className="empty-state-chart">Veri Yükleniyor veya Yok</div>}
+                    </div>
                   </div>
 
                   <div className="journey-section">
@@ -194,7 +233,8 @@ export default function AdminPanel() {
                   <div className="widget-box">
                     <h3>📦 Kritik Stok</h3>
                     <ul className="stock-list">
-                      {products.sort((a, b) => b.stock - a.stock).slice(0, 4).map(p => (
+                      {/* SAFE SORT */}
+                      {(products || []).sort((a, b) => (b.stock || 0) - (a.stock || 0)).slice(0, 4).map(p => (
                         <li key={p.id} className="stock-item">
                           <img src={p.image} alt="" />
                           <div className="info">
@@ -209,14 +249,17 @@ export default function AdminPanel() {
                   </div>
                   <div className="widget-box">
                     <h3>Kategori İlgi</h3>
-                    <div className="mini-pie-container">
-                      <ResponsiveContainer width="100%" height={200}>
-                        <PieChart>
-                          <Pie data={categoryData} cx="50%" cy="50%" innerRadius={40} outerRadius={60} fill="#888" paddingAngle={5} dataKey="value">
-                            {categoryData.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
-                          </Pie>
-                        </PieChart>
-                      </ResponsiveContainer>
+                    <div className="mini-pie-container" style={{ width: '100%', height: 200 }}>
+                      {/* SAFE PIE CHART */}
+                      {categoryData && categoryData.length > 0 ? (
+                        <ResponsiveContainer width="100%" height="100%">
+                          <PieChart>
+                            <Pie data={categoryData} cx="50%" cy="50%" innerRadius={40} outerRadius={60} fill="#888" paddingAngle={5} dataKey="value">
+                              {categoryData.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
+                            </Pie>
+                          </PieChart>
+                        </ResponsiveContainer>
+                      ) : <div className="empty-state-chart">Veri Yok</div>}
                     </div>
                   </div>
                 </div>
@@ -246,7 +289,8 @@ export default function AdminPanel() {
                     </tr>
                   </thead>
                   <tbody>
-                    {products.map(p => (
+                    {/* SAFE MAP */}
+                    {(products || []).map(p => (
                       <tr key={p.id}>
                         <td>
                           <div className="prod-cell-lg">
@@ -261,7 +305,7 @@ export default function AdminPanel() {
                         <td className="font-mono">₺{p.price}</td>
                         <td>
                           <div className="stock-indicator">
-                            <div className="bar" style={{ width: Math.min(100, p.stock * 2) + '%' }}></div>
+                            <div className="bar" style={{ width: Math.min(100, (p.stock || 0) * 2) + '%' }}></div>
                             <span>{p.stock}</span>
                           </div>
                         </td>
@@ -297,11 +341,12 @@ export default function AdminPanel() {
             <div className="orders-view">
               <div className="section-header"><h2>Sipariş Yönetimi</h2></div>
               <div className="data-table-container">
-                {orders.length === 0 ? <div className="empty-state">Henüz sipariş yok.</div> :
+                {(!orders || orders.length === 0) ? <div className="empty-state">Henüz sipariş yok.</div> :
                   <table className="data-table">
                     <thead><tr><th>Sipariş No</th><th>Müşteri</th><th>Tarih</th><th>Tutar</th><th>Durum</th></tr></thead>
                     <tbody>
-                      {orders.map(o => (
+                      {/* SAFE MAP */}
+                      {(orders || []).map(o => (
                         <tr key={o.id}>
                           <td className="font-mono">#{o.id}</td>
                           <td>{o.billingDetails?.name}<br /><span className="sub-text">{o.billingDetails?.email}</span></td>
@@ -338,7 +383,7 @@ export default function AdminPanel() {
                   <tbody>
                     {/* Aggregating Users from Orders + Mock Data for Demo */}
                     {[
-                      ...Array.from(orders.reduce((acc, order) => {
+                      ...Array.from((orders || []).reduce((acc, order) => {
                         const email = order.billingDetails?.email || 'unknown';
                         if (!acc.has(email)) {
                           acc.set(email, {
@@ -358,7 +403,7 @@ export default function AdminPanel() {
                         return acc;
                       }, new Map()).values()),
                       // Mock users for empty state demonstration if needed
-                      ...(orders.length === 0 ? [
+                      ...((orders || []).length === 0 ? [
                         { id: 'demo1', name: 'Ayşe Yılmaz', email: 'ayse@example.com', city: 'İstanbul', count: 3, spent: 45000, lastDate: new Date().toISOString() },
                         { id: 'demo2', name: 'Mehmet Demir', email: 'mehmet@example.com', city: 'Ankara', count: 1, spent: 12500, lastDate: new Date(Date.now() - 86400000).toISOString() }
                       ] : [])
