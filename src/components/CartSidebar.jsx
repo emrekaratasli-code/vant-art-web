@@ -201,9 +201,10 @@ export default function CartSidebar() {
           color: #000; /* Contrast on Gold */
           text-transform: uppercase;
           letter-spacing: 0.1em;
-          font-weight: 700;
+          font-weight: 600;
           transition: filter 0.3s ease, transform 0.1s;
-          border-radius: var(--radius-sm);
+          border-radius: 30px; /* Soft pill shape */
+          font-family: var(--font-heading);
         }
         .checkout-btn:hover {
           filter: brightness(1.1);

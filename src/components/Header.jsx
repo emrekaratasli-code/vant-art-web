@@ -96,9 +96,10 @@ export default function Header() {
           display: flex;
           gap: 0.5rem;
           color: var(--color-text-muted);
-          font-size: 0.75rem; /* Smaller */
-          font-weight: 300; /* Thinner */
+          font-size: 0.7rem; 
+          font-weight: 200; /* Extra Thin */
           letter-spacing: 0.05em;
+          font-family: var(--font-body);
         }
         .lang-switch button {
           color: var(--color-text-muted);
@@ -142,8 +143,8 @@ export default function Header() {
           .nav-right { grid-area: cart; }
           .nav-left { grid-area: nav; justify-content: center; display: flex; }
           .logo-img { 
-            height: 120px; /* Boosted to 120px for massive presence */
-            filter: drop-shadow(0 4px 12px rgba(0,0,0,0.4));
+            height: 90px; /* Balanced large size */
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
           }
         }
       `}</style>
