@@ -307,10 +307,87 @@ export default function AdminPanel() {
             </div>
           )}
 
+          {/* CUSTOMERS VIEW */}
+          {activeTab === 'customers' && (
+            <div className="customers-view">
+              <div className="section-header"><h2>Müşteri Listesi</h2></div>
+
+              {/* Customer Aggregation Logic could be moved to a useMemo for performance in real app */}
+              <div className="data-table-container">
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>Müşteri Bilgisi</th>
+                      <th>Konum</th>
+                      <th>Toplam Sipariş</th>
+                      <th>Harceama (LTV)</th>
+                      <th>Son Görülme</th>
+                      <th>İşlem</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {/* Aggregating Users from Orders + Mock Data for Demo */}
+                    {[
+                      ...Array.from(orders.reduce((acc, order) => {
+                        const email = order.billingDetails?.email || 'unknown';
+                        if (!acc.has(email)) {
+                          acc.set(email, {
+                            id: email,
+                            name: order.billingDetails?.name || 'Müşteri',
+                            email: email,
+                            city: order.billingDetails?.city || 'İstanbul',
+                            count: 0,
+                            spent: 0,
+                            lastDate: order.date
+                          });
+                        }
+                        const user = acc.get(email);
+                        user.count += 1;
+                        user.spent += (order.amount || 0);
+                        if (new Date(order.date) > new Date(user.lastDate)) user.lastDate = order.date;
+                        return acc;
+                      }, new Map()).values()),
+                      // Mock users for empty state demonstration if needed
+                      ...(orders.length === 0 ? [
+                        { id: 'demo1', name: 'Ayşe Yılmaz', email: 'ayse@example.com', city: 'İstanbul', count: 3, spent: 45000, lastDate: new Date().toISOString() },
+                        { id: 'demo2', name: 'Mehmet Demir', email: 'mehmet@example.com', city: 'Ankara', count: 1, spent: 12500, lastDate: new Date(Date.now() - 86400000).toISOString() }
+                      ] : [])
+                    ].map(user => (
+                      <tr key={user.id}>
+                        <td>
+                          <div className="user-cell">
+                            <div className="avatar-circle">{user.name.charAt(0)}</div>
+                            <div>
+                              <div className="font-bold">{user.name}</div>
+                              <div className="sub-text">{user.email}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td>{user.city}</td>
+                        <td className="text-center"><span className="badge-pill">{user.count} Sipariş</span></td>
+                        <td className="font-mono font-bold">₺{user.spent.toLocaleString()}</td>
+                        <td>{new Date(user.lastDate).toLocaleDateString()}</td>
+                        <td><button className="icon-btn">⋮</button></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
         </div>
       </main>
 
       <style>{`
+        /* ... existing styles ... */
+        
+        .user-cell { display: flex; gap: 12px; align-items: center; }
+        .avatar-circle { width: 40px; height: 40px; background: #2a2a2a; color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.1rem; }
+        .badge-pill { background: #f3f4f6; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; color: #555; }
+        .text-center { text-align: center; }
+        .font-bold { font-weight: 600; }
+        
         /* LAYOUT */
         .admin-layout { display: flex; height: 100vh; background: #f4f5f7; font-family: 'Inter', sans-serif; overflow: hidden; }
         .admin-sidebar { width: 260px; background: #1a1a1a; color: #fff; display: flex; flex-direction: column; flex-shrink: 0; transition: width 0.3s; }
