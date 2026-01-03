@@ -4,6 +4,8 @@ import { ProductProvider } from './context/ProductContext';
 import { LanguageProvider } from './context/LanguageContext';
 import { ToastProvider } from './context/ToastContext';
 import { OrderProvider } from './context/OrderContext';
+import { AuthProvider } from './context/AuthContext';
+import { AnalyticsProvider } from './context/AnalyticsContext';
 import Header from './components/Header';
 import Hero from './components/Hero';
 import ProductGrid from './components/ProductGrid';
@@ -15,15 +17,14 @@ import AdminPanel from './components/AdminPanel';
 import LegalDocument from './components/LegalDocuments';
 import BottomNav from './components/BottomNav';
 import ProductDetail from './components/ProductDetail';
-
 import Contact from './components/Contact';
 import OurStory from './components/OurStory';
 import { useLanguage } from './context/LanguageContext';
-
-import { AuthProvider } from './context/AuthContext';
-import { AnalyticsProvider } from './context/AnalyticsContext';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import Preloader from './components/Preloader';
+import CookieBanner from './components/CookieBanner';
+import ErrorBoundary from './components/ErrorBoundary';
 
 function AppContent() {
   const { t } = useLanguage();
@@ -107,9 +108,6 @@ function AppContent() {
   );
 }
 
-import Preloader from './components/Preloader';
-import CookieBanner from './components/CookieBanner';
-
 // Icons
 const InstaIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
@@ -123,18 +121,24 @@ const WhatsappIcon = () => (
 
 export default function App() {
   return (
-    <LanguageProvider>
-      <Preloader />
-      <CookieBanner />
-      <ProductProvider>
-        <ToastProvider>
-          <OrderProvider>
-            <CartProvider>
-              <AppContent />
-            </CartProvider>
-          </OrderProvider>
-        </ToastProvider>
-      </ProductProvider>
-    </LanguageProvider>
+    <ErrorBoundary>
+      <LanguageProvider>
+        <Preloader />
+        <CookieBanner />
+        <ProductProvider>
+          <ToastProvider>
+            <OrderProvider>
+              <CartProvider>
+                <AnalyticsProvider>
+                  <AuthProvider>
+                    <AppContent />
+                  </AuthProvider>
+                </AnalyticsProvider>
+              </CartProvider>
+            </OrderProvider>
+          </ToastProvider>
+        </ProductProvider>
+      </LanguageProvider>
+    </ErrorBoundary>
   );
 }
