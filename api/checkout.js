@@ -1,75 +1,70 @@
-import Stripe from 'stripe';
+import Iyzipay from 'iyzipay';
 
 export default async function handler(req, res) {
-    // Enable CORS
-    res.setHeader('Access-Control-Allow-Credentials', true);
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
-    res.setHeader(
-        'Access-Control-Allow-Headers',
-        'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
-    );
-
-    if (req.method === 'OPTIONS') {
-        res.status(200).end();
-        return;
-    }
-
     if (req.method !== 'POST') {
-        return res.status(405).json({ error: 'Method Not Allowed' });
+        return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    try {
-        const { cartItems, userDetails, totalPrice, currency } = req.body;
+    const { basketItems, user, address } = req.body;
 
-        // Initialize Stripe with secret key
-        const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+    const iyzipay = new Iyzipay({
+        apiKey: process.env.IYZICO_API_KEY,
+        secretKey: process.env.IYZICO_SECRET_KEY,
+        uri: 'https://sandbox-api.iyzipay.com'
+    });
 
-        if (!stripeSecretKey) {
-            console.error('STRIPE_SECRET_KEY not found in environment variables');
-            return res.status(500).json({
-                error: 'Server configuration error: Stripe key missing'
-            });
+    const request = {
+        locale: Iyzipay.LOCALE.TR,
+        conversationId: '123456789',
+        price: basketItems.reduce((total, item) => total + (item.price * item.quantity), 0).toFixed(2),
+        paidPrice: basketItems.reduce((total, item) => total + (item.price * item.quantity), 0).toFixed(2),
+        currency: Iyzipay.CURRENCY.TRY,
+        basketId: 'B67832',
+        paymentGroup: Iyzipay.PAYMENT_GROUP.PRODUCT,
+        callbackUrl: 'https://vantonline.com/payment-result', // Must be absolute URL
+        enabledInstallments: [2, 3, 6, 9],
+        buyer: {
+            id: 'BY789',
+            name: user.name || 'Misafir',
+            surname: user.surname || 'Kullanici',
+            gsmNumber: address.phone || '+905350000000',
+            email: user.email || 'email@email.com',
+            identityNumber: '74300864791',
+            lastLoginDate: '2015-10-05 12:43:35',
+            registrationDate: '2013-04-21 15:12:09',
+            registrationAddress: address.addressLine,
+            ip: '85.34.78.112',
+            city: address.city,
+            country: 'Turkey',
+            zipCode: address.zipCode || '34732'
+        },
+        shippingAddress: {
+            contactName: user.name + ' ' + user.surname,
+            city: address.city,
+            country: 'Turkey',
+            address: address.addressLine,
+            zipCode: address.zipCode || '34732'
+        },
+        billingAddress: {
+            contactName: user.name + ' ' + user.surname,
+            city: address.city,
+            country: 'Turkey',
+            address: address.addressLine,
+            zipCode: address.zipCode || '34732'
+        },
+        basketItems: basketItems.map(item => ({
+            id: item.id.toString(),
+            name: item.name,
+            category1: item.category || 'Jewelry',
+            itemType: Iyzipay.BASKET_ITEM_TYPE.PHYSICAL,
+            price: item.price.toFixed(2)
+        }))
+    };
+
+    iyzipay.checkoutFormInitialize.create(request, (err, result) => {
+        if (err) {
+            return res.status(500).json({ status: 'failure', errorMessage: err });
         }
-
-        const stripe = new Stripe(stripeSecretKey, {
-            apiVersion: '2024-12-18.acacia',
-        });
-
-        // Calculate amount in cents (Stripe uses smallest currency unit)
-        const amount = Math.round(totalPrice * 100);
-
-        // Create a PaymentIntent
-        const paymentIntent = await stripe.paymentIntents.create({
-            amount: amount,
-            currency: currency === 'TR' ? 'try' : 'usd',
-            metadata: {
-                customer_name: userDetails.fullName,
-                customer_email: userDetails.email,
-                customer_phone: userDetails.phone,
-                customer_address: userDetails.address,
-                order_items: JSON.stringify(cartItems.map(item => ({
-                    id: item.id,
-                    name: item.name,
-                    quantity: item.quantity,
-                    price: item.price
-                })))
-            },
-            description: `Order from ${userDetails.fullName}`,
-        });
-
-        console.log('✅ Stripe PaymentIntent created:', paymentIntent.id);
-
-        // Return the client secret to the frontend
-        res.status(200).json({
-            clientSecret: paymentIntent.client_secret,
-            paymentIntentId: paymentIntent.id
-        });
-
-    } catch (error) {
-        console.error('❌ Stripe Error:', error.message);
-        res.status(500).json({
-            error: error.message || 'Payment initialization failed'
-        });
-    }
+        res.status(200).json(result);
+    });
 }

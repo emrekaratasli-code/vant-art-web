@@ -12,7 +12,7 @@ import ProductGrid from './components/ProductGrid';
 import CartSidebar from './components/CartSidebar';
 import CartPage from './components/CartPage';
 import ProfilePage from './components/ProfilePage';
-import Checkout from './components/Checkout';
+import CheckoutPage from './components/CheckoutPage';
 import AdminPanel from './components/AdminPanel';
 import LegalDocument from './components/LegalDocuments';
 import BottomNav from './components/BottomNav';
@@ -109,7 +109,7 @@ function AppContent() {
           <Route path="/product/:id" element={<ProductDetail />} />
           <Route path="/cart" element={<CartPage />} />
           <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/checkout" element={<Checkout />} />
+          <Route path="/checkout" element={<CheckoutPage />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/our-story" element={<OurStory />} />
           <Route path="/admin" element={<AdminPanel />} />
