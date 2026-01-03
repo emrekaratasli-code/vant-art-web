@@ -8,23 +8,31 @@ import {
   BarChart, Bar, PieChart, Pie, Cell, Legend
 } from 'recharts';
 
+// --- Icons ---
+const IconDashboard = () => <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>;
+const IconProducts = () => <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>;
+const IconOrders = () => <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>;
+const IconUsers = () => <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>;
+const IconSettings = () => <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 0-2.83 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>;
+const IconBell = () => <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>;
+
 export default function AdminPanel() {
   const { products, addProduct, deleteProduct } = useProducts();
-  const { orders, updateOrderStatus } = useOrders();
+  const { orders } = useOrders();
   const { getStats } = useAnalytics();
   const { t } = useLanguage();
-  const [activeTab, setActiveTab] = useState('analytics');
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const stats = useMemo(() => getStats(), [getStats]);
 
-  // Prepare data for charts
+  // Chart Data
   const activityData = stats.activityData || [];
   const categoryData = Object.entries(stats.categoryClicks).map(([name, value]) => ({ name, value }));
   const COLORS = ['#d4af37', '#2a2a2a', '#999', '#555'];
 
-  const [formData, setFormData] = useState({
-    name: '', price: '', category: '', image: '', description: '', material: ''
-  });
+  // Form State
+  const [formData, setFormData] = useState({ name: '', price: '', category: '', image: '', description: '', material: '' });
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -34,277 +42,387 @@ export default function AdminPanel() {
     alert(t('addedAlert'));
   };
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+  const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
   return (
-    <section className="admin-section">
-      <div className="container">
-        <h2 className="admin-title">{t('adminTitle')} - Smart Platform</h2>
-
-        <div className="admin-tabs">
-          <button className={`tab-btn ${activeTab === 'analytics' ? 'active' : ''}`} onClick={() => setActiveTab('analytics')}>
-            📈 {t('analytics')}
-          </button>
-          <button className={`tab-btn ${activeTab === 'products' ? 'active' : ''}`} onClick={() => setActiveTab('products')}>
-            💎 {t('currentCollection')}
-          </button>
-          <button className={`tab-btn ${activeTab === 'orders' ? 'active' : ''}`} onClick={() => setActiveTab('orders')}>
-            📦 {t('adminOrders')}
-          </button>
+    <div className="admin-layout">
+      {/* SIDEBAR */}
+      <aside className={`admin-sidebar ${sidebarOpen ? 'open' : 'closed'}`}>
+        <div className="sidebar-header">
+          <h2>VANT<span className="gold">.panel</span></h2>
         </div>
 
-        {activeTab === 'analytics' && (
-          <div className="analytics-dashboard">
-            {/* KPI Cards */}
-            <div className="stats-grid">
-              <div className="stat-card highlight">
-                <h4>Toplam Ziyaretçi</h4>
-                <div className="stat-number">1,248</div>
-                <div className="stat-trend">↑ %12 Artış</div>
-              </div>
-              <div className="stat-card">
-                <h4>Toplam Satış</h4>
-                <div className="stat-number">₺{orders.reduce((acc, o) => acc + (o.amount || 0), 0).toLocaleString()}</div>
-              </div>
-              <div className="stat-card">
-                <h4>Dönüşüm Oranı</h4>
-                <div className="stat-number">%2.4</div>
-              </div>
-              <div className="stat-card alert">
-                <h4>Sepette Kalan</h4>
-                <div className="stat-number">{stats.abandonedCarts?.length || 0}</div>
-                <div className="stat-desc">Potansiyel: ₺17,000</div>
-              </div>
+        <nav className="sidebar-nav">
+          <button className={`nav-btn ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveTab('dashboard')}>
+            <IconDashboard /> <span>Genel Bakış</span>
+          </button>
+          <button className={`nav-btn ${activeTab === 'products' ? 'active' : ''}`} onClick={() => setActiveTab('products')}>
+            <IconProducts /> <span>Ürün Yönetimi</span>
+          </button>
+          <button className={`nav-btn ${activeTab === 'orders' ? 'active' : ''}`} onClick={() => setActiveTab('orders')}>
+            <IconOrders /> <span>Siparişler</span>
+          </button>
+          <button className={`nav-btn ${activeTab === 'customers' ? 'active' : ''}`} onClick={() => setActiveTab('customers')}>
+            <IconUsers /> <span>Müşteriler</span>
+          </button>
+          <div className="nav-divider"></div>
+          <button className="nav-btn">
+            <IconSettings /> <span>Ayarlar</span>
+          </button>
+        </nav>
+
+        <div className="sidebar-footer">
+          <div className="admin-user">
+            <div className="avatar">AD</div>
+            <div className="user-info">
+              <span className="name">Admin User</span>
+              <span className="role">Süper Yönetici</span>
             </div>
+          </div>
+        </div>
+      </aside>
 
-            <div className="charts-container">
-              {/* Traffic Chart */}
-              <div className="chart-box big">
-                <h3>Saatlik Trafik & Satış</h3>
-                <ResponsiveContainer width="100%" height={300}>
-                  <AreaChart data={activityData}>
-                    <defs>
-                      <linearGradient id="colorVis" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#d4af37" stopOpacity={0.8} />
-                        <stop offset="95%" stopColor="#d4af37" stopOpacity={0} />
-                      </linearGradient>
-                      <linearGradient id="colorSale" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#2a2a2a" stopOpacity={0.8} />
-                        <stop offset="95%" stopColor="#2a2a2a" stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eee" />
-                    <XAxis dataKey="time" />
-                    <YAxis />
-                    <Tooltip contentStyle={{ background: '#fff', border: '1px solid #ddd' }} />
-                    <Area type="monotone" dataKey="visitors" stroke="#d4af37" fillOpacity={1} fill="url(#colorVis)" />
-                    <Area type="monotone" dataKey="sales" stroke="#2a2a2a" fillOpacity={1} fill="url(#colorSale)" />
-                  </AreaChart>
-                </ResponsiveContainer>
+      {/* MAIN CONTENT */}
+      <main className="admin-main">
+        {/* TOP BAR */}
+        <header className="admin-topbar">
+          <div className="search-bar">
+            <span className="search-icon">🔍</span>
+            <input type="text" placeholder="Panelde ara..." />
+          </div>
+          <div className="top-actions">
+            <button className="icon-btn notification">
+              <IconBell />
+              <span className="badge-dot"></span>
+            </button>
+            <button className="view-site-btn">Siteyi Görüntüle ↗</button>
+          </div>
+        </header>
+
+        <div className="content-scrollable">
+
+          {/* DASHBOARD VIEW */}
+          {activeTab === 'dashboard' && (
+            <div className="dashboard-view">
+              <div className="section-header">
+                <h2>Panel Özeti</h2>
+                <span className="date-display">{new Date().toLocaleDateString('tr-TR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
               </div>
 
-              {/* Category Pie */}
-              <div className="chart-box small">
-                <h3>Kategori İlgi Dağılımı</h3>
-                <ResponsiveContainer width="100%" height={250}>
-                  <PieChart>
-                    <Pie data={categoryData} cx="50%" cy="50%" innerRadius={60} outerRadius={80} fill="#8884d8" paddingAngle={5} dataKey="value">
-                      {categoryData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                    <Legend />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-
-            {/* NEW: Customer Journey Tracker */}
-            <div className="journey-section">
-              <h3>📍 Müşteri Yolculuk Haritası (Son 1 Saat)</h3>
-              <div className="journey-grid">
-                <div className="journey-card">
-                  <div className="journey-header">
-                    <span className="user-id">Misafir #8821</span>
-                    <span className="time-ago">2 dk önce</span>
-                  </div>
-                  <div className="journey-steps">
-                    <div className="step visited">🏠 Ana Sayfa</div>
-                    <div className="step-arrow">→</div>
-                    <div className="step visited">👀 Zultanit Yüzük</div>
-                    <div className="step-arrow">→</div>
-                    <div className="step active">🛒 Sepete Ekle</div>
+              {/* KPI Cards */}
+              <div className="stats-grid">
+                <div className="stat-card black">
+                  <div className="stat-icon">👥</div>
+                  <div className="stat-info">
+                    <h4>Ziyaretçiler</h4>
+                    <div className="stat-number">1,248</div>
+                    <span className="trend positive">↑ %12 Bu Hafta</span>
                   </div>
                 </div>
-                <div className="journey-card">
-                  <div className="journey-header">
-                    <span className="user-id">Selin K.</span>
-                    <span className="time-ago">12 dk önce</span>
-                  </div>
-                  <div className="journey-steps">
-                    <div className="step visited">🔍 Safir Kolye</div>
-                    <div className="step-arrow">→</div>
-                    <div className="step visited">🛒 Sepete Ekle</div>
-                    <div className="step-arrow">→</div>
-                    <div className="step completed">✅ Sipariş (₺5,400)</div>
+                <div className="stat-card gold">
+                  <div className="stat-icon">💎</div>
+                  <div className="stat-info">
+                    <h4>Toplam Satış</h4>
+                    <div className="stat-number">₺{orders.reduce((acc, o) => acc + (o.amount || 0), 0).toLocaleString()}</div>
+                    <span className="trend positive">↑ %5 Hedef Üzeri</span>
                   </div>
                 </div>
-                <div className="journey-card abandoned">
-                  <div className="journey-header">
-                    <span className="user-id">Misafir #1029</span>
-                    <span className="time-ago">45 dk önce</span>
-                  </div>
-                  <div className="journey-steps">
-                    <div className="step visited">🏠 Ana Sayfa</div>
-                    <div className="step-arrow">→</div>
-                    <div className="step visited">🛒 Sepete Ekle</div>
-                    <div className="step-arrow">→</div>
-                    <div className="step abandoned">⛔ Çıkış (Sepette Ürün)</div>
+                <div className="stat-card white">
+                  <div className="stat-icon">⚠️</div>
+                  <div className="stat-info">
+                    <h4>Sepette Kalan</h4>
+                    <div className="stat-number">{stats.abandonedCarts?.length || 0}</div>
+                    <span className="trend negative">Aksiyon Bekliyor</span>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <div className="bottom-modules">
-              {/* Abandoned Cart Module */}
-              <div className="module-box">
-                <h3>⚠️ Terk Edilen Sepetler</h3>
-                <div className="table-responsive">
-                  <table className="mini-table">
-                    <thead><tr><th>Kullanıcı</th><th>Sepet Özeti</th><th>Tutar</th><th>Zaman</th><th>Aksiyon</th></tr></thead>
-                    <tbody>
-                      {stats.abandonedCarts?.map((cart) => (
-                        <tr key={cart.id}>
-                          <td>{cart.user}</td>
-                          <td><span className="sub-text">{cart.items.join(', ')}</span></td>
-                          <td>₺{cart.total}</td>
-                          <td>{cart.time}</td>
-                          <td><button className="action-btn">E-posta Gönder</button></td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+              <div className="dashboard-split">
+                <div className="main-charts">
+                  <div className="chart-box">
+                    <h3>Gelir & Trafik Analizi</h3>
+                    <ResponsiveContainer width="100%" height={300}>
+                      <AreaChart data={activityData}>
+                        <defs>
+                          <linearGradient id="colorVis" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#d4af37" stopOpacity={0.8} />
+                            <stop offset="95%" stopColor="#d4af37" stopOpacity={0} />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                        <XAxis dataKey="time" axisLine={false} tickLine={false} />
+                        <YAxis axisLine={false} tickLine={false} />
+                        <Tooltip contentStyle={{ background: '#000', color: '#fff', border: 'none', borderRadius: '4px' }} />
+                        <Area type="monotone" dataKey="visitors" stroke="#d4af37" fillOpacity={1} fill="url(#colorVis)" />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
+
+                  <div className="journey-section">
+                    <h3>📍 Canlı Müşteri Akışı</h3>
+                    <div className="journey-list">
+                      <div className="journey-item">
+                        <span className="time">10:42</span>
+                        <span className="user">Misafir_88</span>
+                        <span className="action">Zultanit Yüzük inceledi</span>
+                      </div>
+                      <div className="journey-item highlight">
+                        <span className="time">10:40</span>
+                        <span className="user">Selin K.</span>
+                        <span className="action">Sepete Ekle (Safir Kolye) 🛒</span>
+                      </div>
+                      <div className="journey-item">
+                        <span className="time">10:35</span>
+                        <span className="user">Misafir_92</span>
+                        <span className="action">Ana Sayfa ziyareti</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </div>
 
-              {/* Live Stock Module */}
-              <div className="module-box">
-                <h3>📦 Kritik Stok Takibi</h3>
-                <div className="table-responsive">
-                  <table className="mini-table">
-                    <thead><tr><th>Ürün</th><th>Stok</th><th>Durum</th></tr></thead>
-                    <tbody>
-                      {products.sort((a, b) => a.stock - b.stock).slice(0, 5).map(p => (
-                        <tr key={p.id}>
-                          <td><div className="prod-cell"><img src={p.image} alt="" /> {p.name}</div></td>
-                          <td>{p.stock}</td>
-                          <td>
-                            <span className={`stock-badge ${p.stock < 10 ? 'low' : 'ok'}`}>
-                              {p.stock < 10 ? 'Kritik' : 'Yeterli'}
+                <div className="sidebar-widgets">
+                  <div className="widget-box">
+                    <h3>📦 Kritik Stok</h3>
+                    <ul className="stock-list">
+                      {products.sort((a, b) => b.stock - a.stock).slice(0, 4).map(p => (
+                        <li key={p.id} className="stock-item">
+                          <img src={p.image} alt="" />
+                          <div className="info">
+                            <span className="name">{p.name}</span>
+                            <span className={`status ${p.stock < 5 ? 'critical' : 'warning'}`}>
+                              {p.stock} Adet Kaldı
                             </span>
-                          </td>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className="widget-box">
+                    <h3>Kategori İlgi</h3>
+                    <div className="mini-pie-container">
+                      <ResponsiveContainer width="100%" height={200}>
+                        <PieChart>
+                          <Pie data={categoryData} cx="50%" cy="50%" innerRadius={40} outerRadius={60} fill="#888" paddingAngle={5} dataKey="value">
+                            {categoryData.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
+                          </Pie>
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* PRODUCTS VIEW */}
+          {activeTab === 'products' && (
+            <div className="products-view">
+              <div className="section-header">
+                <h2>Ürün Katalogu</h2>
+                <button className="primary-btn" onClick={() => document.getElementById('add-form').scrollIntoView({ behavior: 'smooth' })}>
+                  + Yeni Ürün Ekle
+                </button>
+              </div>
+
+              <div className="data-table-container">
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>Ürün</th>
+                      <th>Kategori</th>
+                      <th>Fiyat</th>
+                      <th>Stok</th>
+                      <th>İşlemler</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {products.map(p => (
+                      <tr key={p.id}>
+                        <td>
+                          <div className="prod-cell-lg">
+                            <img src={p.image} alt={p.name} />
+                            <div>
+                              <strong>{p.name}</strong>
+                              <span className="sub-id">SKU: VNT-{p.id}</span>
+                            </div>
+                          </div>
+                        </td>
+                        <td>{translateCategory(p.category)}</td>
+                        <td className="font-mono">₺{p.price}</td>
+                        <td>
+                          <div className="stock-indicator">
+                            <div className="bar" style={{ width: Math.min(100, p.stock * 2) + '%' }}></div>
+                            <span>{p.stock}</span>
+                          </div>
+                        </td>
+                        <td>
+                          <button className="icon-action delete" onClick={() => deleteProduct(p.id)}>🗑️</button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="add-product-form-panel" id="add-form">
+                <h3>⚡ Hızlı Ürün Ekleme</h3>
+                <form onSubmit={handleSubmit} className="grid-form">
+                  <div className="form-group"><label>Ürün Adı</label><input name="name" value={formData.name} onChange={handleChange} required /></div>
+                  <div className="form-group"><label>Fiyat (₺)</label><input name="price" value={formData.price} onChange={handleChange} type="number" required /></div>
+                  <div className="form-group"><label>Görsel URL</label><input name="image" value={formData.image} onChange={handleChange} required /></div>
+                  <div className="form-group"><label>Kategori</label>
+                    <select name="category" value={formData.category} onChange={handleChange}>
+                      <option value="rings">Yüzük</option>
+                      <option value="necklaces">Kolye</option>
+                    </select>
+                  </div>
+                  <button type="submit" className="submit-btn full-width">Kataloğa Ekle</button>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* ORDERS VIEW */}
+          {activeTab === 'orders' && (
+            <div className="orders-view">
+              <div className="section-header"><h2>Sipariş Yönetimi</h2></div>
+              <div className="data-table-container">
+                {orders.length === 0 ? <div className="empty-state">Henüz sipariş yok.</div> :
+                  <table className="data-table">
+                    <thead><tr><th>Sipariş No</th><th>Müşteri</th><th>Tarih</th><th>Tutar</th><th>Durum</th></tr></thead>
+                    <tbody>
+                      {orders.map(o => (
+                        <tr key={o.id}>
+                          <td className="font-mono">#{o.id}</td>
+                          <td>{o.billingDetails?.name}<br /><span className="sub-text">{o.billingDetails?.email}</span></td>
+                          <td>{new Date().toLocaleDateString()}</td>
+                          <td className="font-mono">₺{o.amount}</td>
+                          <td><span className="badge-status pending">{o.status || 'Bekliyor'}</span></td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
-                </div>
+                }
               </div>
             </div>
+          )}
 
-            <style>{`
-              .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
-              .stat-card { background: #fff; padding: 1.5rem; border: 1px solid #e5e5e5; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-              .stat-card.highlight { border-left: 4px solid var(--color-accent); }
-              .stat-card.alert { border-left: 4px solid #ef4444; }
-              .stat-number { font-size: 2rem; font-weight: 700; color: #111; margin: 0.5rem 0; font-family: var(--font-heading); }
-              .stat-trend { color: #10b981; font-size: 0.85rem; font-weight: 600; }
-              .stat-desc { color: #ef4444; font-size: 0.85rem; }
-              
-              .charts-container { display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-bottom: 2rem; }
-              .chart-box { background: #fff; padding: 1.5rem; border: 1px solid #e5e5e5; border-radius: 8px; }
-              .chart-box h3 { margin-bottom: 1.5rem; font-size: 1.1rem; color: #444; }
-              
-              /* Journey Map Styles */
-              .journey-section { background: #fff; padding: 1.5rem; border: 1px solid #e5e5e5; border-radius: 8px; margin-bottom: 2rem; }
-              .journey-section h3 { margin-bottom: 1.5rem; font-size: 1.1rem; color: #444; }
-              .journey-grid { display: flex; gap: 1rem; flex-wrap: wrap; }
-              .journey-card { flex: 1; min-width: 250px; background: #fafafa; border: 1px solid #eee; padding: 1rem; border-radius: 6px; }
-              .journey-card.abandoned { border-left: 3px solid #ef4444; }
-              .journey-header { display: flex; justify-content: space-between; margin-bottom: 0.8rem; font-size: 0.8rem; color: #666; }
-              .journey-steps { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; font-size: 0.8rem; }
-              .step { padding: 4px 8px; background: #fff; border: 1px solid #ddd; border-radius: 4px; }
-              .step.visited { background: #f0fdf4; border-color: #bbf7d0; color: #15803d; }
-              .step.active { background: #eff6ff; border-color: #bfdbfe; color: #1d4ed8; font-weight: bold; }
-              .step.completed { background: #ecfccb; border-color: #d9f99d; color: #4d7c0f; font-weight: bold; }
-              .step.abandoned { background: #fef2f2; border-color: #fecaca; color: #b91c1c; }
-              .step-arrow { color: #999; }
+        </div>
+      </main>
 
-              .bottom-modules { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
-              .module-box { background: #fff; padding: 1.5rem; border: 1px solid #e5e5e5; border-radius: 8px; }
-              
-              .mini-table { width: 100%; font-size: 0.85rem; border-collapse: collapse; }
-              .mini-table th { text-align: left; padding: 0.5rem; color: #888; border-bottom: 1px solid #eee; }
-              .mini-table td { padding: 0.75rem 0.5rem; border-bottom: 1px solid #f5f5f5; vertical-align: middle; }
-              .sub-text { font-size: 0.75rem; color: #999; }
-              .prod-cell { display: flex; align-items: center; gap: 0.5rem; }
-              .prod-cell img { width: 30px; height: 30px; object-fit: cover; border-radius: 4px; }
-              
-              .stock-badge { padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: bold; }
-              .stock-badge.low { background: #fee2e2; color: #ef4444; }
-              .stock-badge.ok { background: #dcfce7; color: #16a34a; }
-              
-              .action-btn { background: var(--color-accent); color: #fff; border: none; padding: 4px 12px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; }
-              
-              @media (max-width: 900px) {
-                .charts-container, .bottom-modules, .journey-grid { grid-template-columns: 1fr; display: grid; }
-              }
-            `}</style>
-          </div>
-        )}
+      <style>{`
+        /* LAYOUT */
+        .admin-layout { display: flex; height: 100vh; background: #f4f5f7; font-family: 'Inter', sans-serif; overflow: hidden; }
+        .admin-sidebar { width: 260px; background: #1a1a1a; color: #fff; display: flex; flex-direction: column; flex-shrink: 0; transition: width 0.3s; }
+        .admin-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        .content-scrollable { flex: 1; overflow-y: auto; padding: 2rem; }
 
-        {/* Keeping Products and Orders tabs as is (condensed for brevity in this replace) */}
-        {activeTab === 'products' && (
-          <div className="admin-grid">
-            {/* Same Product Form */}
-            <div className="add-product-form">
-              <h3>{t('addProductTitle')}</h3>
-              <form onSubmit={handleSubmit}>
-                <div className="form-group">
-                  <label>{t('nameLabel')}</label>
-                  <input type="text" name="name" value={formData.name} onChange={handleChange} placeholder={t('namePlaceholder')} required />
-                </div>
-                <div className="form-group"><label>{t('priceLabel')}</label><input type="number" name="price" value={formData.price} onChange={handleChange} placeholder="0.00" required /></div>
-                <div className="form-group"><label>{t('imageLabel')}</label><input type="url" name="image" value={formData.image} onChange={handleChange} placeholder="http://..." required /></div>
-                <button type="submit" className="submit-btn">{t('addBtn')}</button>
-              </form>
-            </div>
-            <div className="product-list">
-              <h3>{t('currentCollection')} ({products.length})</h3>
-              <div className="list-container">
-                {products.map(p => (
-                  <div key={p.id} className="list-item">
-                    <div className="item-info"><img src={p.image} alt="" /> <div><h4>{p.name}</h4><p>Stok: {p.stock}</p></div></div>
-                    <button onClick={() => deleteProduct(p.id)} className="delete-btn">{t('removeBtn')}</button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
+        /* SIDEBAR */
+        .sidebar-header { padding: 1.5rem; border-bottom: 1px solid #333; }
+        .sidebar-header h2 { font-family: 'Playfair Display', serif; font-size: 1.5rem; letter-spacing: 1px; }
+        .gold { color: #d4af37; }
+        .sidebar-nav { padding: 1rem 0; flex: 1; }
+        .nav-btn { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 24px; background: none; border: none; color: #999; text-align: left; cursor: pointer; transition: 0.2s; font-size: 0.95rem; }
+        .nav-btn:hover, .nav-btn.active { color: #fff; background: rgba(212, 175, 55, 0.1); border-right: 3px solid #d4af37; }
+        .nav-divider { height: 1px; background: #333; margin: 10px 24px; }
+        .sidebar-footer { padding: 1.5rem; border-top: 1px solid #333; }
+        .admin-user { display: flex; gap: 10px; align-items: center; }
+        .avatar { width: 36px; height: 36px; background: #333; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: bold; }
+        .user-info { display: flex; flex-direction: column; }
+        .user-info .name { font-size: 0.9rem; font-weight: 500; }
+        .user-info .role { font-size: 0.7rem; color: #666; }
 
-        {activeTab === 'orders' && (
-          <div className="orders-panel">
-            <p>{orders.length === 0 ? t('noOrders') : `${orders.length} Sipariş Bulundu`}</p>
-            {orders.length > 0 && <table className="orders-table">
-              <thead><tr><th>ID</th><th>Müşteri</th><th>Tutar</th><th>Durum</th></tr></thead>
-              <tbody>{orders.map(o => <tr key={o.id}><td>{o.id}</td><td>{o.billingDetails?.name}</td><td>₺{o.amount}</td><td>{o.status}</td></tr>)}</tbody>
-            </table>}
-          </div>
-        )}
-      </div>
-    </section>
+        /* TOPBAR */
+        .admin-topbar { background: #fff; height: 60px; border-bottom: 1px solid #e0e0e0; display: flex; align-items: center; justify-content: space-between; padding: 0 2rem; flex-shrink: 0; }
+        .search-bar { background: #f4f5f7; padding: 6px 12px; border-radius: 6px; display: flex; align-items: center; gap: 8px; width: 300px; }
+        .search-bar input { border: none; background: transparent; outline: none; width: 100%; font-size: 0.9rem; }
+        .top-actions { display: flex; gap: 1rem; align-items: center; }
+        .icon-btn { background: none; border: none; cursor: pointer; position: relative; color: #555; }
+        .badge-dot { position: absolute; top: -2px; right: -2px; width: 8px; height: 8px; background: #ef4444; border-radius: 50%; }
+        .view-site-btn { font-size: 0.8rem; color: #d4af37; background: rgba(212, 175, 55, 0.1); padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; }
+
+        /* DASHBOARD */
+        .section-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 2rem; }
+        .section-header h2 { font-size: 1.8rem; color: #111; font-weight: 600; }
+        .date-display { color: #666; font-size: 0.9rem; }
+
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+        .stat-card { padding: 1.5rem; border-radius: 12px; display: flex; gap: 1rem; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.03); }
+        .stat-card.black { background: #1a1a1a; color: #fff; }
+        .stat-card.gold { background: linear-gradient(135deg, #d4af37 0%, #b38f22 100%); color: #fff; }
+        .stat-card.white { background: #fff; border: 1px solid #eee; }
+        .stat-card.white .stat-icon { background: #fee2e2; color: #ef4444; }
+        .stat-icon { font-size: 1.5rem; width: 48px; height: 48px; background: rgba(255,255,255,0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+        .stat-number { font-size: 1.8rem; font-weight: 700; margin: 4px 0; }
+        .trend { font-size: 0.8rem; font-weight: 500; }
+        .trend.positive { color: #86efac; }
+        .trend.negative { color: #ef4444; }
+
+        .dashboard-split { display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; }
+        .main-charts { display: flex; flex-direction: column; gap: 1.5rem; }
+        .chart-box, .journey-section, .widget-box, .add-product-form-panel { background: #fff; border-radius: 12px; padding: 1.5rem; border: 1px solid #e5e5e5; }
+        .chart-box h3, .journey-section h3, .widget-box h3 { margin-bottom: 1rem; font-size: 1rem; color: #444; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        .journey-item { display: flex; gap: 1rem; padding: 10px 0; border-bottom: 1px solid #f5f5f5; font-size: 0.9rem; align-items: center; }
+        .journey-item:last-child { border-bottom: none; }
+        .journey-item .time { color: #999; font-size: 0.8rem; width: 40px; }
+        .journey-item .user { font-weight: 600; color: #333; width: 100px; }
+        .journey-item .action { color: #555; }
+        .journey-item.highlight { background: #fefce8; border-radius: 4px; padding: 10px 8px; border-left: 3px solid #d4af37; }
+
+        .stock-list { list-style: none; padding: 0; margin: 0; }
+        .stock-item { display: flex; gap: 10px; margin-bottom: 12px; align-items: center; }
+        .stock-item img { width: 40px; height: 40px; border-radius: 4px; object-fit: cover; }
+        .stock-item .info { display: flex; flex-direction: column; }
+        .stock-item .name { font-size: 0.9rem; font-weight: 500; }
+        .stock-item .status { font-size: 0.75rem; font-weight: 600; }
+        .status.critical { color: #ef4444; }
+        .status.warning { color: #d4af37; }
+
+        /* DATA TABLES */
+        .data-table-container { background: #fff; border-radius: 12px; border: 1px solid #e5e5e5; overflow: hidden; margin-bottom: 2rem; }
+        .data-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        .data-table th { background: #f9fafb; padding: 12px 16px; text-align: left; font-weight: 600; color: #666; border-bottom: 1px solid #e5e5e5; }
+        .data-table td { padding: 16px; border-bottom: 1px solid #f5f5f5; vertical-align: middle; color: #333; }
+        .prod-cell-lg { display: flex; gap: 12px; align-items: center; }
+        .prod-cell-lg img { width: 48px; height: 48px; border-radius: 4px; object-fit: cover; border: 1px solid #eee; }
+        .prod-cell-lg div { display: flex; flex-direction: column; }
+        .sub-id { font-size: 0.75rem; color: #999; font-family: monospace; }
+        
+        .stock-indicator { display: flex; align-items: center; gap: 8px; width: 100px; }
+        .stock-indicator .bar { height: 4px; background: #10b981; border-radius: 2px; }
+        
+        .badge-status { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; }
+        .badge-status.pending { background: #fef3c7; color: #d97706; }
+        .badge-status.shipped { background: #dcfce7; color: #16a34a; }
+
+        /* FORMS */
+        .grid-form { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .form-group label { display: block; margin-bottom: 6px; font-size: 0.85rem; color: #666; font-weight: 500; }
+        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #e5e5e5; border-radius: 6px; font-size: 0.9rem; transition: 0.2s; }
+        .form-group input:focus { border-color: #d4af37; outline: none; }
+        .submit-btn { background: #1a1a1a; color: #fff; border: none; padding: 12px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .submit-btn:hover { background: #d4af37; }
+        .primary-btn { background: #d4af37; color: #fff; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; }
+        
+        @media (max-width: 1024px) {
+            .dashboard-split { grid-template-columns: 1fr; }
+            .admin-sidebar { width: 200px; }
+        }
+        @media (max-width: 768px) {
+             .admin-layout { flex-direction: column; overflow: auto; height: auto; }
+             .admin-sidebar { width: 100%; height: auto; }
+             .sidebar-nav { display: flex; overflow-x: auto; padding: 0.5rem; }
+             .nav-btn { width: auto; white-space: nowrap; }
+             .admin-main { overflow: visible; }
+        }
+      `}</style>
+    </div>
   );
+}
+
+function translateCategory(cat) {
+  if (cat === 'rings') return 'Yüzük';
+  if (cat === 'necklaces') return 'Kolye';
+  return cat;
 }
