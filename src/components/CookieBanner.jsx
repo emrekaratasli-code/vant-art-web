@@ -7,9 +7,8 @@ export default function CookieBanner() {
 
     useEffect(() => {
         const consented = localStorage.getItem('vant_cookie_consent');
-        if (consented !== 'true') { // Strict check
-            setTimeout(() => setVisible(true), 2000);
-        }
+        if (consented === 'true') return; // Exit if already true
+        setTimeout(() => setVisible(true), 2000);
     }, []);
 
     const accept = () => {
@@ -36,7 +35,7 @@ export default function CookieBanner() {
                     background: rgba(18, 18, 18, 0.95);
                     border-top: 1px solid var(--color-accent);
                     padding: 0.8rem 1rem; /* Reduced padding */
-                    z-index: 999;
+                    z-index: 1500;
                     backdrop-filter: blur(10px);
                     box-shadow: 0 -4px 20px rgba(0,0,0,0.5);
                     animation: slideUp 0.5s ease-out;

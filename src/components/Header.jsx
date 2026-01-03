@@ -145,9 +145,27 @@ export default function Header() {
           }
           .logo-center { grid-area: logo; justify-content: flex-start; }
           .nav-right { grid-area: cart; }
-          .nav-left { grid-area: nav; justify-content: center; display: flex; }
+          .nav-left { 
+            grid-area: nav; 
+            justify-content: flex-start; /* Start for scroll */
+            display: block; /* Block for overflow container */
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: 5px; /* Space for scrollbar if any */
+          }
+          .nav-list {
+            display: flex;
+            gap: 1.5rem;
+            white-space: nowrap;
+            padding: 0 0.5rem; /* Padding for start/end */
+          }
+          /* Hide Scrollbar */
+          .nav-left::-webkit-scrollbar { display: none; }
+          .nav-left { -ms-overflow-style: none; scrollbar-width: none; }
+
           .logo-img { 
-            height: 90px; /* Balanced large size */
+            height: 90px;
             filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
           }
         }

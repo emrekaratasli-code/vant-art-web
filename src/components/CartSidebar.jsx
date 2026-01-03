@@ -87,7 +87,7 @@ export default function CartSidebar() {
           position: fixed;
           inset: 0;
           background: rgba(0,0,0,0.7);
-          z-index: 900;
+          z-index: 2000;
           opacity: 0;
           visibility: hidden;
           transition: 0.3s ease;
@@ -106,7 +106,7 @@ export default function CartSidebar() {
           height: 100%;
           background: var(--color-surface);
           color: var(--color-text);
-          z-index: 1000;
+          z-index: 2100; /* Highest priority */
           transform: translateX(100%);
           transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
           display: flex;
@@ -184,9 +184,9 @@ export default function CartSidebar() {
           padding: 1.5rem;
           border-top: 1px solid var(--color-border);
           background: var(--color-bg);
-          padding-bottom: max(6rem, env(safe-area-inset-bottom)); /* Increased bottom padding to clear nav */
+          padding-bottom: max(2rem, env(safe-area-inset-bottom)); /* Standard padding since we cover nav */
           position: relative;
-          z-index: 1002; /* Ensure above stuff */
+          z-index: 1002;
         }
         .cart-total {
           display: flex;

@@ -41,7 +41,7 @@ const Toast = ({ message }) => {
                     gap: 0.8rem;
                     box-shadow: 0 4px 20px rgba(0,0,0,0.4);
                     border: 1px solid rgba(212, 175, 55, 0.3); /* Gold border */
-                    z-index: 2000;
+                    z-index: 2200;
                     animation: slideDown 0.3s ease-out;
                     min-width: 250px;
                     justify-content: center;
