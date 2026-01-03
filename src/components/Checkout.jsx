@@ -255,155 +255,154 @@ export default function Checkout() {
                 <h2 className="section-title">{t('checkout')}</h2>
 
                 <div className="checkout-grid">
-                    <div className="checkout-grid">
-                        <div className="checkout-form-container">
-                            {/* Contact Form */}
-                            {!clientSecret ? (
-                                <form onSubmit={handleContactSubmit} id="contact-form">
-                                    <div className="form-block">
-                                        <h3 className="form-section-title">
-                                            <span className="step-number">1</span>
-                                            {t('contactInfo')}
-                                        </h3>
-                                        {/* ... form fields ... */}
+                    <div className="checkout-form-container">
+                        {/* Contact Form */}
+                        {!clientSecret ? (
+                            <form onSubmit={handleContactSubmit} id="contact-form">
+                                <div className="form-block">
+                                    <h3 className="form-section-title">
+                                        <span className="step-number">1</span>
+                                        {t('contactInfo')}
+                                    </h3>
+                                    {/* ... form fields ... */}
+                                    <div className="form-group">
+                                        <label>{t('fullName')}</label>
+                                        <input
+                                            type="text"
+                                            name="fullName"
+                                            value={formData.fullName}
+                                            onChange={handleInputChange}
+                                            required
+                                            placeholder={t('phName')}
+                                        />
+                                    </div>
+                                    <div className="form-row">
                                         <div className="form-group">
-                                            <label>{t('fullName')}</label>
+                                            <label>{t('email')}</label>
                                             <input
-                                                type="text"
-                                                name="fullName"
-                                                value={formData.fullName}
+                                                type="email"
+                                                name="email"
+                                                value={formData.email}
                                                 onChange={handleInputChange}
                                                 required
-                                                placeholder={t('phName')}
+                                                placeholder={t('phEmail')}
                                             />
-                                        </div>
-                                        <div className="form-row">
-                                            <div className="form-group">
-                                                <label>{t('email')}</label>
-                                                <input
-                                                    type="email"
-                                                    name="email"
-                                                    value={formData.email}
-                                                    onChange={handleInputChange}
-                                                    required
-                                                    placeholder={t('phEmail')}
-                                                />
-                                            </div>
-                                            <div className="form-group">
-                                                <label>{t('phone')}</label>
-                                                <input
-                                                    type="tel"
-                                                    name="phone"
-                                                    value={formData.phone}
-                                                    onChange={handleInputChange}
-                                                    required
-                                                    placeholder={t('phPhone')}
-                                                />
-                                            </div>
                                         </div>
                                         <div className="form-group">
-                                            <label>{t('address')}</label>
+                                            <label>{t('phone')}</label>
                                             <input
-                                                type="text"
-                                                name="address"
-                                                value={formData.address}
+                                                type="tel"
+                                                name="phone"
+                                                value={formData.phone}
                                                 onChange={handleInputChange}
                                                 required
-                                                placeholder={t('phAddress')}
+                                                placeholder={t('phPhone')}
                                             />
-                                        </div>
-                                        <div className="form-row">
-                                            <div className="form-group">
-                                                <label>{t('city')}</label>
-                                                <input
-                                                    type="text"
-                                                    name="city"
-                                                    value={formData.city}
-                                                    onChange={handleInputChange}
-                                                    placeholder="Istanbul"
-                                                />
-                                            </div>
-                                            <div className="form-group">
-                                                <label>{t('zipCode')}</label>
-                                                <input
-                                                    type="text"
-                                                    name="zipCode"
-                                                    value={formData.zipCode}
-                                                    onChange={handleInputChange}
-                                                    placeholder="34732"
-                                                />
-                                            </div>
                                         </div>
                                     </div>
-                                </form>
-                            ) : (
-                                <Elements stripe={stripePromise} options={{ clientSecret, appearance }}>
-                                    <PaymentForm formData={formData} cartTotal={cartTotal} />
-                                </Elements>
-                            )}
-
-                            {/* Error Message */}
-                            {error && (
-                                <div style={{
-                                    padding: '1rem',
-                                    background: 'rgba(255, 0, 0, 0.1)',
-                                    border: '1px solid red',
-                                    color: 'red',
-                                    marginTop: '1rem',
-                                    marginBottom: '2rem'
-                                }}>
-                                    {error}
-                                </div>
-                            )}
-                        </div>
-
-                        <div className="order-summary-container">
-                            <div className="order-summary">
-                                <h3>{t('yourBag')}</h3>
-                                <div className="summary-items">
-                                    {cartItems.map(item => (
-                                        <div key={item.id} className="summary-item">
-                                            <div className="summary-img">
-                                                <img src={item.image} alt={item.name} />
-                                            </div>
-                                            <div className="summary-info">
-                                                <h4>{item.name}</h4>
-                                                <p>{formatPrice(item.price)} x {item.quantity}</p>
-                                            </div>
-                                            <span className="summary-price">{formatPrice(item.price * item.quantity)}</span>
+                                    <div className="form-group">
+                                        <label>{t('address')}</label>
+                                        <input
+                                            type="text"
+                                            name="address"
+                                            value={formData.address}
+                                            onChange={handleInputChange}
+                                            required
+                                            placeholder={t('phAddress')}
+                                        />
+                                    </div>
+                                    <div className="form-row">
+                                        <div className="form-group">
+                                            <label>{t('city')}</label>
+                                            <input
+                                                type="text"
+                                                name="city"
+                                                value={formData.city}
+                                                onChange={handleInputChange}
+                                                placeholder="Istanbul"
+                                            />
                                         </div>
-                                    ))}
+                                        <div className="form-group">
+                                            <label>{t('zipCode')}</label>
+                                            <input
+                                                type="text"
+                                                name="zipCode"
+                                                value={formData.zipCode}
+                                                onChange={handleInputChange}
+                                                placeholder="34732"
+                                            />
+                                        </div>
+                                    </div>
                                 </div>
-                                <div className="summary-divider"></div>
-                                <div className="summary-total">
-                                    <span>{t('subtotal')}</span>
-                                    <span>{formatPrice(cartTotal)}</span>
-                                </div>
+                            </form>
+                        ) : (
+                            <Elements stripe={stripePromise} options={{ clientSecret, appearance }}>
+                                <PaymentForm formData={formData} cartTotal={cartTotal} />
+                            </Elements>
+                        )}
 
-                                {!clientSecret && (
-                                    <button
-                                        type="submit"
-                                        form="contact-form"
-                                        className={`submit-btn ${loading ? 'loading' : ''}`}
-                                        disabled={loading}
-                                    >
-                                        {loading ? 'Initializing...' : t('continue') || 'Continue to Payment'}
-                                    </button>
-                                )}
+                        {/* Error Message */}
+                        {error && (
+                            <div style={{
+                                padding: '1rem',
+                                background: 'rgba(255, 0, 0, 0.1)',
+                                border: '1px solid red',
+                                color: 'red',
+                                marginTop: '1rem',
+                                marginBottom: '2rem'
+                            }}>
+                                {error}
+                            </div>
+                        )}
+                    </div>
 
-                                <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
-                                    <img
-                                        src="https://stripe.com/img/v3/newsroom/social.png"
-                                        alt="Powered by Stripe"
-                                        style={{ height: '30px', opacity: 0.6, filter: 'grayscale(100%)' }}
-                                    />
-                                </div>
+                    <div className="order-summary-container">
+                        <div className="order-summary">
+                            <h3>{t('yourBag')}</h3>
+                            <div className="summary-items">
+                                {cartItems.map(item => (
+                                    <div key={item.id} className="summary-item">
+                                        <div className="summary-img">
+                                            <img src={item.image} alt={item.name} />
+                                        </div>
+                                        <div className="summary-info">
+                                            <h4>{item.name}</h4>
+                                            <p>{formatPrice(item.price)} x {item.quantity}</p>
+                                        </div>
+                                        <span className="summary-price">{formatPrice(item.price * item.quantity)}</span>
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="summary-divider"></div>
+                            <div className="summary-total">
+                                <span>{t('subtotal')}</span>
+                                <span>{formatPrice(cartTotal)}</span>
+                            </div>
+
+                            {!clientSecret && (
+                                <button
+                                    type="submit"
+                                    form="contact-form"
+                                    className={`submit-btn ${loading ? 'loading' : ''}`}
+                                    disabled={loading}
+                                >
+                                    {loading ? 'Initializing...' : t('continue') || 'Continue to Payment'}
+                                </button>
+                            )}
+
+                            <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
+                                <img
+                                    src="https://stripe.com/img/v3/newsroom/social.png"
+                                    alt="Powered by Stripe"
+                                    style={{ height: '30px', opacity: 0.6, filter: 'grayscale(100%)' }}
+                                />
                             </div>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <style>{`
+            <style>{`
         .checkout-section {
           padding: 4rem 0;
           color: var(--color-text);
