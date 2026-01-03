@@ -142,8 +142,8 @@ export default function Header() {
           .nav-right { grid-area: cart; }
           .nav-left { grid-area: nav; justify-content: center; display: flex; }
           .logo-img { 
-            height: 105px; /* Boosted to 105px for dramatic presence */
-            filter: drop-shadow(0 4px 12px rgba(0,0,0,0.4)); /* Enhanced clarity */
+            height: 120px; /* Boosted to 120px for massive presence */
+            filter: drop-shadow(0 4px 12px rgba(0,0,0,0.4));
           }
         }
       `}</style>

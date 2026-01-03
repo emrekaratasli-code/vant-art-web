@@ -16,7 +16,7 @@ export default function CartPage() {
                     <div className="empty-icon" style={{ fontSize: '3rem', marginBottom: '1rem', opacity: 0.5 }}>💎</div>
                     <p className="empty-text">{t('emptyBag')}</p>
                     <p className="art-invite">{t('exploreArt')}</p>
-                    <button onClick={() => navigate('/')} className="continue-btn">{t('heroCta')}</button>
+                    <button onClick={() => navigate('/')} className="continue-btn">KOLEKSİYONU KEŞFET</button>
                 </div>
             ) : (
                 <div className="cart-content">
