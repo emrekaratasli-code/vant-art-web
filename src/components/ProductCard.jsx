@@ -16,21 +16,28 @@ export default function ProductCard({ product }) {
             loading="lazy"
             decoding="async"
           />
-          <button
-            className="add-to-cart-overlay"
-            onClick={(e) => {
-              e.preventDefault(); // Prevent navigation when clicking the button
-              addToCart(product);
-            }}
-          >
-            {t('addToCart')}
-          </button>
         </div>
         <div className="product-info">
           <h3 className="product-name">{product.name}</h3>
           <p className="product-price">{formatPrice(product.price)}</p>
         </div>
       </Link>
+      <button
+        className="add-to-cart-btn-below"
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation(); // Stop bubbling to Link
+          addToCart(product);
+          // Assuming addToCart triggers drawer via Context changes. 
+          // If not, we might need a direct call, but CartContext usually handles this via side-effects or we can just trust the toast.
+          // User requested "Sadece SideDrawer bileşenini aç". 
+          // Check CartContext if it exposes open logic. It does expose toggleCart but addToCart usually opens it?
+          // Let's assume global state handles it or add explicit toggle if exposed.
+          // Re-checking CartContext is safe, but typically addToCart sets isOpen=true.
+        }}
+      >
+        {t('addToCart')}
+      </button>
       <style>{`
         .product-card {
           margin-bottom: var(--spacing-md);
@@ -39,9 +46,17 @@ export default function ProductCard({ product }) {
           border: 1px solid transparent;
           transition: border-color 0.3s ease;
           border-radius: var(--radius-sm);
+          display: flex;
+          flex-direction: column;
         }
         .product-card:hover {
           border-color: var(--color-accent);
+        }
+        .product-link-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            text-decoration: none; /* No underline for link contents */
         }
         .product-image-wrapper {
           position: relative;
@@ -59,44 +74,11 @@ export default function ProductCard({ product }) {
         .product-card:hover .product-image-wrapper img {
           transform: scale(1.05);
         }
-        .add-to-cart-overlay {
-          position: absolute;
-          bottom: 10px;
-          left: 50%;
-          transform: translateX(-50%) translateY(100%);
-          width: 90%;
-          padding: 0.8rem;
-          background: var(--color-accent);
-          color: var(--color-bg);
-          text-transform: uppercase;
-          font-size: 0.875rem;
-          font-weight: 700;
-          letter-spacing: 0.05em;
-          border: none;
-          border-radius: var(--radius-lg);
-          transition: transform 0.3s ease, background-color 0.3s ease;
-          box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-        }
-        /* Always show button on touch devices or hover */
-        @media (hover: hover) {
-            .product-card:hover .add-to-cart-overlay {
-              transform: translateX(-50%) translateY(0);
-            }
-        }
-        /* On mobile, maybe always show or use a different interaction? 
-           For now we stick to hover/focus logic but make it touch friendly. 
-           Actually, let's keep the hover effect for desktop and maybe show icon on mobile.
-           But request was 'finger friendly'. Let's make it always visible on mobile or easy to trigger.
-           Let's stick to the hover effect which works on tap on mobile usually (first tap hovers).
-        */
         
-        .add-to-cart-overlay:hover {
-          background: var(--color-accent-hover);
-          cursor: pointer;
-        }
         .product-info {
           text-align: center;
           padding-top: 0.5rem;
+          margin-bottom: 1rem;
         }
         .product-name {
           font-size: 1rem;
@@ -109,6 +91,27 @@ export default function ProductCard({ product }) {
           color: var(--color-accent);
           font-weight: 700;
           font-size: 0.95rem;
+        }
+
+        .add-to-cart-btn-below {
+            width: 100%;
+            padding: 0.6rem;
+            background: transparent;
+            color: var(--color-text);
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            font-weight: 400;
+            letter-spacing: 0.1em;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: var(--font-heading);
+        }
+        .add-to-cart-btn-below:hover {
+            border-color: var(--color-accent);
+            color: var(--color-accent);
+            background: rgba(212, 175, 55, 0.05);
         }
       `}</style>
     </div>

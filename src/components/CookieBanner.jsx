@@ -35,7 +35,7 @@ export default function CookieBanner() {
                     width: 100%;
                     background: rgba(18, 18, 18, 0.95);
                     border-top: 1px solid var(--color-accent);
-                    padding: 1.5rem 1rem;
+                    padding: 0.8rem 1rem; /* Reduced padding */
                     z-index: 999;
                     backdrop-filter: blur(10px);
                     box-shadow: 0 -4px 20px rgba(0,0,0,0.5);

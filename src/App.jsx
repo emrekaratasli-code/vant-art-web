@@ -56,8 +56,8 @@ function AppContent() {
 
         <footer style={{
           textAlign: 'center',
-          padding: '2rem 1rem', // Compacted
-          fontSize: '0.75rem', // Smaller font
+          padding: '1rem 0.5rem', // Ultra Compact
+          fontSize: '0.7rem', // Smaller font
           color: 'var(--color-text-muted)',
           borderTop: '1px solid var(--color-border)',
           marginTop: 'auto',
