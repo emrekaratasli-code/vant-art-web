@@ -45,6 +45,18 @@ export default function CartSidebar() {
               ))}
             </div>
             <div className="cart-footer">
+              <div className="gift-option">
+                <label className="gift-label">
+                  <input type="checkbox" />
+                  <span className="checkbox-custom"></span>
+                  <span className="gift-text">
+                    <span className="gift-title">VANT Özel Mühürlü Paket</span>
+                    <span className="gift-sub">El yazısı not kartı ile</span>
+                  </span>
+                  <span className="gift-icon">🎁</span>
+                </label>
+              </div>
+
               <div className="cart-total">
                 <span>{t('subtotal')}:</span>
                 <span>{formatPrice(cartTotal)}</span>
@@ -247,6 +259,36 @@ export default function CartSidebar() {
             text-decoration: underline;
             color: var(--color-text-muted);
         }
+                .gift-option {
+                    margin-bottom: 1.5rem;
+                    padding: 1rem;
+                    border: 1px solid var(--color-border);
+                    border-radius: var(--radius-sm);
+                    background: rgba(255, 255, 255, 0.02);
+                }
+                .gift-label {
+                    display: flex;
+                    align-items: center;
+                    cursor: pointer;
+                    gap: 1rem;
+                }
+                .gift-text {
+                    flex: 1;
+                    display: flex;
+                    flex-direction: column;
+                }
+                .gift-title {
+                    font-size: 0.9rem;
+                    color: var(--color-text);
+                    font-family: var(--font-heading);
+                }
+                .gift-sub {
+                    font-size: 0.75rem;
+                    color: var(--color-text-muted);
+                }
+                .gift-icon {
+                    font-size: 1.2rem;
+                }
       `}</style>
     </>
   );

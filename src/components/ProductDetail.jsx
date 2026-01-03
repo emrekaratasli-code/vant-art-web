@@ -91,6 +91,12 @@ export default function ProductDetail() {
                     </div>
                 </div>
 
+                <div className="artisan-note">
+                    <h5>Zanaatkarın Notu</h5>
+                    <p>"{t('artisanNote') || 'Bu parça, asırlık tekniklerle modern estetiği buluşturan ustalarımızın elinden çıkmıştır. Her detayında bir ruh, her kıvrımında bir hikaye saklıdır.'}"</p>
+                    <span className="signature">VANT ART Atelier</span>
+                </div>
+
                 <div className="accordion-container">
                     <AccordionItem
                         title={t('description')}
@@ -248,6 +254,35 @@ export default function ProductDetail() {
                 }
 
                 /* Accordion */
+                .artisan-note {
+                    background: rgba(212, 175, 55, 0.05);
+                    border-left: 2px solid var(--color-accent);
+                    padding: 1.5rem;
+                    margin: 2rem 0;
+                    font-family: var(--font-heading);
+                }
+                .artisan-note h5 {
+                    font-size: 0.9rem;
+                    text-transform: uppercase;
+                    letter-spacing: 0.1em;
+                    color: var(--color-accent);
+                    margin-bottom: 0.8rem;
+                }
+                .artisan-note p {
+                    font-style: italic;
+                    color: var(--color-text-muted);
+                    font-size: 0.95rem;
+                    line-height: 1.6;
+                    margin-bottom: 1rem;
+                }
+                .signature {
+                    display: block;
+                    text-align: right;
+                    font-size: 0.8rem;
+                    letter-spacing: 0.1em;
+                    color: var(--color-text);
+                }
+
                 .accordion-container {
                     border-top: 1px solid var(--color-border);
                 }

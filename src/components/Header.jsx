@@ -141,7 +141,10 @@ export default function Header() {
           .logo-center { grid-area: logo; justify-content: flex-start; }
           .nav-right { grid-area: cart; }
           .nav-left { grid-area: nav; justify-content: center; display: flex; }
-          .logo-img { height: 75px; } /* Increased from 50px for premium visibility */
+          .logo-img { 
+            height: 105px; /* Boosted to 105px for dramatic presence */
+            filter: drop-shadow(0 4px 12px rgba(0,0,0,0.4)); /* Enhanced clarity */
+          }
         }
       `}</style>
     </header>

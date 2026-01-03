@@ -54,6 +54,8 @@ h6 {
   /* More elegant lighter weight */
   line-height: 1.2;
   color: var(--color-accent);
+  letter-spacing: 0.15em;
+  /* Quiet Luxury */
   /* Gold headers */
 }
 

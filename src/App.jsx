@@ -115,9 +115,12 @@ function AppContent() {
   );
 }
 
+import Preloader from './components/Preloader';
+
 export default function App() {
   return (
     <LanguageProvider>
+      <Preloader />
       <ProductProvider>
         <ToastProvider>
           <OrderProvider>

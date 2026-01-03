@@ -86,6 +86,7 @@ export const translations = {
         guaranteed: "Authenticity Guaranteed",
         distanceSalesContract: "Distance Sales Agreement",
         returnPolicyLink: "Cancellation & Return Policy",
+        artisanNote: "This piece is crafted by masters who blend centuries-old techniques with modern aesthetics. A soul is hidden in every detail.",
 
         // Order Management
         adminOrders: "Sipariş Yönetimi",
@@ -148,14 +149,14 @@ export const translations = {
         signInDesc: "Sipariş geçmişinizi görüntülemek için giriş yapın.",
         login: "Giriş Yap",
         register: "Kayıt Ol",
-        orderHistory: "Sipariş Geçmişim",
-        savedItems: "Favorilerim",
-        addressBook: "Adres Defterim",
+        orderHistory: "Koleksiyon Geçmişi",
+        savedItems: "Seçkin Koleksiyonum",
+        addressBook: "Kişisel Adres Defteri",
         settings: "Ayarlar",
         logOut: "Çıkış Yap",
         exploreArt: "Sanat eserlerimizi keşfedin",
         heroSubtitle: "Modern Estetik için Enfes Mücevherler.",
-        heroCta: "Koleksiyonu Keşfet",
+        heroCta: "KOLEKSİYONU KEŞFET",
         sectionTitle: "Koleksiyonumuz",
         addToCart: "Sepete Ekle",
         yourBag: "Seçimleriniz",
@@ -237,6 +238,7 @@ export const translations = {
         guaranteed: "Orijinallik Garantisi",
         distanceSalesContract: "Mesafeli Satış Sözleşmesi",
         returnPolicyLink: "İptal & İade Koşulları",
+        artisanNote: "Bu parça, asırlık tekniklerle modern estetiği buluşturan ustalarımızın elinden çıkmıştır. Her detayında bir ruh, her kıvrımında bir hikaye saklıdır.",
 
         // Order Management
         adminOrders: "Sipariş Yönetimi",
