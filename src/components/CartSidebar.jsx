@@ -25,7 +25,7 @@ export default function CartSidebar() {
           <div className="cart-empty">
             <p>{t('emptyBag')}</p>
             <button className="continue-btn" onClick={toggleCart}>
-              {t('collection')}
+              KOLEKSİYONU KEŞFEDİN
             </button>
           </div>
         ) : (
@@ -224,10 +224,20 @@ export default function CartSidebar() {
           gap: 1rem;
         }
         .continue-btn {
-            padding: 0.5rem 1.5rem;
-            border: 1px solid var(--color-accent);
-            color: var(--color-accent);
-            border-radius: var(--radius-sm);
+            padding: 1rem 2rem;
+            background: var(--color-accent);
+            color: #000;
+            border: none;
+            border-radius: 30px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            font-family: var(--font-heading);
+            transition: all 0.3s ease;
+        }
+        .continue-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
         }
         
         /* Trust & Legal */

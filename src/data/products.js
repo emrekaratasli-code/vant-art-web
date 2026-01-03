@@ -4,7 +4,7 @@ export const products = [
     name: "Ethereal Gold Necklace",
     price: 1250,
     category: "Necklaces",
-    image: "https://images.unsplash.com/photo-1599643478518-17488fbbcd75?q=80&w=1000&auto=format&fit=crop",
+    image: "https://images.unsplash.com/photo-1599643477877-5313557d87bc?q=80&w=1000&auto=format&fit=crop",
     description: "A delicate 18k gold chain adorned with a singular, radiant sunburst pendant. Perfect for layering or wearing alone for a subtle glow.",
     material: "18k Gold"
   },

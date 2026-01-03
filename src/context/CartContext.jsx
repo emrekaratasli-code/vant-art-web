@@ -52,8 +52,8 @@ export const CartProvider = ({ children }) => {
         // Notify user with localized message
         if (showToast) showToast(t('addedToCart') || 'Added to Cart');
 
-        // Open the sidebar automatically
-        setIsCartOpen(true);
+        // Open the sidebar automatically - DISABLED per user request
+        // setIsCartOpen(true);
     };
 
     const removeFromCart = (id) => {
