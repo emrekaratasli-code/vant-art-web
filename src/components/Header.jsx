@@ -173,6 +173,10 @@ export default function Header() {
            .logo-img { 
              height: 60px; /* Much smaller for mobile header ratio */
            }
+           
+           .cart-btn {
+             display: none; /* Hidden on mobile as Bottom Nav exists */
+           }
         }
       `}</style>
     </header>
