@@ -184,7 +184,9 @@ export default function CartSidebar() {
           padding: 1.5rem;
           border-top: 1px solid var(--color-border);
           background: var(--color-bg);
-          padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+          padding-bottom: max(6rem, env(safe-area-inset-bottom)); /* Increased bottom padding to clear nav */
+          position: relative;
+          z-index: 1002; /* Ensure above stuff */
         }
         .cart-total {
           display: flex;

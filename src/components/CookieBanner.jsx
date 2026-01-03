@@ -7,7 +7,7 @@ export default function CookieBanner() {
 
     useEffect(() => {
         const consented = localStorage.getItem('vant_cookie_consent');
-        if (!consented) {
+        if (consented !== 'true') { // Strict check
             setTimeout(() => setVisible(true), 2000);
         }
     }, []);

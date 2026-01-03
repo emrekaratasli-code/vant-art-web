@@ -14,6 +14,10 @@ export default function Header() {
         <nav className="nav-left">
           <ul className="nav-list">
             <li><Link to="/">{t('collection')}</Link></li>
+            <li><a href="#rings">{language === 'TR' ? 'Yüzükler' : 'Rings'}</a></li>
+            <li><a href="#necklaces">{language === 'TR' ? 'Kolyeler' : 'Necklaces'}</a></li>
+            <li><a href="#earrings">{language === 'TR' ? 'Küpeler' : 'Earrings'}</a></li>
+            <li><a href="#bracelets">{language === 'TR' ? 'Bileklikler' : 'Bracelets'}</a></li>
           </ul>
         </nav>
 
