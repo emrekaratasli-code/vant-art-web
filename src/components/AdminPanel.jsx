@@ -25,19 +25,11 @@ export default function AdminPanel() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
 
-  // Mock Notifications
-  const notifications = [
-    { id: 1, text: 'Yeni sipariş: #ORD-9921', time: '5 dk önce' },
-    { id: 2, text: 'Stok uyarısı: Zultanit Yüzük', time: '1 saat önce' },
-    { id: 3, text: 'Günlük rapor hazır', time: 'Bugün' }
-  ];
+  const stats = useMemo(() => getStats() || {}, [getStats]);
 
-  const handleViewSite = () => {
-    window.open('/', '_blank');
-  };
-
-  const toggleNotifications = () => setNotificationsOpen(!notificationsOpen);
-  const [formData, setFormData] = useState({ name: '', price: '', category: '', image: '', description: '', material: '' });
+  // Chart Data - Safe Access
+  const activityData = stats.activityData || [];
+  const categoryData = Object.entries(stats.categoryClicks || {}).map(([name, value]) => ({ name, value }));
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -141,7 +133,7 @@ export default function AdminPanel() {
                   <div className="stat-icon">💎</div>
                   <div className="stat-info">
                     <h4>Toplam Satış</h4>
-                    <div className="stat-number">₺{orders.reduce((acc, o) => acc + (o.amount || 0), 0).toLocaleString()}</div>
+                    <div className="stat-number">₺{(orders || []).reduce((acc, o) => acc + (o.amount || 0), 0).toLocaleString()}</div>
                     <span className="trend positive">↑ %5 Hedef Üzeri</span>
                   </div>
                 </div>
