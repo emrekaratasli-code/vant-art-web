@@ -55,7 +55,7 @@ export default function Header() {
       </div>
       <style>{`
         .header {
-          padding: 0.5rem 0; /* Reduced padding for slimmer look */
+          padding: 0.5rem 0;
           background: rgba(18, 18, 18, 0.98);
           position: sticky;
           top: 0;
@@ -65,29 +65,45 @@ export default function Header() {
         }
         .header-container {
           display: grid;
+          /* PC Layout: 1fr - auto - 1fr ensures center is centered, sides take space */
           grid-template-columns: 1fr auto 1fr;
           align-items: center;
           height: auto;
+          min-height: 80px;
         }
+        
+        /* Navigation Links */
         .nav-left .nav-list {
           display: flex;
           gap: var(--spacing-md);
+          flex-wrap: wrap; /* Safety wrap if too many items */
         }
+        .nav-left a {
+          font-size: 0.9rem;
+          white-space: nowrap;
+          color: var(--color-text);
+          font-weight: 500;
+          letter-spacing: 0.05em;
+        }
+        
+        /* Logo */
         .logo-center {
           display: flex;
           justify-content: center;
+          align-items: center;
         }
-          .logo-img {
-          height: 100px; /* Increased by 40% */
+        .logo-img {
+          height: 80px; /* Reduced specific size for clean look */
           width: auto;
           object-fit: contain;
           transition: transform 0.3s ease;
-          filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5)); /* Drop shadow added */
+          filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5));
         }
         .logo-img:hover {
           transform: scale(1.05);
         }
         
+        /* Right Side Actions */
         .nav-right {
           display: flex;
           gap: var(--spacing-md);
@@ -112,14 +128,13 @@ export default function Header() {
         }
         .lang-switch button.active, .lang-switch button:hover {
           color: var(--color-accent);
+          font-weight: bold;
         }
         .cart-btn {
           background: none;
           border: none;
           color: var(--color-accent);
           cursor: pointer;
-          font-family: var(--font-heading);
-          font-size: 0.9rem;
           transition: color 0.3s;
           display: flex;
           align-items: center;
@@ -145,16 +160,19 @@ export default function Header() {
             border: 2px solid #000;
         }
 
-        @media (max-width: 768px) {
-          .header-container {
-            display: flex;
-            justify-content: space-between;
-          }
-           .nav-left { display: none; }
-          .logo-img { 
-            height: 126px; /* Increased by 40% */
-            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
-          }
+        /* Mobile Adjustments */
+        @media (max-width: 900px) {
+           .nav-left { display: none; } /* Hide robust menu on tablet/mobile */
+           
+           .header-container {
+             display: flex; /* Switch to Flex for Mobile simple row */
+             justify-content: space-between;
+             padding: 0 1rem;
+           }
+           
+           .logo-img { 
+             height: 60px; /* Much smaller for mobile header ratio */
+           }
         }
       `}</style>
     </header>

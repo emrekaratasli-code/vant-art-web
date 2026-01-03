@@ -122,20 +122,67 @@ export default function AdminPanel() {
               </div>
             </div>
 
+            {/* NEW: Customer Journey Tracker */}
+            <div className="journey-section">
+              <h3>📍 Müşteri Yolculuk Haritası (Son 1 Saat)</h3>
+              <div className="journey-grid">
+                <div className="journey-card">
+                  <div className="journey-header">
+                    <span className="user-id">Misafir #8821</span>
+                    <span className="time-ago">2 dk önce</span>
+                  </div>
+                  <div className="journey-steps">
+                    <div className="step visited">🏠 Ana Sayfa</div>
+                    <div className="step-arrow">→</div>
+                    <div className="step visited">👀 Zultanit Yüzük</div>
+                    <div className="step-arrow">→</div>
+                    <div className="step active">🛒 Sepete Ekle</div>
+                  </div>
+                </div>
+                <div className="journey-card">
+                  <div className="journey-header">
+                    <span className="user-id">Selin K.</span>
+                    <span className="time-ago">12 dk önce</span>
+                  </div>
+                  <div className="journey-steps">
+                    <div className="step visited">🔍 Safir Kolye</div>
+                    <div className="step-arrow">→</div>
+                    <div className="step visited">🛒 Sepete Ekle</div>
+                    <div className="step-arrow">→</div>
+                    <div className="step completed">✅ Sipariş (₺5,400)</div>
+                  </div>
+                </div>
+                <div className="journey-card abandoned">
+                  <div className="journey-header">
+                    <span className="user-id">Misafir #1029</span>
+                    <span className="time-ago">45 dk önce</span>
+                  </div>
+                  <div className="journey-steps">
+                    <div className="step visited">🏠 Ana Sayfa</div>
+                    <div className="step-arrow">→</div>
+                    <div className="step visited">🛒 Sepete Ekle</div>
+                    <div className="step-arrow">→</div>
+                    <div className="step abandoned">⛔ Çıkış (Sepette Ürün)</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <div className="bottom-modules">
               {/* Abandoned Cart Module */}
               <div className="module-box">
                 <h3>⚠️ Terk Edilen Sepetler</h3>
                 <div className="table-responsive">
                   <table className="mini-table">
-                    <thead><tr><th>Kullanıcı</th><th>Tutar</th><th>Zaman</th><th>İşlem</th></tr></thead>
+                    <thead><tr><th>Kullanıcı</th><th>Sepet Özeti</th><th>Tutar</th><th>Zaman</th><th>Aksiyon</th></tr></thead>
                     <tbody>
                       {stats.abandonedCarts?.map((cart) => (
                         <tr key={cart.id}>
-                          <td>{cart.user} <br /><span className="sub-text">{cart.items.join(', ')}</span></td>
+                          <td>{cart.user}</td>
+                          <td><span className="sub-text">{cart.items.join(', ')}</span></td>
                           <td>₺{cart.total}</td>
                           <td>{cart.time}</td>
-                          <td><button className="action-btn">Hatırlat</button></td>
+                          <td><button className="action-btn">E-posta Gönder</button></td>
                         </tr>
                       ))}
                     </tbody>
@@ -180,6 +227,21 @@ export default function AdminPanel() {
               .chart-box { background: #fff; padding: 1.5rem; border: 1px solid #e5e5e5; border-radius: 8px; }
               .chart-box h3 { margin-bottom: 1.5rem; font-size: 1.1rem; color: #444; }
               
+              /* Journey Map Styles */
+              .journey-section { background: #fff; padding: 1.5rem; border: 1px solid #e5e5e5; border-radius: 8px; margin-bottom: 2rem; }
+              .journey-section h3 { margin-bottom: 1.5rem; font-size: 1.1rem; color: #444; }
+              .journey-grid { display: flex; gap: 1rem; flex-wrap: wrap; }
+              .journey-card { flex: 1; min-width: 250px; background: #fafafa; border: 1px solid #eee; padding: 1rem; border-radius: 6px; }
+              .journey-card.abandoned { border-left: 3px solid #ef4444; }
+              .journey-header { display: flex; justify-content: space-between; margin-bottom: 0.8rem; font-size: 0.8rem; color: #666; }
+              .journey-steps { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; font-size: 0.8rem; }
+              .step { padding: 4px 8px; background: #fff; border: 1px solid #ddd; border-radius: 4px; }
+              .step.visited { background: #f0fdf4; border-color: #bbf7d0; color: #15803d; }
+              .step.active { background: #eff6ff; border-color: #bfdbfe; color: #1d4ed8; font-weight: bold; }
+              .step.completed { background: #ecfccb; border-color: #d9f99d; color: #4d7c0f; font-weight: bold; }
+              .step.abandoned { background: #fef2f2; border-color: #fecaca; color: #b91c1c; }
+              .step-arrow { color: #999; }
+
               .bottom-modules { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
               .module-box { background: #fff; padding: 1.5rem; border: 1px solid #e5e5e5; border-radius: 8px; }
               
@@ -197,7 +259,7 @@ export default function AdminPanel() {
               .action-btn { background: var(--color-accent); color: #fff; border: none; padding: 4px 12px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; }
               
               @media (max-width: 900px) {
-                .charts-container, .bottom-modules { grid-template-columns: 1fr; }
+                .charts-container, .bottom-modules, .journey-grid { grid-template-columns: 1fr; display: grid; }
               }
             `}</style>
           </div>
