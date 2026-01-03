@@ -2,13 +2,19 @@ import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { CartProvider } from './context/CartContext';
 import { ProductProvider } from './context/ProductContext';
 import { LanguageProvider } from './context/LanguageContext';
+import { ToastProvider } from './context/ToastContext';
+import { OrderProvider } from './context/OrderContext';
 import Header from './components/Header';
 import Hero from './components/Hero';
 import ProductGrid from './components/ProductGrid';
 import CartSidebar from './components/CartSidebar';
+import CartPage from './components/CartPage';
+import ProfilePage from './components/ProfilePage';
 import Checkout from './components/Checkout';
 import AdminPanel from './components/AdminPanel';
 import LegalDocument from './components/LegalDocuments';
+import BottomNav from './components/BottomNav';
+import ProductDetail from './components/ProductDetail';
 
 import Contact from './components/Contact';
 import OurStory from './components/OurStory';
@@ -29,10 +35,13 @@ function AppContent() {
                 <ProductGrid />
               </>
             } />
+            <Route path="/product/:id" element={<ProductDetail />} />
+            <Route path="/cart" element={<CartPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/our-story" element={<OurStory />} />
-            <Route path="/vant-secret-admin" element={<AdminPanel />} />
+            <Route path="/admin" element={<AdminPanel />} />
 
             {/* Legal Routes */}
             <Route path="/sozlesmeler/mesafeli-satis" element={<LegalDocument type="distanceSales" />} />
@@ -41,7 +50,10 @@ function AppContent() {
             <Route path="/sozlesmeler/kvkk" element={<LegalDocument type="kvkk" />} />
           </Routes>
         </main>
+
         <CartSidebar />
+        <BottomNav />
+
         <footer style={{
           textAlign: 'center',
           padding: '3rem 2rem', // Increased padding
@@ -49,10 +61,10 @@ function AppContent() {
           color: 'var(--color-text-muted)',
           borderTop: '1px solid var(--color-border)',
           marginTop: '4rem',
-          background: 'var(--color-surface)'
+          background: 'var(--color-surface)',
+          paddingBottom: '6rem' // Extra padding for bottom nav
         }}>
           <div className="social-links" style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'center', gap: '1.5rem' }}>
-            {/* Social Icons - Using simple text/emoji for demo, ideally replaced with SVG icons or FontAwesome */}
             <a href="https://instagram.com/vantartonline" target="_blank" rel="noreferrer" style={{ fontSize: '1.5rem', textDecoration: 'none', color: 'var(--color-accent)' }}>📸</a>
             <a href="https://tiktok.com/@vant.taki.aksesuar" target="_blank" rel="noreferrer" style={{ fontSize: '1.5rem', textDecoration: 'none', color: 'var(--color-accent)' }}>🎵</a>
             <a href="https://whatsapp.com" target="_blank" rel="noreferrer" style={{ fontSize: '1.5rem', textDecoration: 'none', color: 'var(--color-accent)' }}>💬</a>
@@ -103,16 +115,18 @@ function AppContent() {
   );
 }
 
-function App() {
+export default function App() {
   return (
-    <ProductProvider>
-      <CartProvider>
-        <LanguageProvider>
-          <AppContent />
-        </LanguageProvider>
-      </CartProvider>
-    </ProductProvider>
+    <LanguageProvider>
+      <ProductProvider>
+        <ToastProvider>
+          <OrderProvider>
+            <CartProvider>
+              <AppContent />
+            </CartProvider>
+          </OrderProvider>
+        </ToastProvider>
+      </ProductProvider>
+    </LanguageProvider>
   );
 }
-
-export default App;

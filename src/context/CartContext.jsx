@@ -1,12 +1,40 @@
-import { createContext, useState, useContext, useMemo } from 'react';
+import { createContext, useState, useContext, useMemo, useEffect } from 'react';
+import { useToast } from './ToastContext';
+import { useLanguage } from './LanguageContext';
 
 const CartContext = createContext();
 
 export const useCart = () => useContext(CartContext);
 
 export const CartProvider = ({ children }) => {
-    const [cartItems, setCartItems] = useState([]);
+    const [cartItems, setCartItems] = useState(() => {
+        try {
+            const saved = localStorage.getItem('cartItems');
+            return saved ? JSON.parse(saved) : [];
+        } catch {
+            console.error('Failed to load cart');
+            return [];
+        }
+    });
+
     const [isCartOpen, setIsCartOpen] = useState(false);
+
+    // We can't safely use useToast here if ToastProvider is not definitely above CartProvider.
+    // However, we will ensure that structure in App.jsx.
+    // If we want to be safe, we can pass a callback or just assume the structural change will be made.
+    // Let's assume structure: ToastProvider > CartProvider.
+
+    // For now, to avoid "useToast must be used within ToastProvider" error before App.jsx is updated,
+    // we can't use it directly in the initialization if the provider isn't wrapping yet.
+    // Detailed plan sets ToastProvider wrapping AppContent, which contains CartProvider.
+    const { showToast } = useToast() || { showToast: () => console.log('Toast not ready') };
+
+    // We can access Language now because we reordered App.jsx
+    const { t } = useLanguage();
+
+    useEffect(() => {
+        localStorage.setItem('cartItems', JSON.stringify(cartItems));
+    }, [cartItems]);
 
     const addToCart = (product) => {
         setCartItems(prev => {
@@ -20,6 +48,11 @@ export const CartProvider = ({ children }) => {
             }
             return [...prev, { ...product, quantity: 1 }];
         });
+
+        // Notify user with localized message
+        if (showToast) showToast(t('addedToCart') || 'Added to Cart');
+
+        // Open the sidebar automatically
         setIsCartOpen(true);
     };
 
@@ -67,3 +100,4 @@ export const CartProvider = ({ children }) => {
         </CartContext.Provider>
     );
 };
+

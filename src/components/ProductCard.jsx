@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useLanguage } from '../context/LanguageContext';
 
@@ -7,16 +8,24 @@ export default function ProductCard({ product }) {
 
   return (
     <div className="product-card">
-      <div className="product-image-wrapper">
-        <img src={product.image} alt={product.name} loading="lazy" />
-        <button className="add-to-cart-overlay" onClick={() => addToCart(product)}>
-          {t('addToCart')}
-        </button>
-      </div>
-      <div className="product-info">
-        <h3 className="product-name">{product.name}</h3>
-        <p className="product-price">{formatPrice(product.price)}</p>
-      </div>
+      <Link to={`/product/${product.id}`} className="product-link-wrapper">
+        <div className="product-image-wrapper">
+          <img src={product.image} alt={product.name} loading="lazy" />
+          <button
+            className="add-to-cart-overlay"
+            onClick={(e) => {
+              e.preventDefault(); // Prevent navigation when clicking the button
+              addToCart(product);
+            }}
+          >
+            {t('addToCart')}
+          </button>
+        </div>
+        <div className="product-info">
+          <h3 className="product-name">{product.name}</h3>
+          <p className="product-price">{formatPrice(product.price)}</p>
+        </div>
+      </Link>
       <style>{`
         .product-card {
           margin-bottom: var(--spacing-md);

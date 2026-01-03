@@ -1,17 +1,19 @@
 import { useState } from 'react';
 import { useCart } from '../context/CartContext';
+import { useOrders } from '../context/OrderContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useNavigate } from 'react-router-dom';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 
 // Initialize Stripe - using test publishable key
-const stripePromise = loadStripe('pk_test_51QY9ZkP9fJ8rH2mT1d2e3f4g5h6i7j8k9l0m1n2o3p4q5r6s7t8u9v0w1x2y3z4');
+const stripePromise = loadStripe('pk_test_12345');
 
 function PaymentForm({ formData, cartTotal }) {
     const stripe = useStripe();
     const elements = useElements();
-    const { clearCart } = useCart();
+    const { clearCart, cartItems } = useCart();
+    const { addOrder } = useOrders();
     const { t } = useLanguage();
     const navigate = useNavigate();
 
@@ -36,6 +38,7 @@ function PaymentForm({ formData, cartTotal }) {
             return;
         }
 
+        // Simulate payment success for demo purposes if using test keys
         const result = await stripe.confirmPayment({
             elements,
             confirmParams: {
@@ -48,6 +51,15 @@ function PaymentForm({ formData, cartTotal }) {
             setError(result.error.message);
             setLoading(false);
         } else {
+            // Success! Create Order
+            addOrder({
+                billingDetails: formData,
+                items: cartItems,
+                amount: cartTotal,
+                paymentId: result.paymentIntent?.id || 'demo_id',
+                date: new Date().toISOString()
+            });
+
             setSuccess(true);
             clearCart();
             setTimeout(() => navigate('/'), 3000);
@@ -64,7 +76,7 @@ function PaymentForm({ formData, cartTotal }) {
                 borderRadius: '4px'
             }}>
                 <h3 style={{ color: 'var(--color-accent)', marginBottom: '1rem', fontFamily: 'var(--font-heading)' }}>
-                    ✓ Payment Successful!
+                    {t('orderSuccess')}
                 </h3>
                 <p>Thank you for your order. Redirecting to home page...</p>
             </div>
