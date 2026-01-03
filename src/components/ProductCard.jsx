@@ -1,14 +1,20 @@
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useLanguage } from '../context/LanguageContext';
+import { useAnalytics } from '../context/AnalyticsContext';
 
 export default function ProductCard({ product }) {
   const { addToCart } = useCart();
   const { formatPrice, t } = useLanguage();
+  const { trackEvent } = useAnalytics();
 
   return (
     <div className="product-card">
-      <Link to={`/product/${product.id}`} className="product-link-wrapper">
+      <Link
+        to={`/product/${product.id}`}
+        className="product-link-wrapper"
+        onClick={() => trackEvent('view_product', { productId: product.id, productName: product.name })}
+      >
         <div className="product-image-wrapper">
           <img
             src={product.image}
@@ -26,14 +32,9 @@ export default function ProductCard({ product }) {
         className="add-to-cart-btn-below"
         onClick={(e) => {
           e.preventDefault();
-          e.stopPropagation(); // Stop bubbling to Link
+          e.stopPropagation();
           addToCart(product);
-          // Assuming addToCart triggers drawer via Context changes. 
-          // If not, we might need a direct call, but CartContext usually handles this via side-effects or we can just trust the toast.
-          // User requested "Sadece SideDrawer bileşenini aç". 
-          // Check CartContext if it exposes open logic. It does expose toggleCart but addToCart usually opens it?
-          // Let's assume global state handles it or add explicit toggle if exposed.
-          // Re-checking CartContext is safe, but typically addToCart sets isOpen=true.
+          trackEvent('add_to_cart', { productId: product.id, productName: product.name, price: product.price });
         }}
       >
         {t('addToCart')}

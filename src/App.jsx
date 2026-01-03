@@ -20,6 +20,11 @@ import Contact from './components/Contact';
 import OurStory from './components/OurStory';
 import { useLanguage } from './context/LanguageContext';
 
+import { AuthProvider } from './context/AuthContext';
+import { AnalyticsProvider } from './context/AnalyticsContext';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
+
 function AppContent() {
   const { t } = useLanguage();
 
@@ -29,12 +34,7 @@ function AppContent() {
         <Header />
         <main>
           <Routes>
-            <Route path="/" element={
-              <>
-                <Hero />
-                <ProductGrid />
-              </>
-            } />
+            <Route path="/" element={<><Hero /><ProductGrid /></>} />
             <Route path="/product/:id" element={<ProductDetail />} />
             <Route path="/cart" element={<CartPage />} />
             <Route path="/profile" element={<ProfilePage />} />
@@ -42,6 +42,8 @@ function AppContent() {
             <Route path="/contact" element={<Contact />} />
             <Route path="/our-story" element={<OurStory />} />
             <Route path="/admin" element={<AdminPanel />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
 
             {/* Legal Routes */}
             <Route path="/sozlesmeler/mesafeli-satis" element={<LegalDocument type="distanceSales" />} />
@@ -56,59 +58,49 @@ function AppContent() {
 
         <footer style={{
           textAlign: 'center',
-          padding: '1rem 0.5rem', // Ultra Compact
-          fontSize: '0.7rem', // Smaller font
+          padding: '2rem 1rem',
+          fontSize: '0.75rem',
           color: 'var(--color-text-muted)',
           borderTop: '1px solid var(--color-border)',
           marginTop: 'auto',
           background: 'var(--color-surface)',
-          paddingBottom: '5rem'
+          paddingBottom: '6rem' // Space for bottom nav
         }}>
-          <div className="social-links" style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'center', gap: '1.5rem' }}>
-            <a href="https://instagram.com/vantartonline" target="_blank" rel="noreferrer" className="social-icon"><InstaIcon /></a>
-            <a href="https://tiktok.com/@vant.taki.aksesuar" target="_blank" rel="noreferrer" className="social-icon"><TiktokIcon /></a>
-            <a href="https://whatsapp.com" target="_blank" rel="noreferrer" className="social-icon"><WhatsappIcon /></a>
+          <div className="social-links" style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'center', gap: '2rem' }}>
+            <a href="https://instagram.com/vantartonline" target="_blank" rel="noreferrer" className="social-icon" style={{ color: 'var(--color-text)' }}><InstaIcon /></a>
+            <a href="https://tiktok.com/@vant.taki.aksesuar" target="_blank" rel="noreferrer" className="social-icon" style={{ color: 'var(--color-text)' }}><TiktokIcon /></a>
+            <a href="https://whatsapp.com" target="_blank" rel="noreferrer" className="social-icon" style={{ color: 'var(--color-text)' }}><WhatsappIcon /></a>
           </div>
 
-          <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'center', gap: '1.5rem', flexWrap: 'wrap' }}>
-            <Link to="/our-story" style={{ color: 'var(--color-text)', textDecoration: 'none', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('navStory')}</Link>
-            <Link to="/contact" style={{ color: 'var(--color-text)', textDecoration: 'none', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('navContact')}</Link>
+          <div style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'center', gap: '1.5rem', flexWrap: 'wrap' }}>
+            <Link to="/our-story" style={{ color: 'var(--color-text)', textDecoration: 'none', textTransform: 'uppercase', letterSpacing: '0.1em' }}>{t('navStory')}</Link>
+            <Link to="/contact" style={{ color: 'var(--color-text)', textDecoration: 'none', textTransform: 'uppercase', letterSpacing: '0.1em' }}>{t('navContact')}</Link>
           </div>
 
-          <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'center', gap: '1.5rem', flexWrap: 'wrap' }}>
+          <div style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap', opacity: 0.7 }}>
             <Link to="/sozlesmeler/mesafeli-satis" className="legal-link">{t('legalSalesAgreement')}</Link>
             <Link to="/sozlesmeler/iptal-iade" className="legal-link">{t('legalReturnPolicy')}</Link>
             <Link to="/sozlesmeler/gizlilik" className="legal-link">{t('legalPrivacyPolicy')}</Link>
             <Link to="/sozlesmeler/kvkk" className="legal-link">{t('legalKvkk')}</Link>
           </div>
-          &copy; 2025 VANT ART. {t('footerCopyright')}
+          <div style={{ opacity: 0.5 }}>
+            &copy; 2025 VANT ART. {t('footerCopyright')}
+          </div>
         </footer>
         <style>{`
           .legal-link {
             color: var(--color-text-muted);
             text-decoration: none;
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
             transition: color 0.3s;
-            position: relative;
           }
           .legal-link:hover {
             color: var(--color-accent);
           }
-          .legal-link::after {
-            content: '';
-            position: absolute;
-            width: 0;
-            height: 1px;
-            bottom: -2px;
-            left: 0;
-            background-color: var(--color-accent);
-            transition: width 0.3s;
-          }
-          .legal-link:hover::after {
-            width: 100%;
-          }
+          .social-icon { transition: transform 0.3s; }
+          .social-icon:hover { transform: scale(1.1); color: var(--color-accent) !important; }
         `}</style>
       </div>
     </Router>

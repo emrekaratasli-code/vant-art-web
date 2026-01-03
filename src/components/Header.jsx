@@ -68,8 +68,8 @@ export default function Header() {
           display: flex;
           justify-content: center;
         }
-        .logo-img {
-          height: 70px; /* Reduced visual height slightly to fit thinner bar, but maintained prominence */
+          .logo-img {
+          height: 100px; /* Increased by 40% */
           width: auto;
           object-fit: contain;
           transition: transform 0.3s ease;
@@ -78,94 +78,13 @@ export default function Header() {
         .logo-img:hover {
           transform: scale(1.05);
         }
-        .nav-right {
-          display: flex;
-          justify-content: flex-end;
-          align-items: center;
-          gap: 1.5rem;
-        }
         
-        .nav-list a {
-          text-transform: uppercase;
-          font-size: 0.85rem;
-          letter-spacing: 0.1em;
-          color: var(--color-text);
-          font-family: var(--font-heading);
-        }
-        .nav-list a:hover {
-          color: var(--color-accent);
-        }
+        /* ... */
 
-        .lang-switch {
-          display: flex;
-          gap: 0.5rem;
-          color: var(--color-text-muted);
-          font-size: 0.7rem; 
-          font-weight: 200; /* Extra Thin */
-          letter-spacing: 0.05em;
-          font-family: var(--font-body);
-        }
-        .lang-switch button {
-          color: var(--color-text-muted);
-          transition: color 0.3s;
-          font-weight: 300;
-        }
-        .lang-switch button.active {
-          color: var(--color-accent);
-          font-weight: 400;
-        }
-        .lang-switch button:hover {
-          color: var(--color-text);
-        }
-        
-        .cart-btn {
-          font-size: 0.75rem; /* Smaller */
-          color: var(--color-accent);
-          font-weight: 300; /* Thinner */
-          text-transform: uppercase;
-          letter-spacing: 0.1em;
-          border: 1px solid rgba(212, 175, 55, 0.5); /* Thinner border look */
-          padding: 0.3rem 1rem;
-          transition: all 0.3s ease;
-        }
-        .cart-btn:hover {
-          background: var(--color-accent);
-          color: var(--color-bg);
-          border-color: var(--color-accent);
-        }
-        
         @media (max-width: 768px) {
-          .header-container {
-            grid-template-columns: 1fr auto;
-            grid-template-areas: 
-              "logo cart"
-              "nav nav";
-            gap: 0.5rem;
-            padding-bottom: 0.5rem;
-          }
-          .logo-center { grid-area: logo; justify-content: flex-start; }
-          .nav-right { grid-area: cart; }
-          .nav-left { 
-            grid-area: nav; 
-            justify-content: flex-start; /* Start for scroll */
-            display: block; /* Block for overflow container */
-            width: 100%;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-            padding-bottom: 5px; /* Space for scrollbar if any */
-          }
-          .nav-list {
-            display: flex;
-            gap: 1.5rem;
-            white-space: nowrap;
-            padding: 0 0.5rem; /* Padding for start/end */
-          }
-          /* Hide Scrollbar */
-          .nav-left::-webkit-scrollbar { display: none; }
-          .nav-left { -ms-overflow-style: none; scrollbar-width: none; }
-
+           /* ... */
           .logo-img { 
-            height: 90px;
+            height: 126px; /* Increased by 40% */
             filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
           }
         }

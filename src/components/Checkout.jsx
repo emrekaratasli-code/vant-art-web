@@ -322,16 +322,7 @@ export default function Checkout() {
                                                 placeholder="Istanbul"
                                             />
                                         </div>
-                                        <div className="form-group">
-                                            <label>{t('zipCode')}</label>
-                                            <input
-                                                type="text"
-                                                name="zipCode"
-                                                value={formData.zipCode}
-                                                onChange={handleInputChange}
-                                                placeholder="34732"
-                                            />
-                                        </div>
+                                        {/* Zip Code Removed */}
                                     </div>
                                 </div>
                             </form>
@@ -386,7 +377,7 @@ export default function Checkout() {
                                     className={`submit-btn ${loading ? 'loading' : ''}`}
                                     disabled={loading}
                                 >
-                                    {loading ? 'Initializing...' : t('continue') || 'Continue to Payment'}
+                                    {loading ? 'Initializing...' : 'DEVAM ET'}
                                 </button>
                             )}
 

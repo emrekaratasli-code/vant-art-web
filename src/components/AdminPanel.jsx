@@ -1,13 +1,17 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useProducts } from '../context/ProductContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useOrders } from '../context/OrderContext';
+import { useAnalytics } from '../context/AnalyticsContext';
 
 export default function AdminPanel() {
   const { products, addProduct, deleteProduct } = useProducts();
   const { orders, updateOrderStatus } = useOrders();
+  const { getStats } = useAnalytics();
   const { t } = useLanguage();
-  const [activeTab, setActiveTab] = useState('products'); // 'products' or 'orders'
+  const [activeTab, setActiveTab] = useState('analytics'); // Default to analytics for "Smart Platform" feel
+
+  const stats = useMemo(() => getStats(), [activeTab]);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -37,6 +41,12 @@ export default function AdminPanel() {
         <h2 className="admin-title">{t('adminTitle')}</h2>
 
         <div className="admin-tabs">
+          <button
+            className={`tab-btn ${activeTab === 'analytics' ? 'active' : ''}`}
+            onClick={() => setActiveTab('analytics')}
+          >
+            📊 {t('analytics') || 'Analiz'}
+          </button>
           <button
             className={`tab-btn ${activeTab === 'products' ? 'active' : ''}`}
             onClick={() => setActiveTab('products')}
@@ -141,54 +151,99 @@ export default function AdminPanel() {
                 ))}
               </div>
             </div>
-          </div>
-        ) : (
-          <div className="orders-panel">
-            {orders.length === 0 ? (
-              <p className="no-data">{t('noOrders')}</p>
-            ) : (
-              <div className="table-responsive">
-                <table className="orders-table">
-                  <thead>
-                    <tr>
-                      <th>{t('orderId')}</th>
-                      <th>{t('orderDate')}</th>
-                      <th>{t('customer')}</th>
-                      <th>{t('total')}</th>
-                      <th>{t('status')}</th>
-                      <th>{t('actions')}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {orders.map(order => (
-                      <tr key={order.id}>
-                        <td>{order.id}</td>
-                        <td>{new Date(order.date).toLocaleDateString()}</td>
-                        <td>{order.billingDetails?.name || 'Guest'}</td>
-                        <td>{order.amount ? `₺${(order.amount).toLocaleString()}` : '-'}</td>
-                        <td>
-                          <span className={`status-badge ${order.status.toLowerCase()}`}>
-                            {t(`status${order.status}`) || order.status}
-                          </span>
-                        </td>
-                        <td>
-                          <select
-                            value={order.status}
-                            onChange={(e) => updateOrderStatus(order.id, e.target.value)}
-                            className="status-select"
-                          >
-                            <option value="Preparing">{t('statusPreparing')}</option>
-                            <option value="Shipped">{t('statusShipped')}</option>
-                            <option value="Delivered">{t('statusDelivered')}</option>
-                            <option value="Cancelled">{t('statusCancelled')}</option>
-                          </select>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+            {activeTab === 'analytics' ? (
+              <div className="analytics-dashboard">
+                <div className="stats-grid">
+                  <div className="stat-card">
+                    <h4>Toplam Etkileşim</h4>
+                    <div className="stat-number">{stats.totalEvents}</div>
+                  </div>
+                  <div className="stat-card">
+                    <h4>En Çok İncelenen</h4>
+                    <ul className="stat-list">
+                      {Object.entries(stats.productViews)
+                        .sort((a, b) => b[1] - a[1])
+                        .slice(0, 3)
+                        .map(([name, count]) => <li key={name}>{name} <span>{count}</span></li>)}
+                    </ul>
+                  </div>
+                  <div className="stat-card">
+                    <h4>Popüler Kategoriler</h4>
+                    <ul className="stat-list">
+                      {Object.entries(stats.categoryClicks)
+                        .sort((a, b) => b[1] - a[1])
+                        .slice(0, 3)
+                        .map(([cat, count]) => <li key={cat}>{cat} <span>{count}</span></li>)}
+                    </ul>
+                  </div>
+                  <div className="stat-card">
+                    <h4>Sepete İlgi</h4>
+                    <ul className="stat-list">
+                      {Object.entries(stats.cartAdds)
+                        .sort((a, b) => b[1] - a[1])
+                        .slice(0, 3)
+                        .map(([name, count]) => <li key={name}>{name} <span>{count}</span></li>)}
+                    </ul>
+                  </div>
+                </div>
+                <style>{`
+                    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
+                    .stat-card { background: var(--color-bg); padding: 1.5rem; border: 1px solid var(--color-border); }
+                    .stat-card h4 { color: var(--color-text-muted); font-size: 0.9rem; margin-bottom: 1rem; text-transform: uppercase; }
+                    .stat-number { font-size: 2.5rem; color: var(--color-accent); font-weight: 700; font-family: var(--font-heading); }
+                    .stat-list { list-style: none; }
+                    .stat-list li { display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px dashed var(--color-border); font-size: 0.85rem; }
+                    .stat-list li span { color: var(--color-accent); font-weight: bold; }
+                `}</style>
               </div>
-            )}
+            ) : activeTab === 'products' ? (
+              {
+                orders.length === 0 ? (
+                  <p className="no-data">{t('noOrders')}</p>
+                ) : (
+                  <div className="table-responsive">
+                    <table className="orders-table">
+                      <thead>
+                        <tr>
+                          <th>{t('orderId')}</th>
+                          <th>{t('orderDate')}</th>
+                          <th>{t('customer')}</th>
+                          <th>{t('total')}</th>
+                          <th>{t('status')}</th>
+                          <th>{t('actions')}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {orders.map(order => (
+                          <tr key={order.id}>
+                            <td>{order.id}</td>
+                            <td>{new Date(order.date).toLocaleDateString()}</td>
+                            <td>{order.billingDetails?.name || 'Guest'}</td>
+                            <td>{order.amount ? `₺${(order.amount).toLocaleString()}` : '-'}</td>
+                            <td>
+                              <span className={`status-badge ${order.status.toLowerCase()}`}>
+                                {t(`status${order.status}`) || order.status}
+                              </span>
+                            </td>
+                            <td>
+                              <select
+                                value={order.status}
+                                onChange={(e) => updateOrderStatus(order.id, e.target.value)}
+                                className="status-select"
+                              >
+                                <option value="Preparing">{t('statusPreparing')}</option>
+                                <option value="Shipped">{t('statusShipped')}</option>
+                                <option value="Delivered">{t('statusDelivered')}</option>
+                                <option value="Cancelled">{t('statusCancelled')}</option>
+                              </select>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )
+              }
           </div>
         )}
       </div>
