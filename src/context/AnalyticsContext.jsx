@@ -31,7 +31,7 @@ export const AnalyticsProvider = ({ children }) => {
     };
 
     const getStats = () => {
-        // Simple aggregation
+        // Simple aggregation for real events
         const productViews = {};
         const cartAdds = {};
         const categoryClicks = {};
@@ -54,7 +54,36 @@ export const AnalyticsProvider = ({ children }) => {
             }
         });
 
-        return { productViews, cartAdds, categoryClicks, totalEvents: events.length };
+        // Smart Platform Mock Data for "Live" Feel
+        const activityData = [
+            { time: '09:00', visitors: 120, sales: 5 },
+            { time: '12:00', visitors: 350, sales: 25 },
+            { time: '15:00', visitors: 450, sales: 42 },
+            { time: '18:00', visitors: 620, sales: 68 },
+            { time: '21:00', visitors: 210, sales: 15 },
+        ];
+
+        const recentActivity = [
+            { user: 'Ahmet Y.', action: 'Sepete Ekleme', detail: 'Zultanit Yüzük', time: '2 dk önce' },
+            { user: 'Selin K.', action: 'Sipariş', detail: '₺5.400', time: '5 dk önce' },
+            { user: 'Misafir', action: 'Ürün İnceleme', detail: 'Safir Kolye', time: '12 dk önce' },
+            { user: 'Mehmet A.', action: 'Kayıt Ol', detail: 'Yeni Üye', time: '25 dk önce' },
+        ];
+
+        const abandonedCarts = [
+            { id: 101, user: 'cansu@mail.com', total: 12500, time: '1 saat önce', items: ['Zümrüt Yüzük', 'Altın Zincir'] },
+            { id: 102, user: 'Misafir (IP: 88.2.)', total: 4500, time: '3 saat önce', items: ['Gümüş Bileklik'] },
+        ];
+
+        return {
+            productViews,
+            cartAdds,
+            categoryClicks,
+            totalEvents: events.length,
+            activityData,
+            recentActivity,
+            abandonedCarts
+        };
     };
 
     return (

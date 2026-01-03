@@ -6,7 +6,12 @@ const ProductContext = createContext();
 export const useProducts = () => useContext(ProductContext);
 
 export const ProductProvider = ({ children }) => {
-    const [products, setProducts] = useState(initialProducts);
+    const [products, setProducts] = useState(() => {
+        return initialProducts.map(p => ({
+            ...p,
+            stock: p.stock || Math.floor(Math.random() * 50) + 5 // Random stock for demo
+        }));
+    });
 
     const addProduct = (product) => {
         const newProduct = {
