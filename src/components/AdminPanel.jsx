@@ -23,15 +23,20 @@ export default function AdminPanel() {
   const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
 
-  const stats = useMemo(() => getStats(), [getStats]);
+  // Mock Notifications
+  const notifications = [
+    { id: 1, text: 'Yeni sipariş: #ORD-9921', time: '5 dk önce' },
+    { id: 2, text: 'Stok uyarısı: Zultanit Yüzük', time: '1 saat önce' },
+    { id: 3, text: 'Günlük rapor hazır', time: 'Bugün' }
+  ];
 
-  // Chart Data
-  const activityData = stats.activityData || [];
-  const categoryData = Object.entries(stats.categoryClicks).map(([name, value]) => ({ name, value }));
-  const COLORS = ['#d4af37', '#2a2a2a', '#999', '#555'];
+  const handleViewSite = () => {
+    window.open('/', '_blank');
+  };
 
-  // Form State
+  const toggleNotifications = () => setNotificationsOpen(!notificationsOpen);
   const [formData, setFormData] = useState({ name: '', price: '', category: '', image: '', description: '', material: '' });
 
   const handleSubmit = (e) => {
@@ -91,11 +96,24 @@ export default function AdminPanel() {
             <input type="text" placeholder="Panelde ara..." />
           </div>
           <div className="top-actions">
-            <button className="icon-btn notification">
-              <IconBell />
-              <span className="badge-dot"></span>
-            </button>
-            <button className="view-site-btn">Siteyi Görüntüle ↗</button>
+            <div className="notification-wrapper">
+              <button className="icon-btn notification" onClick={toggleNotifications}>
+                <IconBell />
+                <span className="badge-dot"></span>
+              </button>
+              {notificationsOpen && (
+                <div className="notification-dropdown">
+                  <div className="dropdown-header">Bildirimler</div>
+                  {notifications.map(n => (
+                    <div key={n.id} className="notif-item">
+                      <span className="notif-text">{n.text}</span>
+                      <span className="notif-time">{n.time}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            <button className="view-site-btn" onClick={handleViewSite}>Siteyi Görüntüle ↗</button>
           </div>
         </header>
 
@@ -416,7 +434,16 @@ export default function AdminPanel() {
         .top-actions { display: flex; gap: 1rem; align-items: center; }
         .icon-btn { background: none; border: none; cursor: pointer; position: relative; color: #555; }
         .badge-dot { position: absolute; top: -2px; right: -2px; width: 8px; height: 8px; background: #ef4444; border-radius: 50%; }
-        .view-site-btn { font-size: 0.8rem; color: #d4af37; background: rgba(212, 175, 55, 0.1); padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; }
+        .view-site-btn { font-size: 0.8rem; color: #d4af37; background: rgba(212, 175, 55, 0.1); padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; transition: 0.2s; }
+        .view-site-btn:hover { background: rgba(212, 175, 55, 0.2); }
+        
+        .notification-wrapper { position: relative; }
+        .notification-dropdown { position: absolute; top: 100%; right: 0; width: 280px; background: #fff; border: 1px solid #eee; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 100; margin-top: 10px; }
+        .dropdown-header { padding: 12px; border-bottom: 1px solid #f5f5f5; font-weight: 600; font-size: 0.9rem; color: #333; }
+        .notif-item { padding: 12px; border-bottom: 1px solid #f9f9f9; display: flex; flex-direction: column; gap: 4px; }
+        .notif-item:last-child { border-bottom: none; }
+        .notif-text { font-size: 0.85rem; color: #444; }
+        .notif-time { font-size: 0.75rem; color: #999; }
 
         /* DASHBOARD */
         .section-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 2rem; }

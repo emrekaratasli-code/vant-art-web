@@ -26,69 +26,61 @@ import Preloader from './components/Preloader';
 import CookieBanner from './components/CookieBanner';
 import ErrorBoundary from './components/ErrorBoundary';
 
-function AppContent() {
-  const { t } = useLanguage();
+function Layout({ children }) {
+  const location = useLocation();
+  const isAdmin = location.pathname.startsWith('/admin');
 
   return (
-    <Router>
-      <div className="app">
-        <Header />
-        <main>
-          <Routes>
-            <Route path="/" element={<><Hero /><ProductGrid /></>} />
-            <Route path="/product/:id" element={<ProductDetail />} />
-            <Route path="/cart" element={<CartPage />} />
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/checkout" element={<Checkout />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/our-story" element={<OurStory />} />
-            <Route path="/admin" element={<AdminPanel />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
+    <div className="app">
+      {!isAdmin && <Header />}
+      <main style={isAdmin ? { padding: 0 } : {}}>
+        {children}
+      </main>
+      {!isAdmin && (
+        <>
+          <CartSidebar />
+          <BottomNav />
+          <Footer />
+        </>
+      )}
+    </div>
+  );
+}
 
-            {/* Legal Routes */}
-            <Route path="/sozlesmeler/mesafeli-satis" element={<LegalDocument type="distanceSales" />} />
-            <Route path="/sozlesmeler/iptal-iade" element={<LegalDocument type="returnPolicy" />} />
-            <Route path="/sozlesmeler/gizlilik" element={<LegalDocument type="privacy" />} />
-            <Route path="/sozlesmeler/kvkk" element={<LegalDocument type="kvkk" />} />
-          </Routes>
-        </main>
+function Footer() {
+  const { t } = useLanguage();
+  return (
+    <footer style={{
+      textAlign: 'center',
+      padding: '2rem 1rem',
+      fontSize: '0.75rem',
+      color: 'var(--color-text-muted)',
+      borderTop: '1px solid var(--color-border)',
+      marginTop: 'auto',
+      background: 'var(--color-surface)',
+      paddingBottom: '6rem' // Space for bottom nav
+    }}>
+      <div className="social-links" style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'center', gap: '2rem' }}>
+        <a href="https://instagram.com/vantartonline" target="_blank" rel="noreferrer" className="social-icon" style={{ color: 'var(--color-text)' }}><InstaIcon /></a>
+        <a href="https://tiktok.com/@vant.taki.aksesuar" target="_blank" rel="noreferrer" className="social-icon" style={{ color: 'var(--color-text)' }}><TiktokIcon /></a>
+        <a href="https://whatsapp.com" target="_blank" rel="noreferrer" className="social-icon" style={{ color: 'var(--color-text)' }}><WhatsappIcon /></a>
+      </div>
 
-        <CartSidebar />
-        <BottomNav />
+      <div style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'center', gap: '1.5rem', flexWrap: 'wrap' }}>
+        <Link to="/our-story" style={{ color: 'var(--color-text)', textDecoration: 'none', textTransform: 'uppercase', letterSpacing: '0.1em' }}>{t('navStory')}</Link>
+        <Link to="/contact" style={{ color: 'var(--color-text)', textDecoration: 'none', textTransform: 'uppercase', letterSpacing: '0.1em' }}>{t('navContact')}</Link>
+      </div>
 
-        <footer style={{
-          textAlign: 'center',
-          padding: '2rem 1rem',
-          fontSize: '0.75rem',
-          color: 'var(--color-text-muted)',
-          borderTop: '1px solid var(--color-border)',
-          marginTop: 'auto',
-          background: 'var(--color-surface)',
-          paddingBottom: '6rem' // Space for bottom nav
-        }}>
-          <div className="social-links" style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'center', gap: '2rem' }}>
-            <a href="https://instagram.com/vantartonline" target="_blank" rel="noreferrer" className="social-icon" style={{ color: 'var(--color-text)' }}><InstaIcon /></a>
-            <a href="https://tiktok.com/@vant.taki.aksesuar" target="_blank" rel="noreferrer" className="social-icon" style={{ color: 'var(--color-text)' }}><TiktokIcon /></a>
-            <a href="https://whatsapp.com" target="_blank" rel="noreferrer" className="social-icon" style={{ color: 'var(--color-text)' }}><WhatsappIcon /></a>
-          </div>
-
-          <div style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'center', gap: '1.5rem', flexWrap: 'wrap' }}>
-            <Link to="/our-story" style={{ color: 'var(--color-text)', textDecoration: 'none', textTransform: 'uppercase', letterSpacing: '0.1em' }}>{t('navStory')}</Link>
-            <Link to="/contact" style={{ color: 'var(--color-text)', textDecoration: 'none', textTransform: 'uppercase', letterSpacing: '0.1em' }}>{t('navContact')}</Link>
-          </div>
-
-          <div style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap', opacity: 0.7 }}>
-            <Link to="/sozlesmeler/mesafeli-satis" className="legal-link">{t('legalSalesAgreement')}</Link>
-            <Link to="/sozlesmeler/iptal-iade" className="legal-link">{t('legalReturnPolicy')}</Link>
-            <Link to="/sozlesmeler/gizlilik" className="legal-link">{t('legalPrivacyPolicy')}</Link>
-            <Link to="/sozlesmeler/kvkk" className="legal-link">{t('legalKvkk')}</Link>
-          </div>
-          <div style={{ opacity: 0.5 }}>
-            &copy; 2025 VANT ART. {t('footerCopyright')}
-          </div>
-        </footer>
-        <style>{`
+      <div style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap', opacity: 0.7 }}>
+        <Link to="/sozlesmeler/mesafeli-satis" className="legal-link">{t('legalSalesAgreement')}</Link>
+        <Link to="/sozlesmeler/iptal-iade" className="legal-link">{t('legalReturnPolicy')}</Link>
+        <Link to="/sozlesmeler/gizlilik" className="legal-link">{t('legalPrivacyPolicy')}</Link>
+        <Link to="/sozlesmeler/kvkk" className="legal-link">{t('legalKvkk')}</Link>
+      </div>
+      <div style={{ opacity: 0.5 }}>
+        &copy; 2025 VANT ART. {t('footerCopyright')}
+      </div>
+      <style>{`
           .legal-link {
             color: var(--color-text-muted);
             text-decoration: none;
@@ -103,7 +95,34 @@ function AppContent() {
           .social-icon { transition: transform 0.3s; }
           .social-icon:hover { transform: scale(1.1); color: var(--color-accent) !important; }
         `}</style>
-      </div>
+    </footer>
+  );
+}
+
+
+function AppContent() {
+  return (
+    <Router>
+      <Layout>
+        <Routes>
+          <Route path="/" element={<><Hero /><ProductGrid /></>} />
+          <Route path="/product/:id" element={<ProductDetail />} />
+          <Route path="/cart" element={<CartPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/checkout" element={<Checkout />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/our-story" element={<OurStory />} />
+          <Route path="/admin" element={<AdminPanel />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+
+          {/* Legal Routes */}
+          <Route path="/sozlesmeler/mesafeli-satis" element={<LegalDocument type="distanceSales" />} />
+          <Route path="/sozlesmeler/iptal-iade" element={<LegalDocument type="returnPolicy" />} />
+          <Route path="/sozlesmeler/gizlilik" element={<LegalDocument type="privacy" />} />
+          <Route path="/sozlesmeler/kvkk" element={<LegalDocument type="kvkk" />} />
+        </Routes>
+      </Layout>
     </Router>
   );
 }
