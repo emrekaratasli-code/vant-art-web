@@ -24,6 +24,7 @@ export default function AdminPanel() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [formData, setFormData] = useState({ name: '', price: '', category: '', image: '', description: '', material: '' });
 
   // MOCK NOTIFICATIONS
   const notifications = [
@@ -37,19 +38,6 @@ export default function AdminPanel() {
   };
 
   const toggleNotifications = () => setNotificationsOpen(!notificationsOpen);
-  const [formData, setFormData] = useState({ name: '', price: '', category: '', image: '', description: '', material: '' });
-
-  // --- SAFETY CHECK ---
-  if (!products || !orders) {
-    return (
-      <div className="admin-loading" style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f4f5f7' }}>
-        <div style={{ textAlign: 'center' }}>
-          <h3>Panel Yükleniyor...</h3>
-          <p style={{ color: '#666', fontSize: '0.9rem' }}>Veriler hazırlanıyor.</p>
-        </div>
-      </div>
-    );
-  }
 
   const stats = useMemo(() => {
     try {
@@ -74,6 +62,18 @@ export default function AdminPanel() {
   };
 
   const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
+
+  // --- SAFETY CHECK (MOVED TO END) ---
+  if (!products || !orders) {
+    return (
+      <div className="admin-loading" style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f4f5f7' }}>
+        <div style={{ textAlign: 'center' }}>
+          <h3>Panel Yükleniyor...</h3>
+          <p style={{ color: '#666', fontSize: '0.9rem' }}>Veriler hazırlanıyor.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="admin-layout">
