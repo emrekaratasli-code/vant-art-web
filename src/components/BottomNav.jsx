@@ -100,10 +100,12 @@ export default function BottomNav() {
                     height: 100%;
                     position: relative;
                     -webkit-tap-highlight-color: transparent;
+                    opacity: 0.5; /* Dim inactive items */
                 }
 
                 .nav-item.active {
                     color: var(--color-accent);
+                    opacity: 1; /* Highlight active item */
                 }
 
                 .nav-item:active {

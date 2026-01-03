@@ -13,7 +13,9 @@ export default function CartPage() {
 
             {cartItems.length === 0 ? (
                 <div className="empty-state">
-                    <p>{t('emptyBag')}</p>
+                    <div className="empty-icon" style={{ fontSize: '3rem', marginBottom: '1rem', opacity: 0.5 }}>💎</div>
+                    <p className="empty-text">{t('emptyBag')}</p>
+                    <p className="art-invite">{t('exploreArt')}</p>
                     <button onClick={() => navigate('/')} className="continue-btn">{t('heroCta')}</button>
                 </div>
             ) : (
@@ -68,16 +70,38 @@ export default function CartPage() {
                 }
                 .empty-state {
                     text-align: center;
-                    padding: 4rem 1rem;
+                    padding: 6rem 1rem;
                     color: var(--color-text-muted);
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                }
+                .empty-text {
+                    font-size: 1.2rem;
+                    margin-bottom: 0.5rem;
+                    color: var(--color-text);
+                }
+                .art-invite {
+                    font-family: var(--font-heading);
+                    font-style: italic;
+                    color: var(--color-accent);
+                    margin-bottom: 2rem;
+                    letter-spacing: 0.05em;
                 }
                 .continue-btn {
-                    margin-top: 1rem;
-                    padding: 0.8rem 2rem;
+                    padding: 1rem 3rem;
                     background: var(--color-accent);
-                    color: #000;
-                    font-weight: bold;
-                    border-radius: 4px;
+                    color: #000; /* Dark text for contrast */
+                    font-weight: 700;
+                    border-radius: var(--radius-sm);
+                    text-transform: uppercase;
+                    letter-spacing: 0.1em;
+                    border: none;
+                    cursor: pointer;
+                    transition: transform 0.2s;
+                }
+                .continue-btn:active {
+                    transform: scale(0.95);
                 }
 
                 .cart-row {

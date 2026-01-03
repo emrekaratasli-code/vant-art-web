@@ -7,7 +7,13 @@ export default function Hero() {
   return (
     <section className="hero">
       <div className="hero-content">
-        <img src={logo} alt="VANT ART" className="hero-logo" />
+        <img
+          src={logo}
+          alt="VANT ART"
+          className="hero-logo"
+          fetchPriority="high"
+          loading="eager"
+        />
         {/* Title removed as requested, using Logo only */}
         <p className="hero-subtitle">{t('heroSubtitle')}</p>
         <div className="hero-actions">

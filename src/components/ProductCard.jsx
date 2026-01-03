@@ -10,7 +10,12 @@ export default function ProductCard({ product }) {
     <div className="product-card">
       <Link to={`/product/${product.id}`} className="product-link-wrapper">
         <div className="product-image-wrapper">
-          <img src={product.image} alt={product.name} loading="lazy" />
+          <img
+            src={product.image}
+            alt={product.name}
+            loading="lazy"
+            decoding="async"
+          />
           <button
             className="add-to-cart-overlay"
             onClick={(e) => {

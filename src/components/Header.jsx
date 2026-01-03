@@ -5,42 +5,42 @@ import logo from '../assets/VANT.png';
 
 
 export default function Header() {
-    const { toggleCart, cartCount } = useCart();
-    const { language, toggleLanguage, t } = useLanguage();
+  const { toggleCart, cartCount } = useCart();
+  const { language, toggleLanguage, t } = useLanguage();
 
-    return (
-        <header className="header">
-            <div className="container header-container">
-                <nav className="nav-left">
-                    <ul className="nav-list">
-                        <li><Link to="/">{t('collection')}</Link></li>
-                    </ul>
-                </nav>
+  return (
+    <header className="header">
+      <div className="container header-container">
+        <nav className="nav-left">
+          <ul className="nav-list">
+            <li><Link to="/">{t('collection')}</Link></li>
+          </ul>
+        </nav>
 
-                <div className="logo-center">
-                    <Link to="/" className="logo-link">
-                        <img src={logo} alt="VANT ART" className="logo-img" />
-                    </Link>
-                </div>
+        <div className="logo-center">
+          <Link to="/" className="logo-link">
+            <img src={logo} alt="VANT ART" className="logo-img" />
+          </Link>
+        </div>
 
-                <div className="nav-right">
-                    <div className="lang-switch">
-                        <button
-                            className={language === 'TR' ? 'active' : ''}
-                            onClick={() => toggleLanguage('TR')}
-                        >TR</button>
-                        <span className="separator">|</span>
-                        <button
-                            className={language === 'EN' ? 'active' : ''}
-                            onClick={() => toggleLanguage('EN')}
-                        >EN</button>
-                    </div>
-                    <button className="cart-btn" onClick={toggleCart} aria-label="Open Cart">
-                        {t('cart')} ({cartCount})
-                    </button>
-                </div>
-            </div>
-            <style>{`
+        <div className="nav-right">
+          <div className="lang-switch">
+            <button
+              className={language === 'TR' ? 'active' : ''}
+              onClick={() => toggleLanguage('TR')}
+            >TR</button>
+            <span className="separator">|</span>
+            <button
+              className={language === 'EN' ? 'active' : ''}
+              onClick={() => toggleLanguage('EN')}
+            >EN</button>
+          </div>
+          <button className="cart-btn" onClick={toggleCart} aria-label="Open Cart">
+            {t('cart')} ({cartCount})
+          </button>
+        </div>
+      </div>
+      <style>{`
         .header {
           padding: 0.5rem 0; /* Reduced padding for slimmer look */
           background: rgba(18, 18, 18, 0.98);
@@ -96,33 +96,37 @@ export default function Header() {
           display: flex;
           gap: 0.5rem;
           color: var(--color-text-muted);
-          font-size: 0.8rem;
-          font-weight: 700;
+          font-size: 0.75rem; /* Smaller */
+          font-weight: 300; /* Thinner */
+          letter-spacing: 0.05em;
         }
         .lang-switch button {
           color: var(--color-text-muted);
           transition: color 0.3s;
+          font-weight: 300;
         }
         .lang-switch button.active {
           color: var(--color-accent);
+          font-weight: 400;
         }
         .lang-switch button:hover {
           color: var(--color-text);
         }
         
         .cart-btn {
-          font-size: 0.9rem;
+          font-size: 0.75rem; /* Smaller */
           color: var(--color-accent);
-          font-weight: 400;
+          font-weight: 300; /* Thinner */
           text-transform: uppercase;
           letter-spacing: 0.1em;
-          border: 1px solid var(--color-accent);
-          padding: 0.4rem 1.2rem;
+          border: 1px solid rgba(212, 175, 55, 0.5); /* Thinner border look */
+          padding: 0.3rem 1rem;
           transition: all 0.3s ease;
         }
         .cart-btn:hover {
           background: var(--color-accent);
           color: var(--color-bg);
+          border-color: var(--color-accent);
         }
         
         @media (max-width: 768px) {
@@ -137,9 +141,9 @@ export default function Header() {
           .logo-center { grid-area: logo; justify-content: flex-start; }
           .nav-right { grid-area: cart; }
           .nav-left { grid-area: nav; justify-content: center; display: flex; }
-          .logo-img { height: 50px; }
+          .logo-img { height: 75px; } /* Increased from 50px for premium visibility */
         }
       `}</style>
-        </header>
-    );
+    </header>
+  );
 }

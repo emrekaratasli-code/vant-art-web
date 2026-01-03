@@ -5,50 +5,50 @@ export default function ProfilePage() {
 
     return (
         <div className="profile-page container">
-            <h1 className="page-title">{t('admin') || 'Profile'}</h1>
+            <h1 className="page-title">{t('myProfile')}</h1>
 
-            <div className="auth-card">
-                <h2>Welcome to VANT ART</h2>
-                <p>Sign in to view your order history and saved items.</p>
+            <div className="auth-section">
+                <h2 className="welcome-text">{t('welcome')}</h2>
+                <p className="welcome-sub">{t('signInDesc')}</p>
 
                 <div className="auth-buttons">
-                    <button className="btn-primary">Login</button>
-                    <button className="btn-secondary">Register</button>
+                    <button className="btn-primary">{t('login')}</button>
+                    <button className="btn-secondary">{t('register')}</button>
                 </div>
             </div>
 
-            <div className="links-list">
-                <a href="#" className="list-item">Order History</a>
-                <a href="#" className="list-item">Saved Items</a>
-                <a href="#" className="list-item">Address Book</a>
-                <a href="#" className="list-item">Settings</a>
+            <div className="profile-menu">
+                <a href="#" className="menu-item">{t('orderHistory')}</a>
+                <a href="#" className="menu-item">{t('savedItems')}</a>
+                <a href="#" className="menu-item">{t('addressBook')}</a>
+                <a href="#" className="menu-item">{t('settings')}</a>
             </div>
 
             <style>{`
                 .profile-page {
-                    padding-top: 2rem;
+                    padding-top: 3rem;
                     min-height: 80vh;
+                    max-width: 600px; /* Focus content */
                 }
                 .page-title {
                     text-align: center;
-                    margin-bottom: 2rem;
+                    margin-bottom: 3rem;
                     font-size: 2rem;
-                }
-                .auth-card {
-                    background: var(--color-surface);
-                    padding: 2rem;
-                    border-radius: var(--radius-sm);
-                    text-align: center;
-                    margin-bottom: 2rem;
-                    border: 1px solid var(--color-border);
-                }
-                .auth-card h2 {
                     color: var(--color-accent);
-                    margin-bottom: 0.5rem;
                 }
-                .auth-card p {
+                .auth-section {
+                    text-align: center;
+                    margin-bottom: 4rem;
+                }
+                .welcome-text {
+                    font-size: 1.5rem;
+                    margin-bottom: 0.5rem;
+                    color: var(--color-text);
+                }
+                .welcome-sub {
                     color: var(--color-text-muted);
-                    margin-bottom: 1.5rem;
+                    margin-bottom: 2rem;
+                    font-size: 0.9rem;
                 }
                 .auth-buttons {
                     display: flex;
@@ -56,39 +56,45 @@ export default function ProfilePage() {
                     justify-content: center;
                 }
                 .btn-primary, .btn-secondary {
-                    padding: 0.8rem 2rem;
-                    border-radius: 4px;
-                    font-weight: bold;
-                    min-width: 120px;
+                    padding: 0.8rem 2.5rem;
+                    border-radius: var(--radius-sm);
+                    font-weight: 600;
+                    letter-spacing: 0.05em;
+                    text-transform: uppercase;
+                    font-size: 0.85rem;
+                    cursor: pointer;
+                    transition: all 0.3s;
                 }
                 .btn-primary {
                     background: var(--color-accent);
                     color: #000;
+                    border: 1px solid var(--color-accent);
                 }
                 .btn-secondary {
-                    border: 1px solid var(--color-border);
                     background: transparent;
+                    border: 1px solid var(--color-text-muted);
                     color: var(--color-text);
+                }
+                .btn-secondary:hover {
+                    border-color: var(--color-text);
                 }
 
-                .links-list {
-                    background: var(--color-surface);
-                    border-radius: var(--radius-sm);
-                    overflow: hidden;
-                    border: 1px solid var(--color-border);
+                .profile-menu {
+                    border-top: 1px solid rgba(212, 175, 55, 0.2);
                 }
-                .list-item {
+                .menu-item {
                     display: block;
-                    padding: 1rem 1.5rem;
-                    border-bottom: 1px solid var(--color-border);
+                    padding: 1.5rem 0;
+                    border-bottom: 1px solid rgba(212, 175, 55, 0.2); /* Subtle Gold Divider */
                     color: var(--color-text);
-                    transition: background 0.2s;
+                    text-decoration: none;
+                    font-size: 1rem;
+                    letter-spacing: 0.05em;
+                    transition: padding-left 0.3s, color 0.3s;
                 }
-                .list-item:last-child {
-                    border-bottom: none;
-                }
-                .list-item:hover {
-                    background: rgba(255,255,255,0.02);
+                .menu-item:hover {
+                    padding-left: 10px;
+                    color: var(--color-accent);
                 }
             `}</style>
         </div>
