@@ -93,56 +93,135 @@ export default function CheckoutPage() {
                 {/* FORM LEFT */}
                 <div className="flex-1">
                     <h2 className="text-xl mb-6 pb-2 border-b border-[#333] text-white uppercase tracking-wider">Teslimat Bilgileri</h2>
-                    <form onSubmit={handlePayment} className="space-y-6">
-                        <div className="grid grid-cols-2 gap-4">
-                            <input
-                                type="text" name="name" placeholder="Adınız" required
-                                value={formData.name} onChange={handleInputChange}
-                                className={inputClasses}
-                            />
-                            <input
-                                type="text" name="surname" placeholder="Soyadınız" required
-                                value={formData.surname} onChange={handleInputChange}
-                                className={inputClasses}
-                            />
+                    <form onSubmit={handlePayment} className="checkout-form">
+                        <div className="form-grid">
+                            <div className="form-group">
+                                <label>Ad</label>
+                                <input
+                                    type="text" name="name" required
+                                    value={formData.name} onChange={handleInputChange}
+                                    className="ant-input"
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label>Soyad</label>
+                                <input
+                                    type="text" name="surname" required
+                                    value={formData.surname} onChange={handleInputChange}
+                                    className="ant-input"
+                                />
+                            </div>
+
+                            <div className="form-group">
+                                <label>Telefon</label>
+                                <input
+                                    type="text" name="phone" placeholder="555 555 55 55" required
+                                    value={formData.phone} onChange={handleInputChange}
+                                    className="ant-input"
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label>E-posta</label>
+                                <input
+                                    type="email" name="email" required
+                                    value={formData.email} onChange={handleInputChange}
+                                    className="ant-input"
+                                />
+                            </div>
+
+                            <div className="form-group">
+                                <label>Şehir</label>
+                                <input
+                                    type="text" name="city" required
+                                    value={formData.city} onChange={handleInputChange}
+                                    className="ant-input"
+                                />
+                            </div>
+                            <div className="form-group full-width">
+                                <label>Adres</label>
+                                <textarea
+                                    name="addressLine" required
+                                    rows="3"
+                                    value={formData.addressLine} onChange={handleInputChange}
+                                    className="ant-input"
+                                />
+                            </div>
                         </div>
-
-                        <input
-                            type="text" name="phone" placeholder="Telefon Numarası (535...)" required
-                            value={formData.phone} onChange={handleInputChange}
-                            className={inputClasses}
-                        />
-
-                        <input
-                            type="email" name="email" placeholder="E-posta Adresi" required
-                            value={formData.email} onChange={handleInputChange}
-                            className={inputClasses}
-                        />
-
-                        <input
-                            type="text" name="city" placeholder="Şehir" required
-                            value={formData.city} onChange={handleInputChange}
-                            className={inputClasses}
-                        />
-
-                        <textarea
-                            name="addressLine" placeholder="Adres (Mahalle, Sokak, Kapı No...)" required
-                            rows="3"
-                            value={formData.addressLine} onChange={handleInputChange}
-                            className={inputClasses}
-                        />
 
                         <div className="mt-8">
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full bg-[#d4af37] text-black py-4 hover:bg-white transition-all duration-300 uppercase tracking-widest text-sm font-bold"
+                                className="checkout-btn"
                             >
                                 {loading ? 'Ödeme Yükleniyor...' : `DEVAM ET (${cartTotal.toLocaleString('tr-TR')} TL)`}
                             </button>
                             {error && <p className="text-red-500 mt-4 text-sm">{error}</p>}
                         </div>
                     </form>
+
+                    <style>{`
+                        .checkout-form { font-family: 'Inter', sans-serif; }
+                        .form-grid {
+                            display: grid;
+                            grid-template-columns: 1fr 1fr;
+                            gap: 1.5rem;
+                        }
+                        .full-width { grid-column: 1 / -1; }
+                        
+                        .form-group label {
+                            display: block;
+                            color: #888;
+                            font-size: 0.75rem;
+                            margin-bottom: 0.5rem;
+                            text-transform: uppercase;
+                            letter-spacing: 1px;
+                        }
+
+                        .ant-input {
+                            width: 100%;
+                            background: rgba(255, 255, 255, 0.03);
+                            border: 1px solid #333;
+                            color: #fff;
+                            padding: 12px 16px;
+                            font-size: 0.95rem;
+                            border-radius: 4px; /* Slight radius */
+                            outline: none;
+                            transition: all 0.3s ease;
+                            -webkit-appearance: none;
+                        }
+                        .ant-input:focus {
+                            border-color: #d4af37;
+                            background: rgba(212, 175, 55, 0.05);
+                        }
+                        
+                        .checkout-btn {
+                            width: 100%;
+                            background: #d4af37;
+                            color: #000;
+                            padding: 1rem;
+                            border: none;
+                            text-transform: uppercase;
+                            letter-spacing: 2px;
+                            font-weight: 700;
+                            font-size: 0.9rem;
+                            cursor: pointer;
+                            transition: all 0.3s;
+                            margin-top: 1rem;
+                        }
+                        .checkout-btn:hover {
+                            background: #fff;
+                            color: #000;
+                        }
+                        .checkout-btn:disabled {
+                            opacity: 0.7;
+                            cursor: not-allowed;
+                        }
+                        
+                        @media (max-width: 768px) {
+                            .form-grid { grid-template-columns: 1fr; gap: 1rem; }
+                        }
+                    `}</style>
                 </div>
 
                 {/* ORDER SUMMARY RIGHT */}
