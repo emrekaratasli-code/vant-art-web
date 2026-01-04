@@ -34,6 +34,7 @@ export const AnalyticsProvider = ({ children }) => {
         // Simple aggregation for real events
         const productViews = {};
         const cartAdds = {};
+        const wishlistAdds = {}; // Added
         const categoryClicks = {};
 
         events.forEach(e => {
@@ -47,6 +48,11 @@ export const AnalyticsProvider = ({ children }) => {
                 if (!cartAdds[name]) cartAdds[name] = 0;
                 cartAdds[name]++;
             }
+            if (e.event === 'add_to_wishlist') { // Added logic
+                const name = e.data.productName;
+                if (!wishlistAdds[name]) wishlistAdds[name] = 0;
+                wishlistAdds[name]++;
+            }
             if (e.event === 'category_click') {
                 const cat = e.data.category;
                 if (!categoryClicks[cat]) categoryClicks[cat] = 0;
@@ -54,7 +60,33 @@ export const AnalyticsProvider = ({ children }) => {
             }
         });
 
-        // Smart Platform Mock Data for "Live" Feel
+        // Generate Real Recent Activity from Events
+        // Map last 5 events to activity format
+        const realRecentActivity = events.slice(0, 5).map(e => {
+            let action = 'İşlem';
+            let detail = 'Detay';
+
+            switch (e.event) {
+                case 'view_product': action = 'Ürün İnceleme'; detail = e.data.productName; break;
+                case 'add_to_cart': action = 'Sepete Ekleme'; detail = e.data.productName; break;
+                case 'add_to_wishlist': action = 'Favorilere Ekleme'; detail = e.data.productName; break;
+                case 'checkout_start': action = 'Ödeme Başlatma'; detail = 'Checkout'; break;
+                default: action = e.event; detail = JSON.stringify(e.data).substring(0, 20);
+            }
+
+            // Calculate relative time (simple)
+            const diff = Math.floor((new Date() - new Date(e.timestamp)) / 60000);
+            const timeStr = diff < 1 ? 'Şimdi' : `${diff} dk önce`;
+
+            return {
+                user: 'Ziyaretçi', // We don't track user name in events yet widely, default to Visitor
+                action,
+                detail,
+                time: timeStr
+            };
+        });
+
+        // Smart Platform Mock Data for "Live" Feel (Charts etc)
         const activityData = [
             { time: '09:00', visitors: 120, sales: 5 },
             { time: '12:00', visitors: 350, sales: 25 },
@@ -63,11 +95,11 @@ export const AnalyticsProvider = ({ children }) => {
             { time: '21:00', visitors: 210, sales: 15 },
         ];
 
-        const recentActivity = [
+        // Fallback or mix real activity
+        const recentActivity = realRecentActivity.length > 0 ? realRecentActivity : [
             { user: 'Ahmet Y.', action: 'Sepete Ekleme', detail: 'Zultanit Yüzük', time: '2 dk önce' },
             { user: 'Selin K.', action: 'Sipariş', detail: '₺5.400', time: '5 dk önce' },
             { user: 'Misafir', action: 'Ürün İnceleme', detail: 'Safir Kolye', time: '12 dk önce' },
-            { user: 'Mehmet A.', action: 'Kayıt Ol', detail: 'Yeni Üye', time: '25 dk önce' },
         ];
 
         const abandonedCarts = [
@@ -78,6 +110,7 @@ export const AnalyticsProvider = ({ children }) => {
         return {
             productViews,
             cartAdds,
+            wishlistAdds, // Exported
             categoryClicks,
             totalEvents: events.length,
             activityData,

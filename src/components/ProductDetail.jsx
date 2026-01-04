@@ -5,6 +5,9 @@ import { useLanguage } from '../context/LanguageContext';
 import { products } from '../data/products';
 import { useEffect } from 'react';
 
+import { useWishlist } from '../context/WishlistContext';
+import ProductRecommendations from './ProductRecommendations'; // Import Added // Import Added
+
 const AccordionItem = ({ title, isOpen, onClick, children }) => {
     return (
         <div className="accordion-item">
@@ -21,11 +24,16 @@ const AccordionItem = ({ title, isOpen, onClick, children }) => {
     );
 };
 
+import { useSettings } from '../context/SettingsContext'; // Import Added
+
 export default function ProductDetail() {
     const { id } = useParams();
     const navigate = useNavigate();
     const { addToCart } = useCart();
     const { t, formatPrice } = useLanguage();
+    const { toggleWishlist, isInWishlist } = useWishlist(); // Hook Added
+    const { settings } = useSettings(); // Hook Added
+    const [viewers, setViewers] = useState(0);
 
     // Accordion State
     const [openSection, setOpenSection] = useState('description');
@@ -36,11 +44,17 @@ export default function ProductDetail() {
         window.scrollTo(0, 0);
     }, [id]);
 
+    useEffect(() => {
+        // Random viewers between 5 and 25
+        setViewers(Math.floor(Math.random() * 20) + 5);
+    }, []);
+
     if (!product) {
         return <div className="container" style={{ padding: '4rem 0', textAlign: 'center' }}>Product not found</div>;
     }
 
     const images = product.images || [product.image, product.image];
+    const isFav = isInWishlist(product.id);
 
     const toggleSection = (section) => {
         setOpenSection(openSection === section ? null : section);
@@ -69,14 +83,45 @@ export default function ProductDetail() {
                 </button>
 
                 <h1 className="product-title">{product.name}</h1>
+
+                {/* Social Proof Badge */}
+                {settings?.showSocialProof && (
+                    <div className="social-proof-badge">
+                        <span className="pulse-dot"></span>
+                        <span>Şu an {viewers} kişi bu ürünü inceliyor</span>
+                    </div>
+                )}
+
                 <p className="product-price-lg">{formatPrice(product.price)}</p>
 
-                <div className="action-area">
+                <div className="action-area" style={{ display: 'flex', gap: '1rem' }}>
                     <button
                         className="add-btn-main"
                         onClick={() => addToCart(product)}
+                        style={{ flex: 1, marginBottom: 0 }}
                     >
                         {t('addToCart')}
+                    </button>
+
+                    <button
+                        className={`wishlist-toggle ${isFav ? 'active' : ''}`}
+                        onClick={() => toggleWishlist(product)}
+                        style={{
+                            width: '54px',
+                            height: '54px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            border: '1px solid var(--color-border)',
+                            background: 'transparent',
+                            cursor: 'pointer',
+                            color: isFav ? '#d4af37' : 'var(--color-text)',
+                            transition: 'all 0.3s ease'
+                        }}
+                    >
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill={isFav ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.5">
+                            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                        </svg>
                     </button>
                 </div>
 
@@ -147,6 +192,9 @@ export default function ProductDetail() {
                 </button>
             </div>
 
+            <ProductRecommendations category={product.category} currentProductId={product.id} />
+
+
             <style>{`
                 .product-detail-page {
                     min-height: 100vh;
@@ -209,6 +257,31 @@ export default function ProductDetail() {
                     margin-bottom: 0.5rem;
                     font-family: var(--font-heading);
                     color: var(--color-accent);
+                }
+
+                .social-proof-badge {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 8px;
+                    background: rgba(212, 175, 55, 0.1);
+                    color: #d4af37;
+                    padding: 4px 12px;
+                    border-radius: 20px;
+                    font-size: 0.8rem;
+                    font-weight: 500;
+                    margin-bottom: 1rem;
+                }
+                .pulse-dot {
+                    width: 8px;
+                    height: 8px;
+                    background: #d4af37;
+                    border-radius: 50%;
+                    animation: pulse 2s infinite;
+                }
+                @keyframes pulse {
+                    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.7); }
+                    70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(212, 175, 55, 0); }
+                    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(212, 175, 55, 0); }
                 }
 
                 .product-price-lg {

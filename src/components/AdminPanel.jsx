@@ -16,15 +16,43 @@ const IconUsers = () => <svg width="20" height="20" fill="none" stroke="currentC
 const IconSettings = () => <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 0-2.83 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>;
 const IconBell = () => <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>;
 
+import { useAuth } from '../context/AuthContext'; // Added
+import { useSettings } from '../context/SettingsContext'; // Added
+
+// ... (existing imports)
+
 export default function AdminPanel() {
+  const { user } = useAuth(); // Added
   const { products, addProduct, deleteProduct } = useProducts();
   const { orders } = useOrders();
   const { getStats } = useAnalytics();
+  const { settings, updateSetting } = useSettings();
   const { t } = useLanguage();
-  const [activeTab, setActiveTab] = useState('dashboard');
+
+  // Default to 'products' for worker, 'dashboard' for admin
+  const [activeTab, setActiveTab] = useState(user?.role === 'worker' ? 'products' : 'dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [formData, setFormData] = useState({ name: '', price: '', category: '', image: '', description: '', material: '' });
+
+  // Update active tab if user role changes or on mount to enforce restriction
+  // This simple check ensures if they somehow got to dashboard, they are moved to products
+  if (user?.role === 'worker' && ['dashboard', 'customers', 'settings'].includes(activeTab)) {
+    setActiveTab('products');
+  }
+
+  // --- ACCESS CHECK ---
+  if (!user || (user.role !== 'admin' && user.role !== 'worker')) {
+    return (
+      <div className="admin-loading" style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f4f5f7', flexDirection: 'column', gap: '1rem' }}>
+        <div style={{ textAlign: 'center' }}>
+          <h3 style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>Erişim Yetkisi Yok</h3>
+          <p style={{ color: '#666', fontSize: '0.9rem', marginBottom: '2rem' }}>Bu paneli görüntülemek için yetkili hesapla giriş yapmalısınız.</p>
+          <a href="/login" style={{ padding: '10px 20px', background: '#d4af37', color: '#fff', textDecoration: 'none', borderRadius: '4px', fontWeight: 'bold' }}>Giriş Yap</a>
+        </div>
+      </div>
+    );
+  }
 
   // MOCK NOTIFICATIONS
   const notifications = [
@@ -75,6 +103,8 @@ export default function AdminPanel() {
     );
   }
 
+  const isWorker = user?.role === 'worker';
+
   return (
     <div className="admin-layout">
       {/* SIDEBAR */}
@@ -84,30 +114,36 @@ export default function AdminPanel() {
         </div>
 
         <nav className="sidebar-nav">
-          <button className={`nav-btn ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveTab('dashboard')}>
-            <IconDashboard /> <span>Genel Bakış</span>
-          </button>
+          {!isWorker && (
+            <button className={`nav-btn ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveTab('dashboard')}>
+              <IconDashboard /> <span>Genel Bakış</span>
+            </button>
+          )}
           <button className={`nav-btn ${activeTab === 'products' ? 'active' : ''}`} onClick={() => setActiveTab('products')}>
             <IconProducts /> <span>Ürün Yönetimi</span>
           </button>
           <button className={`nav-btn ${activeTab === 'orders' ? 'active' : ''}`} onClick={() => setActiveTab('orders')}>
             <IconOrders /> <span>Siparişler</span>
           </button>
-          <button className={`nav-btn ${activeTab === 'customers' ? 'active' : ''}`} onClick={() => setActiveTab('customers')}>
-            <IconUsers /> <span>Müşteriler</span>
-          </button>
-          <div className="nav-divider"></div>
-          <button className="nav-btn">
-            <IconSettings /> <span>Ayarlar</span>
-          </button>
+          {!isWorker && (
+            <>
+              <button className={`nav-btn ${activeTab === 'customers' ? 'active' : ''}`} onClick={() => setActiveTab('customers')}>
+                <IconUsers /> <span>Müşteriler</span>
+              </button>
+              <div className="nav-divider"></div>
+              <button className={`nav-btn ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => setActiveTab('settings')}>
+                <IconSettings /> <span>Ayarlar</span>
+              </button>
+            </>
+          )}
         </nav>
 
         <div className="sidebar-footer">
           <div className="admin-user">
-            <div className="avatar">AD</div>
+            <div className="avatar" style={{ textTransform: 'uppercase' }}>{user.name.substring(0, 2)}</div>
             <div className="user-info">
-              <span className="name">Admin User</span>
-              <span className="role">Süper Yönetici</span>
+              <span className="name" style={{ maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user.name}</span>
+              <span className="role">{isWorker ? 'Depo / Sipariş' : 'Süper Yönetici'}</span>
             </div>
           </div>
         </div>
@@ -183,6 +219,29 @@ export default function AdminPanel() {
 
               <div className="dashboard-split">
                 <div className="main-charts">
+                  {/* Views & Favorites Chart */}
+                  <div className="chart-box">
+                    <h3>📈 Ürün İlgi Analizi (Görüntülenme vs Favori)</h3>
+                    <div style={{ width: '100%', height: 300 }}>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={Object.entries(stats.productViews || {}).map(([name, views]) => ({
+                          name: name.length > 10 ? name.substring(0, 10) + '...' : name,
+                          fullName: name,
+                          views,
+                          likes: stats.wishlistAdds?.[name] || 0
+                        })).sort((a, b) => b.views - a.views).slice(0, 7)}>
+                          <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                          <XAxis dataKey="name" fontSize={12} />
+                          <YAxis />
+                          <Tooltip cursor={{ fill: 'transparent' }} />
+                          <Legend />
+                          <Bar dataKey="views" name="Görüntülenme" fill="#2a2a2a" radius={[4, 4, 0, 0]} />
+                          <Bar dataKey="likes" name="Favorilenme" fill="#d4af37" radius={[4, 4, 0, 0]} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+
                   <div className="chart-box">
                     <h3>Gelir & Trafik Analizi</h3>
                     {/* SAFE CHART: Only render if data exists and is valid */}
@@ -210,26 +269,40 @@ export default function AdminPanel() {
                   <div className="journey-section">
                     <h3>📍 Canlı Müşteri Akışı</h3>
                     <div className="journey-list">
-                      <div className="journey-item">
-                        <span className="time">10:42</span>
-                        <span className="user">Misafir_88</span>
-                        <span className="action">Zultanit Yüzük inceledi</span>
-                      </div>
-                      <div className="journey-item highlight">
-                        <span className="time">10:40</span>
-                        <span className="user">Selin K.</span>
-                        <span className="action">Sepete Ekle (Safir Kolye) 🛒</span>
-                      </div>
-                      <div className="journey-item">
-                        <span className="time">10:35</span>
-                        <span className="user">Misafir_92</span>
-                        <span className="action">Ana Sayfa ziyareti</span>
-                      </div>
+                      {(stats.recentActivity || []).map((item, idx) => (
+                        <div key={idx} className={`journey-item ${item.action.includes('Sipariş') ? 'highlight' : ''}`}>
+                          <span className="time">{item.time}</span>
+                          <span className="user">{item.user}</span>
+                          <span className="action">
+                            {item.action === 'Favorilere Ekleme' ? '❤️ ' : ''}
+                            {item.action} ({item.detail})
+                          </span>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </div>
 
                 <div className="sidebar-widgets">
+                  <div className="widget-box">
+                    <h3>❤️ En Çok Favorilenenler</h3>
+                    <ul className="stock-list">
+                      {Object.entries(stats.wishlistAdds || {})
+                        .sort(([, a], [, b]) => b - a)
+                        .slice(0, 5)
+                        .map(([name, count], i) => (
+                          <li key={i} className="stock-item">
+                            <div className="avatar-circle" style={{ background: '#d4af37', fontSize: '0.9rem' }}>{i + 1}</div>
+                            <div className="info">
+                              <span className="name">{name}</span>
+                              <span className="status warning">{count} Kişi Favoriledi</span>
+                            </div>
+                          </li>
+                        ))}
+                      {(!stats.wishlistAdds || Object.keys(stats.wishlistAdds).length === 0) && <p className="text-muted text-sm decoration-gray-400">Henüz veri yok.</p>}
+                    </ul>
+                  </div>
+
                   <div className="widget-box">
                     <h3>📦 Kritik Stok</h3>
                     <ul className="stock-list">
@@ -239,7 +312,7 @@ export default function AdminPanel() {
                           <img src={p.image} alt="" />
                           <div className="info">
                             <span className="name">{p.name}</span>
-                            <span className={`status ${p.stock < 5 ? 'critical' : 'warning'}`}>
+                            <span className="status warning">
                               {p.stock} Adet Kaldı
                             </span>
                           </div>
@@ -431,6 +504,49 @@ export default function AdminPanel() {
             </div>
           )}
 
+          {/* SETTINGS VIEW */}
+          {activeTab === 'settings' && (
+            <div className="settings-view">
+              <div className="section-header"><h2>Panel Ayarları</h2></div>
+
+              <div className="widget-box" style={{ maxWidth: '600px' }}>
+                <h3>📢 Sosyal Kanıt Yönetimi</h3>
+                <div className="setting-row">
+                  <div className="setting-info">
+                    <h4>Aktif Ziyaretçi Gösterimi</h4>
+                    <p className="text-muted text-sm">Ürün detay sayfalarında "Şu an X kişi inceliyor" uyarısını göster.</p>
+                  </div>
+                  <label className="switch">
+                    <input
+                      type="checkbox"
+                      checked={settings.showSocialProof}
+                      onChange={(e) => updateSetting('showSocialProof', e.target.checked)}
+                    />
+                    <span className="slider round"></span>
+                  </label>
+                </div>
+              </div>
+
+              <div className="widget-box" style={{ maxWidth: '600px', marginTop: '2rem' }}>
+                <h3>⚠️ Bakım Modu</h3>
+                <div className="setting-row">
+                  <div className="setting-info">
+                    <h4>Siteyi Bakım Moduna Al</h4>
+                    <p className="text-muted text-sm">Sadece adminler siteye erişebilir. Ziyaretçiler bakım sayfası görür.</p>
+                  </div>
+                  <label className="switch">
+                    <input
+                      type="checkbox"
+                      checked={settings.maintenanceMode}
+                      onChange={(e) => updateSetting('maintenanceMode', e.target.checked)}
+                    />
+                    <span className="slider round"></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          )}
+
         </div>
       </main>
 
@@ -557,6 +673,17 @@ export default function AdminPanel() {
              .nav-btn { width: auto; white-space: nowrap; }
              .admin-main { overflow: visible; }
         }
+
+        /* TOGGLE SWITCH */
+        .setting-row { display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; }
+        .setting-info h4 { margin: 0 0 4px 0; font-size: 1rem; }
+        .switch { position: relative; display: inline-block; width: 50px; height: 26px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: #d4af37; }
+        input:focus + .slider { box-shadow: 0 0 1px #d4af37; }
+        input:checked + .slider:before { transform: translateX(24px); }
       `}</style>
     </div>
   );

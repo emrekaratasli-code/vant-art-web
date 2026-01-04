@@ -18,8 +18,8 @@ export default function CheckoutPage() {
         email: user?.email || '',
         phone: '',
         city: '',
-        addressLine: '',
-        zipCode: ''
+        addressLine: ''
+        // Zip Code removed
     });
 
     const handleInputChange = (e) => {
@@ -43,20 +43,20 @@ export default function CheckoutPage() {
                         surname: formData.surname,
                         email: formData.email
                     },
-                    address: formData
+                    address: {
+                        ...formData,
+                        zipCode: '34000' // Default / Hidden zip code for Iyzico requirement
+                    }
                 })
             });
 
             const data = await response.json();
 
             if (data.status === 'success' && data.checkoutFormContent) {
-                // Inject the Iyzico Script and HTML
+                // Iyzico injection
                 const container = document.getElementById('iyzipay-checkout-form');
                 if (container) {
                     container.innerHTML = data.checkoutFormContent;
-
-                    // Execute the script embedded in the HTML content
-                    // Since setting innerHTML doesn't execute scripts, we need to extract and run it manually
                     const scriptContent = /<script\b[^>]*>([\s\S]*?)<\/script>/gm.exec(data.checkoutFormContent);
                     if (scriptContent && scriptContent[1]) {
                         window.eval(scriptContent[1]);
@@ -75,75 +75,70 @@ export default function CheckoutPage() {
     if (cartItems.length === 0) {
         return (
             <div className="container mx-auto px-6 py-24 text-center">
-                <h2 className="text-2xl mb-4">Sepetiniz Boş</h2>
-                <button onClick={() => navigate('/products')} className="text-secondary hover:underline">
+                <h2 className="text-2xl mb-4 text-[#d4af37]">Sepetiniz Boş</h2>
+                <button onClick={() => navigate('/')} className="text-white hover:text-[#d4af37] underline transition-colors">
                     Alışverişe Başla
                 </button>
             </div>
         );
     }
 
+    const inputClasses = "w-full p-3 bg-[#0a0a0a] border border-[#333] text-white focus:outline-none focus:border-[#d4af37] transition-colors placeholder-gray-600 font-light tracking-wide";
+
     return (
-        <div className="container mx-auto px-4 md:px-12 py-32 font-secondary">
-            <h1 className="text-3xl md:text-4xl mb-12 text-center playfair font-medium tracking-wide text-[#d4af37]">ÖDEME</h1>
+        <div className="container mx-auto px-4 md:px-12 py-32 font-secondary min-h-screen">
+            <h1 className="text-3xl md:text-4xl mb-12 text-center playfair font-medium tracking-wide text-[#d4af37] uppercase">Güvenli Ödeme</h1>
 
             <div className="flex flex-col lg:flex-row gap-12">
                 {/* FORM LEFT */}
                 <div className="flex-1">
-                    <h2 className="text-xl mb-6 pb-2 border-b border-gray-200">Teslimat Bilgileri</h2>
+                    <h2 className="text-xl mb-6 pb-2 border-b border-[#333] text-white uppercase tracking-wider">Teslimat Bilgileri</h2>
                     <form onSubmit={handlePayment} className="space-y-6">
                         <div className="grid grid-cols-2 gap-4">
                             <input
                                 type="text" name="name" placeholder="Adınız" required
                                 value={formData.name} onChange={handleInputChange}
-                                className="w-full p-3 bg-[#111] border border-[#333] text-white focus:outline-none focus:border-[#d4af37] transition-colors placeholder-gray-500"
+                                className={inputClasses}
                             />
                             <input
                                 type="text" name="surname" placeholder="Soyadınız" required
                                 value={formData.surname} onChange={handleInputChange}
-                                className="w-full p-3 bg-[#111] border border-[#333] text-white focus:outline-none focus:border-[#d4af37] transition-colors placeholder-gray-500"
+                                className={inputClasses}
                             />
                         </div>
 
                         <input
                             type="text" name="phone" placeholder="Telefon Numarası (535...)" required
                             value={formData.phone} onChange={handleInputChange}
-                            className="w-full p-3 border border-gray-300 focus:outline-none focus:border-secondary transition-colors"
+                            className={inputClasses}
                         />
 
                         <input
                             type="email" name="email" placeholder="E-posta Adresi" required
                             value={formData.email} onChange={handleInputChange}
-                            className="w-full p-3 border border-gray-300 focus:outline-none focus:border-secondary transition-colors"
+                            className={inputClasses}
                         />
 
-                        <div className="grid grid-cols-2 gap-4">
-                            <input
-                                type="text" name="city" placeholder="Şehir" required
-                                value={formData.city} onChange={handleInputChange}
-                                className="w-full p-3 bg-[#111] border border-[#333] text-white focus:outline-none focus:border-[#d4af37] transition-colors placeholder-gray-500"
-                            />
-                            <input
-                                type="text" name="zipCode" placeholder="Posta Kodu" required
-                                value={formData.zipCode} onChange={handleInputChange}
-                                className="w-full p-3 bg-[#111] border border-[#333] text-white focus:outline-none focus:border-[#d4af37] transition-colors placeholder-gray-500"
-                            />
-                        </div>
+                        <input
+                            type="text" name="city" placeholder="Şehir" required
+                            value={formData.city} onChange={handleInputChange}
+                            className={inputClasses}
+                        />
 
                         <textarea
                             name="addressLine" placeholder="Adres (Mahalle, Sokak, Kapı No...)" required
                             rows="3"
                             value={formData.addressLine} onChange={handleInputChange}
-                            className="w-full p-3 border border-gray-300 focus:outline-none focus:border-secondary transition-colors"
+                            className={inputClasses}
                         />
 
                         <div className="mt-8">
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full bg-secondary text-primary py-4 hover:bg-black hover:text-white transition-all duration-300 uppercase tracking-widest text-sm"
+                                className="w-full bg-[#d4af37] text-black py-4 hover:bg-white transition-all duration-300 uppercase tracking-widest text-sm font-bold"
                             >
-                                {loading ? 'Ödeme Yükleniyor...' : `Ödemeye Geç (${cartTotal.toLocaleString('tr-TR')} TL)`}
+                                {loading ? 'Ödeme Yükleniyor...' : `DEVAM ET (${cartTotal.toLocaleString('tr-TR')} TL)`}
                             </button>
                             {error && <p className="text-red-500 mt-4 text-sm">{error}</p>}
                         </div>

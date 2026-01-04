@@ -1,16 +1,58 @@
-import { useLanguage } from '../context/LanguageContext';
-import { useAuth } from '../context/AuthContext';
-import { useNavigate, Link } from 'react-router-dom';
+import { useState } from 'react'; // Added useState
+import { useWishlist } from '../context/WishlistContext'; // Added
+import ProductCard from './ProductCard'; // Added
 
 export default function ProfilePage() {
     const { t } = useLanguage();
     const { user, logout, isAuthenticated } = useAuth();
     const navigate = useNavigate();
+    const { wishlist } = useWishlist();
+    const [activeTab, setActiveTab] = useState('menu'); // menu, favorites, history, address
 
     const handleLogout = () => {
         logout();
         navigate('/');
     };
+
+    const renderMenu = () => (
+        <div className="profile-menu">
+            <div className="menu-item-group">
+                <span className="group-title">HESABIM</span>
+                <button onClick={() => setActiveTab('history')} className="menu-item">Koleksiyon Geçmişi</button>
+                <button onClick={() => setActiveTab('favorites')} className="menu-item">Favorilerim ({wishlist.length})</button>
+                <button onClick={() => setActiveTab('address')} className="menu-item">Kayıtlı Adreslerim</button>
+            </div>
+            <div className="menu-item-group">
+                <span className="group-title">TERCİHLER</span>
+                <button className="menu-item">İletişim İzinleri</button>
+                <button onClick={handleLogout} className="menu-item logout-btn">Çıkış Yap</button>
+            </div>
+        </div>
+    );
+
+    const renderFavorites = () => (
+        <div className="favorites-view">
+            <button onClick={() => setActiveTab('menu')} className="back-link">← Menüye Dön</button>
+            <h2 className="view-title">Favorilerim</h2>
+            {wishlist.length === 0 ? (
+                <p className="empty-msg">Henüz favori ürününüz yok.</p>
+            ) : (
+                <div className="fav-grid">
+                    {wishlist.map(product => (
+                        <ProductCard key={product.id} product={product} />
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+
+    const renderPlaceholder = (title) => (
+        <div className="placeholder-view">
+            <button onClick={() => setActiveTab('menu')} className="back-link">← Menüye Dön</button>
+            <h2 className="view-title">{title}</h2>
+            <p className="empty-msg">Bu özellik yakında eklenecek.</p>
+        </div>
+    );
 
     return (
         <div className="profile-page container">
@@ -28,19 +70,10 @@ export default function ProfilePage() {
                 </div>
             ) : (
                 <div className="profile-dashboard">
-                    <div className="profile-menu">
-                        <div className="menu-item-group">
-                            <span className="group-title">HESABIM</span>
-                            <a href="#" className="menu-item">Koleksiyon Geçmişi</a>
-                            <a href="#" className="menu-item">Favorilerim</a>
-                            <a href="#" className="menu-item">Kayıtlı Adreslerim</a>
-                        </div>
-                        <div className="menu-item-group">
-                            <span className="group-title">TERCİHLER</span>
-                            <a href="#" className="menu-item">İletişim İzinleri</a>
-                            <button onClick={handleLogout} className="menu-item logout-btn">Çıkış Yap</button>
-                        </div>
-                    </div>
+                    {activeTab === 'menu' && renderMenu()}
+                    {activeTab === 'favorites' && renderFavorites()}
+                    {activeTab === 'history' && renderPlaceholder('Koleksiyon Geçmişi')}
+                    {activeTab === 'address' && renderPlaceholder('Kayıtlı Adreslerim')}
                 </div>
             )}
 
@@ -145,6 +178,37 @@ export default function ProfilePage() {
                 }
                 .logout-btn:hover {
                     color: #ff1a1a;
+                }
+
+                /* Tab Views Styles */
+                .back-link {
+                    background: none;
+                    border: none;
+                    color: var(--color-text-muted);
+                    cursor: pointer;
+                    font-size: 0.9rem;
+                    margin-bottom: 2rem;
+                    display: inline-block;
+                }
+                .back-link:hover {
+                    color: var(--color-accent);
+                }
+                .view-title {
+                    font-size: 1.5rem;
+                    color: var(--color-text);
+                    margin-bottom: 2rem;
+                    font-family: var(--font-heading);
+                    border-bottom: 1px solid var(--color-border);
+                    padding-bottom: 1rem;
+                }
+                .empty-msg {
+                    color: var(--color-text-muted);
+                    font-style: italic;
+                }
+                .fav-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+                    gap: 1.5rem;
                 }
             `}</style>
         </div>

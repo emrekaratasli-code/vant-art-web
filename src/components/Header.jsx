@@ -161,7 +161,7 @@ export default function Header() {
         }
 
         /* Mobile Adjustments */
-        @media (max-width: 900px) {
+        @media (max-width: 1024px) {
            .nav-left { display: none; } /* Hide robust menu on tablet/mobile */
            
            .header-container {

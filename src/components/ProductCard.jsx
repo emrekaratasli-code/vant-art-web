@@ -2,11 +2,15 @@ import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useAnalytics } from '../context/AnalyticsContext';
+import { useWishlist } from '../context/WishlistContext'; // Import Added
 
 export default function ProductCard({ product }) {
   const { addToCart } = useCart();
   const { formatPrice, t } = useLanguage();
   const { trackEvent } = useAnalytics();
+  const { toggleWishlist, isInWishlist } = useWishlist(); // Hook Added
+
+  const isFav = isInWishlist(product.id);
 
   return (
     <div className="product-card">
@@ -16,6 +20,20 @@ export default function ProductCard({ product }) {
         onClick={() => trackEvent('view_product', { productId: product.id, productName: product.name })}
       >
         <div className="product-image-wrapper">
+          {/* Wishlist Button Added */}
+          <button
+            className={`wishlist-btn ${isFav ? 'active' : ''}`}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              toggleWishlist(product);
+            }}
+          >
+            <svg viewBox="0 0 24 24">
+              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+            </svg>
+          </button>
+
           <img
             src={product.image}
             alt={product.name}
@@ -113,6 +131,42 @@ export default function ProductCard({ product }) {
             border-color: var(--color-accent);
             color: var(--color-accent);
             background: rgba(212, 175, 55, 0.05);
+        }
+
+        .wishlist-btn {
+          position: absolute;
+          top: 10px;
+          right: 10px;
+          z-index: 10;
+          background: rgba(0,0,0,0.5);
+          border: none;
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: transform 0.2s, background 0.2s;
+          color: white;
+        }
+        .wishlist-btn:hover {
+          transform: scale(1.1);
+          background: rgba(0,0,0,0.7);
+        }
+        .wishlist-btn.active {
+          color: #d4af37;
+        }
+        .wishlist-btn svg {
+          width: 18px;
+          height: 18px;
+          fill: none;
+          stroke: currentColor;
+          stroke-width: 2;
+        }
+        .wishlist-btn.active svg {
+          fill: currentColor;
+          stroke: none;
         }
       `}</style>
     </div>

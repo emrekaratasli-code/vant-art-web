@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useLanguage } from '../context/LanguageContext';
+import ProductRecommendations from './ProductRecommendations'; // Import Added
 
 export default function CartPage() {
     const { cartItems, updateQuantity, removeFromCart, cartTotal } = useCart();
@@ -62,6 +63,13 @@ export default function CartPage() {
                     </div>
                 </div>
             )}
+
+            <div className="cart-recommendations">
+                <ProductRecommendations
+                    category={cartItems.length > 0 ? cartItems[0].category : 'Yüzükler'}
+                    currentProductId={-1}
+                />
+            </div>
 
             <style>{`
                 .cart-page {
