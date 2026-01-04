@@ -1,6 +1,9 @@
-import { useState } from 'react'; // Added useState
-import { useWishlist } from '../context/WishlistContext'; // Added
-import ProductCard from './ProductCard'; // Added
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
+import { useWishlist } from '../context/WishlistContext';
+import ProductCard from './ProductCard';
 
 export default function ProfilePage() {
     const { t } = useLanguage();
