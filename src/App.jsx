@@ -152,14 +152,14 @@ export default function App() {
           <ProductProvider>
             <ToastProvider>
               <OrderProvider>
-                <CartProvider>
-                  <WishlistProvider>
-                    <AnalyticsProvider>
+                <CartProvider> {/* Cart uses Toast */}
+                  <AnalyticsProvider> {/* Analytics is independent */}
+                    <WishlistProvider> {/* Wishlist uses Analytics & Toast */}
                       <AuthProvider>
                         <AppContent />
                       </AuthProvider>
-                    </AnalyticsProvider>
-                  </WishlistProvider>
+                    </WishlistProvider>
+                  </AnalyticsProvider>
                 </CartProvider>
               </OrderProvider>
             </ToastProvider>
