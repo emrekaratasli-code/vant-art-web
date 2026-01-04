@@ -159,87 +159,24 @@ export default function CheckoutPage() {
                             {error && <p className="text-red-500 mt-4 text-sm">{error}</p>}
                         </div>
                     </form>
-
-                    <style>{`
-                        .checkout-form { font-family: 'Inter', sans-serif; }
-                        .form-grid {
-                            display: grid;
-                            grid-template-columns: 1fr 1fr;
-                            gap: 1.5rem;
-                        }
-                        .full-width { grid-column: 1 / -1; }
-                        
-                        .form-group label {
-                            display: block;
-                            color: #888;
-                            font-size: 0.75rem;
-                            margin-bottom: 0.5rem;
-                            text-transform: uppercase;
-                            letter-spacing: 1px;
-                        }
-
-                        .ant-input {
-                            width: 100%;
-                            background: rgba(255, 255, 255, 0.03);
-                            border: 1px solid #333;
-                            color: #fff;
-                            padding: 12px 16px;
-                            font-size: 0.95rem;
-                            border-radius: 4px; /* Slight radius */
-                            outline: none;
-                            transition: all 0.3s ease;
-                            -webkit-appearance: none;
-                        }
-                        .ant-input:focus {
-                            border-color: #d4af37;
-                            background: rgba(212, 175, 55, 0.05);
-                        }
-                        
-                        .checkout-btn {
-                            width: 100%;
-                            background: #d4af37;
-                            color: #000;
-                            padding: 1rem;
-                            border: none;
-                            text-transform: uppercase;
-                            letter-spacing: 2px;
-                            font-weight: 700;
-                            font-size: 0.9rem;
-                            cursor: pointer;
-                            transition: all 0.3s;
-                            margin-top: 1rem;
-                        }
-                        .checkout-btn:hover {
-                            background: #fff;
-                            color: #000;
-                        }
-                        .checkout-btn:disabled {
-                            opacity: 0.7;
-                            cursor: not-allowed;
-                        }
-                        
-                        @media (max-width: 768px) {
-                            .form-grid { grid-template-columns: 1fr; gap: 1rem; }
-                        }
-                    `}</style>
                 </div>
 
                 {/* ORDER SUMMARY RIGHT */}
-                <div className="w-full lg:w-1/3 bg-[#1a1a1a] p-8 h-fit border border-[#333]">
-                    <h3 className="text-xl mb-6 pb-2 border-b border-[#333] text-[#d4af37]">Sipariş Özeti</h3>
-                    <div className="space-y-4 mb-6 text-gray-300">
+                <div className="order-summary-card">
+                    <h3 className="summary-title">Sipariş Özeti</h3>
+                    <div className="summary-items">
                         {cartItems.map(item => (
-                            <div key={item.id} className="flex justify-between items-center text-sm">
-                                <div className="flex items-center gap-3">
-                                    <span className="text-gray-500">{item.quantity}x</span>
-                                    <span>{item.name}</span>
+                            <div key={item.id} className="summary-item">
+                                <div className="item-info">
+                                    <span className="qty">{item.quantity}x</span>
+                                    <span className="name">{item.name}</span>
                                 </div>
-                                <span>{(item.price * item.quantity).toLocaleString('tr-TR')} TL</span>
+                                <span className="price">{(item.price * item.quantity).toLocaleString('tr-TR')} TL</span>
                             </div>
                         ))}
                     </div>
 
-                    <div className="flex justify-between items-center font-bold text-lg pt-4 border-t border-[#333] text-white">
+                    <div className="summary-total">
                         <span>Toplam</span>
                         <span>{cartTotal.toLocaleString('tr-TR')} TL</span>
                     </div>
@@ -248,14 +185,114 @@ export default function CheckoutPage() {
 
             {/* IYZICO FORM CONTAINER */}
             <div id="iyzipay-checkout-form" className="mt-12 w-full"></div>
+
+            <style>{`
+                .checkout-form { font-family: 'Inter', sans-serif; }
+                .form-grid {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 1.5rem;
+                }
+                .full-width { grid-column: 1 / -1; }
+                
+                .form-group label {
+                    display: block;
+                    color: #888;
+                    font-size: 0.75rem;
+                    margin-bottom: 0.5rem;
+                    text-transform: uppercase;
+                    letter-spacing: 1px;
+                }
+
+                .ant-input {
+                    width: 100%;
+                    background: rgba(255, 255, 255, 0.03);
+                    border: 1px solid #333;
+                    color: #fff;
+                    padding: 12px 16px;
+                    font-size: 0.95rem;
+                    border-radius: 4px;
+                    outline: none;
+                    transition: all 0.3s ease;
+                    -webkit-appearance: none;
+                }
+                .ant-input:focus {
+                    border-color: #d4af37;
+                    background: rgba(212, 175, 55, 0.05);
+                }
+                
+                .checkout-btn {
+                    width: 100%;
+                    background: #d4af37;
+                    color: #000;
+                    padding: 1rem;
+                    border: none;
+                    text-transform: uppercase;
+                    letter-spacing: 2px;
+                    font-weight: 700;
+                    font-size: 0.9rem;
+                    cursor: pointer;
+                    transition: all 0.3s;
+                    margin-top: 1rem;
+                }
+                .checkout-btn:hover {
+                    background: #fff;
+                    color: #000;
+                }
+                .checkout-btn:disabled {
+                    opacity: 0.7;
+                    cursor: not-allowed;
+                }
+
+                /* ORDER SUMMARY STYLES */
+                .order-summary-card {
+                    width: 100%;
+                    background: #1a1a1a;
+                    padding: 2rem;
+                    border: 1px solid #333;
+                    height: fit-content;
+                }
+                @media (min-width: 1024px) {
+                    .order-summary-card { width: 33%; }
+                }
+                .summary-title {
+                    font-size: 1.25rem;
+                    color: #d4af37;
+                    margin-bottom: 1.5rem;
+                    padding-bottom: 0.5rem;
+                    border-bottom: 1px solid #333;
+                    font-family: 'Playfair Display', serif;
+                }
+                .summary-items {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 1rem;
+                    margin-bottom: 1.5rem;
+                }
+                .summary-item {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    font-size: 0.9rem;
+                    color: #ccc;
+                }
+                .item-info { display: flex; gap: 0.75rem; align-items: center; }
+                .qty { color: #666; font-size: 0.8rem; }
+                .summary-total {
+                    display: flex;
+                    justify-content: space-between;
+                    font-size: 1.1rem;
+                    font-weight: 700;
+                    color: #fff;
+                    padding-top: 1rem;
+                    border-top: 1px solid #333;
+                }
+                
+                @media (max-width: 768px) {
+                    .form-grid { grid-template-columns: 1fr; gap: 1rem; }
+                    .order-summary-card { margin-top: 2rem; }
+                }
+            `}</style>
         </div>
     );
 }
-
-// Add these styles or update Tailwind classes above.
-// For simplicity in this edit, I updated className directly in the JSX above to use standard Tailwind colors
-// assuming standard config, or hex codes where specific control is needed.
-// Inputs should have unwanted white bg removed or styled.
-// Let's force some styles for inputs to ensure they look good on dark/light.
-// Actually, since I can't see index.css easily, I'll add inline styles to inputs via classNames in the form section.
-
