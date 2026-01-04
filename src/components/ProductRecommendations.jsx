@@ -12,12 +12,12 @@ export default function ProductRecommendations({ category, currentProductId }) {
     if (recommendations.length === 0) return null;
 
     return (
-        <div className="recommendations-section mt-24 mb-12">
-            <h3 className="text-2xl font-heading text-center mb-8 text-[#d4af37] tracking-wider uppercase">
+        <div className="recommendations-section mt-12 mb-6 px-4">
+            <h3 className="text-lg font-heading text-left mb-6 text-[#d4af37] tracking-wider uppercase">
                 Bunu da Beğenebilirsiniz
             </h3>
 
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                 {recommendations.map(product => (
                     <ProductCard key={product.id} product={product} />
                 ))}
