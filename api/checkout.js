@@ -7,6 +7,10 @@ export default async function handler(req, res) {
 
     const { basketItems, user, address } = req.body;
 
+    if (!process.env.IYZICO_API_KEY || !process.env.IYZICO_SECRET_KEY) {
+        return res.status(500).json({ status: 'failure', errorMessage: 'Server Configuration Error: API Keys are missing. Please check Vercel Env Variables.' });
+    }
+
     const iyzipay = new Iyzipay({
         apiKey: process.env.IYZICO_API_KEY,
         secretKey: process.env.IYZICO_SECRET_KEY,

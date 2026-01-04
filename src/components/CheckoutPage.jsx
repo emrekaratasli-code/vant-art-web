@@ -85,7 +85,7 @@ export default function CheckoutPage() {
 
     return (
         <div className="container mx-auto px-4 md:px-12 py-32 font-secondary">
-            <h1 className="text-3xl md:text-4xl mb-12 text-center playfair font-medium tracking-wide">ÖDEME</h1>
+            <h1 className="text-3xl md:text-4xl mb-12 text-center playfair font-medium tracking-wide text-[#d4af37]">ÖDEME</h1>
 
             <div className="flex flex-col lg:flex-row gap-12">
                 {/* FORM LEFT */}
@@ -96,12 +96,12 @@ export default function CheckoutPage() {
                             <input
                                 type="text" name="name" placeholder="Adınız" required
                                 value={formData.name} onChange={handleInputChange}
-                                className="w-full p-3 border border-gray-300 focus:outline-none focus:border-secondary transition-colors"
+                                className="w-full p-3 bg-[#111] border border-[#333] text-white focus:outline-none focus:border-[#d4af37] transition-colors placeholder-gray-500"
                             />
                             <input
                                 type="text" name="surname" placeholder="Soyadınız" required
                                 value={formData.surname} onChange={handleInputChange}
-                                className="w-full p-3 border border-gray-300 focus:outline-none focus:border-secondary transition-colors"
+                                className="w-full p-3 bg-[#111] border border-[#333] text-white focus:outline-none focus:border-[#d4af37] transition-colors placeholder-gray-500"
                             />
                         </div>
 
@@ -121,12 +121,12 @@ export default function CheckoutPage() {
                             <input
                                 type="text" name="city" placeholder="Şehir" required
                                 value={formData.city} onChange={handleInputChange}
-                                className="w-full p-3 border border-gray-300 focus:outline-none focus:border-secondary transition-colors"
+                                className="w-full p-3 bg-[#111] border border-[#333] text-white focus:outline-none focus:border-[#d4af37] transition-colors placeholder-gray-500"
                             />
                             <input
                                 type="text" name="zipCode" placeholder="Posta Kodu" required
                                 value={formData.zipCode} onChange={handleInputChange}
-                                className="w-full p-3 border border-gray-300 focus:outline-none focus:border-secondary transition-colors"
+                                className="w-full p-3 bg-[#111] border border-[#333] text-white focus:outline-none focus:border-[#d4af37] transition-colors placeholder-gray-500"
                             />
                         </div>
 
@@ -151,9 +151,9 @@ export default function CheckoutPage() {
                 </div>
 
                 {/* ORDER SUMMARY RIGHT */}
-                <div className="w-full lg:w-1/3 bg-[#f9f9f9] p-8 h-fit">
-                    <h3 className="text-xl mb-6 pb-2 border-b border-gray-200">Sipariş Özeti</h3>
-                    <div className="space-y-4 mb-6">
+                <div className="w-full lg:w-1/3 bg-[#1a1a1a] p-8 h-fit border border-[#333]">
+                    <h3 className="text-xl mb-6 pb-2 border-b border-[#333] text-[#d4af37]">Sipariş Özeti</h3>
+                    <div className="space-y-4 mb-6 text-gray-300">
                         {cartItems.map(item => (
                             <div key={item.id} className="flex justify-between items-center text-sm">
                                 <div className="flex items-center gap-3">
@@ -165,7 +165,7 @@ export default function CheckoutPage() {
                         ))}
                     </div>
 
-                    <div className="flex justify-between items-center font-bold text-lg pt-4 border-t border-gray-300">
+                    <div className="flex justify-between items-center font-bold text-lg pt-4 border-t border-[#333] text-white">
                         <span>Toplam</span>
                         <span>{cartTotal.toLocaleString('tr-TR')} TL</span>
                     </div>
@@ -177,3 +177,11 @@ export default function CheckoutPage() {
         </div>
     );
 }
+
+// Add these styles or update Tailwind classes above.
+// For simplicity in this edit, I updated className directly in the JSX above to use standard Tailwind colors
+// assuming standard config, or hex codes where specific control is needed.
+// Inputs should have unwanted white bg removed or styled.
+// Let's force some styles for inputs to ensure they look good on dark/light.
+// Actually, since I can't see index.css easily, I'll add inline styles to inputs via classNames in the form section.
+
