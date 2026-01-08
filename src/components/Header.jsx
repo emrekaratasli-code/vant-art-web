@@ -17,7 +17,7 @@ export default function Header() {
   const { language, toggleLanguage, t } = useLanguage();
 
   return (
-    <header className="header">
+    <header className="header luxury-bg">
       <div className="container header-container">
         <nav className="nav-left">
           <ul className="nav-list">
@@ -56,11 +56,10 @@ export default function Header() {
       <style>{`
         .header {
           padding: 0.5rem 0;
-          background: rgba(18, 18, 18, 0.98);
+          /* background removed to use luxury-bg */
           position: sticky;
           top: 0;
           z-index: 100;
-          backdrop-filter: blur(10px);
           border-bottom: 1px solid var(--color-border);
         }
         .header-container {

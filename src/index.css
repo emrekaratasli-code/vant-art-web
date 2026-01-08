@@ -1,8 +1,8 @@
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Tenor+Sans&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Script:wght@400;500;600;700&display=swap');
 
 :root {
-  --font-heading: 'Cinzel', serif;
-  --font-body: 'Tenor Sans', sans-serif;
+  --font-heading: 'Playfair Script', cursive;
+  --font-body: 'Inter', sans-serif;
 
   /* VANT ART Luxury Palette: Black & Gold */
   --color-bg: #121212;
@@ -38,13 +38,30 @@
 body {
   font-family: var(--font-body);
   background-color: var(--color-bg);
-  background-image: url('./assets/bg-texture.jpg');
-  background-size: cover;
-  background-position: center;
-  background-attachment: fixed;
   color: var(--color-text);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+}
+
+/* Luxury Background Utility - Applied to Body and Sections */
+.luxury-bg,
+body {
+  background-image: url('./assets/bg-texture.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  /* Parallax-like fixed background */
+}
+
+/* Typography Utilities */
+.font-luxury {
+  font-family: var(--font-heading);
+  color: var(--color-accent);
+}
+
+.font-ui {
+  font-family: var(--font-body);
 }
 
 h1,

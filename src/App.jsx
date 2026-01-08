@@ -50,14 +50,14 @@ function Layout({ children }) {
 function Footer() {
   const { t } = useLanguage();
   return (
-    <footer style={{
+    <footer className="luxury-bg" style={{
       textAlign: 'center',
       padding: '2rem 1rem',
       fontSize: '0.75rem',
       color: 'var(--color-text-muted)',
       borderTop: '1px solid var(--color-border)',
       marginTop: 'auto',
-      background: 'var(--color-surface)',
+      /* background removed to use luxury-bg */
       paddingBottom: '6rem' // Space for bottom nav
     }}>
       <div className="social-links" style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'center', gap: '2rem' }}>
