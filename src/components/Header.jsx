@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useLanguage } from '../context/LanguageContext';
-import logo from '../assets/Vant.jpg';
+import logo from '../assets/VANT.png';
 
 
 const ShoppingBagIcon = () => (
