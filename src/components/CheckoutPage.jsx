@@ -4,12 +4,13 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 export default function CheckoutPage() {
-    const { cartItems, cartTotal } = useCart();
+    const { cartItems, cartTotal, clearCart } = useCart();
     const { user } = useAuth();
     const navigate = useNavigate();
 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [paymentMethod, setPaymentMethod] = useState('credit_card'); // 'credit_card' | 'test'
 
     const [formData, setFormData] = useState({
         name: user?.name || '',
@@ -31,6 +32,17 @@ export default function CheckoutPage() {
         e.preventDefault();
         setLoading(true);
         setError(null);
+
+        if (paymentMethod === 'test') {
+            // Simulate processing delay
+            setTimeout(() => {
+                setLoading(false);
+                clearCart();
+                alert('Test Siparişiniz Başarıyla Alındı! Teşekkür ederiz.');
+                navigate('/');
+            }, 1500);
+            return;
+        }
 
         try {
             const response = await fetch('/api/checkout', {
@@ -68,7 +80,9 @@ export default function CheckoutPage() {
         } catch (err) {
             setError('Bir hata oluştu: ' + err.message);
         } finally {
-            setLoading(false);
+            if (paymentMethod !== 'test') {
+                setLoading(false);
+            }
         }
     };
 
@@ -145,6 +159,44 @@ export default function CheckoutPage() {
                                     value={formData.addressLine} onChange={handleInputChange}
                                     className="ant-input"
                                 />
+                            </div>
+                        </div>
+
+
+                        <div className="mt-8 pt-6 border-t border-[#333]">
+                            <h2 className="text-xl mb-6 text-white uppercase tracking-wider">Ödeme Yöntemi</h2>
+                            <div className="flex flex-col gap-4">
+                                <label className={`payment-option ${paymentMethod === 'credit_card' ? 'selected' : ''}`}>
+                                    <input
+                                        type="radio"
+                                        name="paymentMethod"
+                                        value="credit_card"
+                                        checked={paymentMethod === 'credit_card'}
+                                        onChange={(e) => setPaymentMethod(e.target.value)}
+                                    />
+                                    <span className="flex items-center gap-3">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                                        </svg>
+                                        Kredi / Banka Kartı
+                                    </span>
+                                </label>
+
+                                <label className={`payment-option ${paymentMethod === 'test' ? 'selected' : ''}`}>
+                                    <input
+                                        type="radio"
+                                        name="paymentMethod"
+                                        value="test"
+                                        checked={paymentMethod === 'test'}
+                                        onChange={(e) => setPaymentMethod(e.target.value)}
+                                    />
+                                    <span className="flex items-center gap-3">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        Test Siparişi (Ödeme Yok)
+                                    </span>
+                                </label>
                             </div>
                         </div>
 
@@ -291,6 +343,32 @@ export default function CheckoutPage() {
                 @media (max-width: 768px) {
                     .form-grid { grid-template-columns: 1fr; gap: 1rem; }
                     .order-summary-card { margin-top: 2rem; }
+                }
+
+                .payment-option {
+                    display: flex;
+                    align-items: center;
+                    gap: 1rem;
+                    padding: 1rem;
+                    border: 1px solid #333;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    background: rgba(255, 255, 255, 0.02);
+                    color: #aaa;
+                }
+                .payment-option:hover {
+                    background: rgba(255, 255, 255, 0.05);
+                }
+                .payment-option.selected {
+                    border-color: #d4af37;
+                    background: rgba(212, 175, 55, 0.05);
+                    color: #fff;
+                }
+                .payment-option input {
+                    accent-color: #d4af37;
+                    width: 1.2rem;
+                    height: 1.2rem;
                 }
             `}</style>
         </div>
