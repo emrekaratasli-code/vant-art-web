@@ -23,15 +23,29 @@ export const AuthProvider = ({ children }) => {
     }, [user]);
 
     const login = (email, password) => {
-        // Mock login - accept any valid email for demo, or check against stored 'users'
-        // For this demo, we'll simulate a successful login for any email
+        // Mock login
         if (!email.includes('@')) throw new Error('Geçersiz e-posta adresi');
+
+        let role = 'customer';
+        let name = email.split('@')[0];
+
+        // GODMODE CHECK
+        if (email === 'emrekaratasli@vantonline.com') {
+            role = 'owner';
+            name = 'Emre Karataşlı';
+        }
+        // Admin/Worker Domain Check
+        else if (email.endsWith('@vantonline.com')) {
+            // Default to 'worker' but pending approval in real app context. 
+            // For this mock auth, we'll assign 'worker' role but the AdminPanel will check status.
+            role = 'worker';
+        }
 
         const newUser = {
             id: Date.now(),
             email,
-            name: email.split('@')[0],
-            role: (email.includes('admin') || email.endsWith('@vantonline.com')) ? 'admin' : (email.includes('worker') || email.includes('calisan') ? 'worker' : 'customer')
+            name: name,
+            role: role
         };
         setUser(newUser);
         return newUser;

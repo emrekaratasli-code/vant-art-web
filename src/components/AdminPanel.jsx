@@ -37,11 +37,11 @@ export default function AdminPanel() {
 
   // WORKER DATA STATE
   const [workers, setWorkers] = useState([
-    { id: 1, name: 'Ahmet', surname: 'Yılmaz', email: 'ahmet@vantart.com', position: 'Depo Sorumlusu', role: 'worker' },
-    { id: 2, name: 'Zeynep', surname: 'Kaya', email: 'zeynep@vantart.com', position: 'Satış Uzmanı', role: 'worker' },
-    { id: 3, name: 'Mehmet', surname: 'Demir', email: 'mehmet@vantart.com', position: 'Operasyon Müdürü', role: 'admin' }
+    { id: 1, name: 'Ahmet', surname: 'Yılmaz', email: 'ahmet@vantonline.com', position: 'Depo Sorumlusu', role: 'worker', status: 'active', salary: 28000, startDate: '2024-01-15' },
+    { id: 2, name: 'Zeynep', surname: 'Kaya', email: 'zeynep@vantonline.com', position: 'Satış Uzmanı', role: 'worker', status: 'active', salary: 32000, startDate: '2023-11-20' },
+    { id: 3, name: 'Can', surname: 'Vural', email: 'can@vantonline.com', position: 'Stajyer', role: 'worker', status: 'pending', salary: 17002, startDate: '2025-01-09' }
   ]);
-  const [workerFormData, setWorkerFormData] = useState({ name: '', surname: '', email: '', position: '', role: 'worker' });
+  const [workerFormData, setWorkerFormData] = useState({ name: '', surname: '', email: '', position: 'Satış Temsilcisi', role: 'worker', salary: '', startDate: '' });
 
   // CATEGORY DATA STATE
   const [categories, setCategories] = useState([
@@ -58,13 +58,31 @@ export default function AdminPanel() {
   }
 
   // --- ACCESS CHECK ---
-  if (!user || (user.role !== 'admin' && user.role !== 'worker')) {
+  // --- ACCESS CHECK ---
+  // Allow 'owner', 'admin', 'worker' but check permissions
+  if (!user || user.role === 'customer') {
     return (
       <div className="admin-loading" style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f4f5f7', flexDirection: 'column', gap: '1rem' }}>
         <div style={{ textAlign: 'center' }}>
           <h3 style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>Erişim Yetkisi Yok</h3>
           <p style={{ color: '#666', fontSize: '0.9rem', marginBottom: '2rem' }}>Bu paneli görüntülemek için yetkili hesapla giriş yapmalısınız.</p>
           <a href="/login" style={{ padding: '10px 20px', background: '#d4af37', color: '#fff', textDecoration: 'none', borderRadius: '4px', fontWeight: 'bold' }}>Giriş Yap</a>
+        </div>
+      </div>
+    );
+  }
+
+  // CHECK APPROVAL FOR WORKERS/ADMINS (Excluding Owner)
+  // In a real app, this status would come from the user object or API
+  // Here we mock check against our internal workers list if email matches
+  const currentUserRecord = workers.find(w => w.email === user.email);
+  if (user.role !== 'owner' && (!currentUserRecord || currentUserRecord.status === 'pending')) {
+    return (
+      <div className="admin-loading" style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f4f5f7', flexDirection: 'column', gap: '1rem' }}>
+        <div style={{ textAlign: 'center' }}>
+          <h3 style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>⏳ Onay Bekliyor</h3>
+          <p style={{ color: '#666', fontSize: '0.9rem', marginBottom: '2rem' }}>Hesabınız oluşturuldu ancak yönetici onayı bekliyor.</p>
+          <a href="/" style={{ textDecoration: 'underline', color: '#d4af37' }}>Siteye Dön</a>
         </div>
       </div>
     );
@@ -162,7 +180,9 @@ export default function AdminPanel() {
             <div className="avatar" style={{ textTransform: 'uppercase' }}>{user.name.substring(0, 2)}</div>
             <div className="user-info">
               <span className="name" style={{ maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user.name}</span>
-              <span className="role">{isWorker ? 'Depo / Sipariş' : 'Süper Yönetici'}</span>
+              <span className="role">
+                {user.role === 'owner' ? '👑 Kurucu & Owner' : (isWorker ? 'Personel' : 'Yönetici')}
+              </span>
             </div>
           </div>
         </div>
@@ -422,18 +442,16 @@ export default function AdminPanel() {
                     <div className="card-details">
                       <div className="card-header">
                         <span className="card-id">#{p.id}</span>
-                        <div className="card-actions">
-                          <button className="icon-action delete" onClick={() => deleteProduct(p.id)}>🗑️</button>
+                        <div className="stock-bg">
+                          <span className={`stock-status ${p.stock < 5 ? 'critical' : 'ok'}`}>Stok: {p.stock}</span>
                         </div>
                       </div>
-                      <h4>{p.name}</h4>
+                      <h4 style={{ wordBreak: 'break-word' }}>{p.name}</h4>
                       <p className="card-category">{translateCategory(p.category)}</p>
 
                       <div className="card-footer">
                         <span className="card-price">₺{p.price}</span>
-                        <div className="stock-bg">
-                          <span className={`stock-status ${p.stock < 5 ? 'critical' : 'ok'}`}>Stok: {p.stock}</span>
-                        </div>
+                        <button className="icon-action delete mobile-btn" onClick={() => deleteProduct(p.id)}>Sil 🗑️</button>
                       </div>
                     </div>
                   </div>
@@ -448,8 +466,10 @@ export default function AdminPanel() {
                   <div className="form-group"><label>Görsel URL</label><input name="image" value={formData.image} onChange={handleChange} required /></div>
                   <div className="form-group"><label>Kategori</label>
                     <select name="category" value={formData.category} onChange={handleChange}>
-                      <option value="rings">Yüzük</option>
-                      <option value="necklaces">Kolye</option>
+                      <option value="">Seçiniz</option>
+                      {categories.map(cat => (
+                        <option key={cat.id} value={cat.id}>{cat.icon} {cat.name}</option>
+                      ))}
                     </select>
                   </div>
                   <button type="submit" className="submit-btn full-width">Kataloğa Ekle</button>
@@ -499,30 +519,51 @@ export default function AdminPanel() {
                   <thead>
                     <tr>
                       <th>Ad Soyad</th>
-                      <th>E-posta</th>
                       <th>Pozisyon</th>
-                      <th>Yetki</th>
+                      <th>Maaş</th>
+                      <th>Durum / Yetki</th>
+                      <th>İşe Giriş</th>
                       <th>İşlem</th>
                     </tr>
                   </thead>
                   <tbody>
                     {workers.map(worker => (
-                      <tr key={worker.id}>
+                      <tr key={worker.id} style={{ opacity: worker.status === 'pending' ? 0.6 : 1 }}>
                         <td>
                           <div className="user-cell">
-                            <div className="avatar-circle">{worker.name.charAt(0)}</div>
-                            <div className="font-bold">{worker.name} {worker.surname}</div>
+                            <div className="avatar-circle" style={{ background: worker.role === 'owner' ? '#d4af37' : '#2a2a2a' }}>{worker.name.charAt(0)}</div>
+                            <div>
+                              <div className="font-bold">{worker.name} {worker.surname}</div>
+                              <div className="sub-text">{worker.email}</div>
+                            </div>
                           </div>
                         </td>
-                        <td>{worker.email}</td>
                         <td>{worker.position}</td>
-                        <td><span className={`badge-status ${worker.role === 'admin' ? 'shipped' : 'pending'}`}>{worker.role === 'admin' ? 'Yönetici' : 'Çalışan'}</span></td>
+                        <td className="font-mono">₺{worker.salary ? worker.salary.toLocaleString() : '-'}</td>
                         <td>
-                          <button className="icon-action delete" onClick={() => {
-                            if (window.confirm('Bu çalışanı silmek istediğinize emin misiniz?')) {
-                              setWorkers(workers.filter(w => w.id !== worker.id));
-                            }
-                          }}>🗑️</button>
+                          <div style={{ display: 'flex', gap: '6px', flexDirection: 'column' }}>
+                            <span className={`badge-status ${worker.role === 'admin' || worker.role === 'owner' ? 'shipped' : 'pending'}`}>
+                              {worker.role === 'owner' ? 'OWNER' : (worker.role === 'admin' ? 'Yönetici' : 'Çalışan')}
+                            </span>
+                            {worker.status === 'pending' && <span className="badge-status critical" style={{ fontSize: '0.65rem' }}>Onay Bekliyor</span>}
+                          </div>
+                        </td>
+                        <td>{worker.startDate}</td>
+                        <td>
+                          <div style={{ display: 'flex', gap: '5px' }}>
+                            {worker.status === 'pending' && user.role === 'owner' && (
+                              <button className="primary-btn" style={{ padding: '4px 8px', fontSize: '0.7rem' }} onClick={() => {
+                                setWorkers(workers.map(w => w.id === worker.id ? { ...w, status: 'active' } : w));
+                              }}>✅ Onayla</button>
+                            )}
+                            {worker.role !== 'owner' && (
+                              <button className="icon-action delete" onClick={() => {
+                                if (window.confirm('Bu çalışanı silmek istediğinize emin misiniz?')) {
+                                  setWorkers(workers.filter(w => w.id !== worker.id));
+                                }
+                              }}>🗑️</button>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -533,23 +574,33 @@ export default function AdminPanel() {
               {/* MOBILE CARD VIEW FOR WORKERS */}
               <div className="mobile-card-view">
                 {workers.map(worker => (
-                  <div key={worker.id} className="mobile-card">
+                  <div key={worker.id} className="mobile-card" style={{ opacity: worker.status === 'pending' ? 0.7 : 1 }}>
                     <div className="card-details">
                       <div className="card-header">
                         <span className="card-id">#{worker.id}</span>
-                        <div className="card-actions">
-                          <button className="icon-action delete" onClick={() => {
-                            if (window.confirm('Bu çalışanı silmek istediğinize emin misiniz?')) {
-                              setWorkers(workers.filter(w => w.id !== worker.id));
-                            }
-                          }}>🗑️</button>
-                        </div>
+                        <span className={`badge-status ${worker.status === 'active' ? 'shipped' : 'pending'}`}>{worker.status === 'active' ? 'Aktif' : 'Onay Bekliyor'}</span>
                       </div>
                       <h4>{worker.name} {worker.surname}</h4>
                       <p className="card-category">{worker.position}</p>
-                      <div className="card-footer">
-                        <span>{worker.email}</span>
-                        <span className={`badge-status ${worker.role === 'admin' ? 'shipped' : 'pending'}`}>{worker.role === 'admin' ? 'Yönetici' : 'Çalışan'}</span>
+
+                      <span style={{ fontSize: '0.8rem', color: '#666' }}>{worker.email}</span>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto', paddingTop: '10px', borderTop: '1px solid #eee' }}>
+                        <span className="font-mono" style={{ fontWeight: 'bold' }}>₺{worker.salary}</span>
+
+                        <div className="card-actions" style={{ display: 'flex', gap: '10px' }}>
+                          {worker.status === 'pending' && user.role === 'owner' && (
+                            <button className="primary-btn" style={{ padding: '6px 12px', fontSize: '0.8rem' }} onClick={() => {
+                              setWorkers(workers.map(w => w.id === worker.id ? { ...w, status: 'active' } : w));
+                            }}>Onayla ✅</button>
+                          )}
+                          {worker.role !== 'owner' && (
+                            <button className="icon-action delete mobile-btn" onClick={() => {
+                              if (window.confirm('Bu çalışanı silmek istediğinize emin misiniz?')) {
+                                setWorkers(workers.filter(w => w.id !== worker.id));
+                              }
+                            }}>Sil 🗑️</button>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -557,25 +608,39 @@ export default function AdminPanel() {
               </div>
 
               <div className="add-product-form-panel" id="add-worker-form">
-                <h3>👥 Yeni Çalışan Ekle</h3>
+                <h3>👥 Yeni Çalışan Ekle (Pasif Olarak Eklenir)</h3>
                 <form onSubmit={(e) => {
                   e.preventDefault();
                   if (!workerFormData.name || !workerFormData.email) return;
-                  setWorkers([...workers, { ...workerFormData, id: Date.now() }]);
-                  setWorkerFormData({ name: '', surname: '', email: '', position: '', role: 'worker' });
-                  alert('Çalışan başarıyla eklendi.');
+                  setWorkers([...workers, { ...workerFormData, id: Date.now(), status: 'pending' }]); // Default pending
+                  setWorkerFormData({ name: '', surname: '', email: '', position: 'Satış Temsilcisi', role: 'worker', salary: '', startDate: '' });
+                  alert('Çalışan başarıyla listeye eklendi. Erişim için yönetici onayı gereklidir.');
                 }} className="grid-form">
                   <div className="form-group"><label>Ad</label><input value={workerFormData.name} onChange={e => setWorkerFormData({ ...workerFormData, name: e.target.value })} required /></div>
                   <div className="form-group"><label>Soyad</label><input value={workerFormData.surname} onChange={e => setWorkerFormData({ ...workerFormData, surname: e.target.value })} required /></div>
-                  <div className="form-group"><label>E-posta</label><input type="email" value={workerFormData.email} onChange={e => setWorkerFormData({ ...workerFormData, email: e.target.value })} required /></div>
-                  <div className="form-group"><label>Pozisyon</label><input value={workerFormData.position} onChange={e => setWorkerFormData({ ...workerFormData, position: e.target.value })} required placeholder="Örn: Satış Temsilcisi" /></div>
-                  <div className="form-group"><label>Yetki</label>
-                    <select value={workerFormData.role} onChange={e => setWorkerFormData({ ...workerFormData, role: e.target.value })}>
-                      <option value="worker">Çalışan (Kısıtlı Erişim)</option>
-                      <option value="admin">Yönetici (Tam Erişim)</option>
+                  <div className="form-group"><label>E-posta (@vantonline.com)</label><input type="email" value={workerFormData.email} onChange={e => setWorkerFormData({ ...workerFormData, email: e.target.value })} required /></div>
+
+                  <div className="form-group"><label>Pozisyon</label>
+                    <select value={workerFormData.position} onChange={e => setWorkerFormData({ ...workerFormData, position: e.target.value })}>
+                      <option value="Satış Temsilcisi">Satış Temsilcisi</option>
+                      <option value="Depo Sorumlusu">Depo Sorumlusu</option>
+                      <option value="Operasyon Müdürü">Operasyon Müdürü</option>
+                      <option value="Stajyer">Stajyer</option>
+                      <option value="Muhasebe">Muhasebe</option>
                     </select>
                   </div>
-                  <button type="submit" className="submit-btn full-width">Çalışanı Kaydet</button>
+
+                  <div className="form-group"><label>Maaş (₺)</label><input type="number" value={workerFormData.salary} onChange={e => setWorkerFormData({ ...workerFormData, salary: e.target.value })} required /></div>
+                  <div className="form-group"><label>İşe Giriş Tarihi</label><input type="date" value={workerFormData.startDate} onChange={e => setWorkerFormData({ ...workerFormData, startDate: e.target.value })} required /></div>
+
+                  <div className="form-group"><label>Yetki Seviyesi</label>
+                    <select value={workerFormData.role} onChange={e => setWorkerFormData({ ...workerFormData, role: e.target.value })}>
+                      <option value="worker">Çalışan (Kısıtlı)</option>
+                      <option value="admin">Yönetici (Tam Yetki)</option>
+                    </select>
+                  </div>
+                  <button type="submit" className="submit-btn full-width">Kayıt Oluştur</button>
+
                 </form>
               </div>
             </div>
@@ -629,14 +694,17 @@ export default function AdminPanel() {
                     <div className="card-details">
                       <div className="card-header">
                         <span style={{ fontSize: '1.5rem' }}>{cat.icon}</span>
-                        <button className="icon-action delete" onClick={() => {
+                      </div>
+                      <h4>{cat.name}</h4>
+                      <p className="text-muted" style={{ fontSize: '0.8rem', marginBottom: '10px' }}>{cat.description}</p>
+
+                      <div className="card-footer" style={{ borderTop: '1px solid #eee', paddingTop: '8px', justifyContent: 'flex-end' }}>
+                        <button className="icon-action delete mobile-btn" onClick={() => {
                           if (window.confirm('Bu kategoriyi silmek istediğinize emin misiniz?')) {
                             setCategories(categories.filter(c => c.id !== cat.id));
                           }
-                        }}>🗑️</button>
+                        }}>Kategoriyi Sil 🗑️</button>
                       </div>
-                      <h4>{cat.name}</h4>
-                      <p className="text-muted" style={{ fontSize: '0.8rem' }}>{cat.description}</p>
                     </div>
                   </div>
                 ))}
@@ -883,17 +951,30 @@ export default function AdminPanel() {
             
             .content-scrollable { padding: 1rem; overflow: visible; }
             
-            /* Hide topbar search on mobile to save space */
+             /* Hide topbar search on mobile to save space */
             .search-bar { display: none; }
             .admin-topbar { padding: 0 1rem; }
+            
+            /* Mobile Buttons */
+            .mobile-btn { padding: 8px 16px; border-radius: 6px; background: #fee2e2; color: #ef4444; font-weight: 600; font-size: 0.85rem; border: none; }
+            .mobile-btn:hover { background: #fecaca; }
         }
       `}</style>
     </div>
   );
 }
 
+
 function translateCategory(cat) {
-  if (cat === 'rings') return 'Yüzük';
-  if (cat === 'necklaces') return 'Kolye';
-  return cat;
+  // Basic mapping, in real app this would look up from category state or map
+  // Since we now have dynamic categories, we might want to pass the list or use a hook
+  // For this simple demo, we rely on the ID being close enough or just return ID if not found
+  const map = {
+    'rings': 'Yüzükler',
+    'necklaces': 'Kolyeler',
+    'bracelets': 'Bileklikler',
+    'earrings': 'Küpe',
+    'watches': 'Saat'
+  };
+  return map[cat] || cat;
 }
