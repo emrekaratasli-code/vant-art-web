@@ -16,11 +16,16 @@ if (isConfigured) {
         console.error('CRITICAL: Supabase Init Failed:', e);
     }
 } else {
-    // This logs to the browser console so the developer can see why it's not working
-    console.error('🚨 Supabase Configuration Missing! Check Vercel Environment Variables: VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY');
-    console.log('Provided URL:', supabaseUrl);
-    // Be careful not to log full secrets, just existence
-    console.log('Provided Key:', supabaseAnonKey ? 'EXISTS (Hidden)' : 'MISSING');
+    // Detailed Error Reporting
+    const missingVars = [];
+    if (!supabaseUrl) missingVars.push('VITE_SUPABASE_URL');
+    if (!supabaseAnonKey) missingVars.push('VITE_SUPABASE_ANON_KEY');
+
+    console.error(`🚨 SUPABASE CONFIGURATION ERROR: The following Environment Variables are missing or empty: ${missingVars.join(', ')}`);
+    console.warn('Please check your .env file (local) or Vercel Project Settings (Production).');
+
+    // Explicitly throw meaningful error to console for visibility
+    // new Error(`Missing required Supabase configuration: ${missingVars.join(', ')}`); 
 }
 
 // Fallback Dummy Client to prevent "SupabaseUrl is required" crash
