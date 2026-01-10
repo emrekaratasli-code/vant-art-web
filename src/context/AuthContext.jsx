@@ -13,30 +13,57 @@ export const AuthProvider = ({ children }) => {
     const OWNER_EMAIL = 'emrekaratasli@vantonline.com';
 
     useEffect(() => {
-        // 1. Check active session
-        const getSession = async () => {
-            // Fallback handling if supabase client is dummy
-            if (supabase?.auth?.getSession) {
+        let mounted = true;
+
+        // 1. SAFETY TIMEOUT: Force load after 5 seconds
+        const safetyTimeout = setTimeout(() => {
+            if (mounted && loading) {
+                console.warn('⚠️ CRITICAL: Auth check timed out (5s). Forcing app to load.');
+                setLoading(false);
+            }
+        }, 5000);
+
+        const initAuth = async () => {
+            try {
+                // Fallback handling if supabase client is dummy or missing
+                if (!supabase?.auth?.getSession) {
+                    console.warn('Supabase client invalid. Skipping auth check.');
+                    return;
+                }
+
+                // Get Session
                 const { data: { session }, error } = await supabase.auth.getSession();
+
+                if (error) {
+                    // If session check fails (network?), just log and continue as guest
+                    console.error('Session Check Error:', error);
+                    return;
+                }
+
                 if (session) {
                     await fetchProfile(session.user);
-                } else {
+                }
+            } catch (err) {
+                console.error('Auth Uncaught Error:', err);
+            } finally {
+                // ALWAYS finish loading
+                if (mounted) {
+                    clearTimeout(safetyTimeout);
                     setLoading(false);
                 }
-            } else {
-                setLoading(false);
             }
         };
 
-        getSession();
+        // Run Init
+        initAuth();
 
         // 2. Listen for auth changes
         let subscription;
         if (supabase?.auth?.onAuthStateChange) {
-            const { data } = supabase.auth.onAuthStateChange(async (_event, session) => {
-                if (session) {
-                    await fetchProfile(session.user);
-                } else {
+            const { data } = supabase.auth.onAuthStateChange(async (event, session) => {
+                if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+                    if (session) await fetchProfile(session.user);
+                } else if (event === 'SIGNED_OUT') {
                     setUser(null);
                     setLoading(false);
                 }
@@ -45,6 +72,8 @@ export const AuthProvider = ({ children }) => {
         }
 
         return () => {
+            mounted = false;
+            clearTimeout(safetyTimeout);
             if (subscription && subscription.unsubscribe) subscription.unsubscribe();
         };
     }, []);
@@ -58,7 +87,7 @@ export const AuthProvider = ({ children }) => {
                 .eq('id', authUser.id)
                 .single();
 
-            if (error && error.code !== 'PGRST116') { // PGRST116 means no rows found (expected for new users)
+            if (error && error.code !== 'PGRST116') {
                 console.error('Error fetching profile:', error);
             }
 
@@ -68,6 +97,7 @@ export const AuthProvider = ({ children }) => {
             const userData = {
                 id: authUser.id,
                 email: authUser.email,
+                // Fallback to Auth Metadata if Profile Table is empty/missing
                 name: profile?.name || authUser.user_metadata?.full_name || 'Kullanıcı',
                 role: isOwner ? 'owner' : (profile?.role || 'customer'),
                 status: isOwner ? 'active' : (profile?.status || 'pending'),
@@ -76,10 +106,20 @@ export const AuthProvider = ({ children }) => {
 
             setUser(userData);
         } catch (error) {
-            console.error('Profile fetch error:', error);
-        } finally {
-            setLoading(false);
+            console.error('Critical Profile Error:', error);
+            // Fallback: If DB fails, still let user in as basic user
+            setUser({
+                id: authUser.id,
+                email: authUser.email,
+                name: authUser.email.split('@')[0],
+                role: 'customer',
+                status: 'pending'
+            });
         }
+        // fetchProfile is usually called inside initAuth or onAuthStateChange
+        // We do NOT set loading(false) here because initAuth handles the main loading state via finally.
+        // However, if called from onAuthStateChange, we might need to verify loading state logic.
+        // But the 5s timeout + initAuth finally block covers the initial load.
     };
 
     const login = async (email, password) => {
@@ -88,7 +128,6 @@ export const AuthProvider = ({ children }) => {
             return;
         }
         try {
-            // Trim inputs to avoid JSON body errors
             const cleanEmail = String(email).trim();
             const cleanPassword = String(password).trim();
 
@@ -108,18 +147,12 @@ export const AuthProvider = ({ children }) => {
             return;
         }
         try {
-            // Normalize inputs
             let cleanEmail = email;
-
-            // Robust check: if mistakenly passed as object (though fixed in caller now)
             if (typeof email === 'object' && email !== null && email.email) {
                 cleanEmail = email.email;
             }
-
             cleanEmail = String(cleanEmail).trim();
             const cleanPassword = String(password).trim();
-
-            console.log('Registering with:', cleanEmail); // Debug Log
 
             const { data, error } = await supabase.auth.signUp({
                 email: cleanEmail,
@@ -133,9 +166,6 @@ export const AuthProvider = ({ children }) => {
 
             console.log('Register Success:', data);
 
-            // If signup successful, trying to create employee record
-            // Note: This might duplicate if you have a database trigger. 
-            // Better to rely on DB trigger for security, but keeping it here for now as requested.
             if (email.endsWith('@vantonline.com') && data.user) {
                 const { error: insertError } = await supabase.from('employees').insert([{
                     id: data.user.id,
@@ -150,7 +180,6 @@ export const AuthProvider = ({ children }) => {
             return data;
         } catch (error) {
             console.error('Register Error:', error);
-            // Show the actual Supabase error message
             alert('Kayıt Başarısız: ' + (error.message || error.error_description || 'Beklenmeyen sunucu hatası'));
             throw error;
         }
