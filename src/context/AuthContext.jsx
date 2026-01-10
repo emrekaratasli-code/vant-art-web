@@ -88,7 +88,11 @@ export const AuthProvider = ({ children }) => {
             return;
         }
         try {
-            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+            // Trim inputs to avoid JSON body errors
+            const cleanEmail = String(email).trim();
+            const cleanPassword = String(password).trim();
+
+            const { data, error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password: cleanPassword });
             if (error) throw error;
             return data;
         } catch (error) {
@@ -104,9 +108,13 @@ export const AuthProvider = ({ children }) => {
             return;
         }
         try {
+            // Trim inputs to avoid JSON body errors
+            const cleanEmail = String(email).trim();
+            const cleanPassword = String(password).trim();
+
             const { data, error } = await supabase.auth.signUp({
-                email,
-                password,
+                email: cleanEmail,
+                password: cleanPassword,
                 options: {
                     data: { full_name: fullName }
                 }
