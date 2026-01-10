@@ -13,11 +13,11 @@ export const legalContent = {
 **Telefon:** [TELEFON NUMARASI]
 
 **ALICI:**
-Müşteri olarak www.vantart.com alışveriş sitesine üye olan veya sipariş veren kişi.
+Müşteri olarak www.vantonline.com alışveriş sitesine üye olan veya sipariş veren kişi.
 Adres ve iletişim bilgileri sipariş formunda belirtildiği gibidir.
 
 ### 2. KONU
-İşbu sözleşmenin konusu, ALICI'nın SATICI'ya ait www.vantart.com internet sitesinden elektronik ortamda siparişini yaptığı aşağıda nitelikleri ve satış fiyatı belirtilen ürünün satışı ve teslimi ile ilgili olarak 6502 sayılı Tüketicinin Korunması Hakkında Kanun ve Mesafeli Sözleşmeler Yönetmeliği hükümleri gereğince tarafların hak ve yükümlülüklerinin saptanmasıdır.
+İşbu sözleşmenin konusu, ALICI'nın SATICI'ya ait www.vantonline.com internet sitesinden elektronik ortamda siparişini yaptığı aşağıda nitelikleri ve satış fiyatı belirtilen ürünün satışı ve teslimi ile ilgili olarak 6502 sayılı Tüketicinin Korunması Hakkında Kanun ve Mesafeli Sözleşmeler Yönetmeliği hükümleri gereğince tarafların hak ve yükümlülüklerinin saptanmasıdır.
 
 ### 3. SÖZLEŞME KONUSU ÜRÜN
 Ürünlerin Cinsi ve Türü, Miktarı, Marka/Modeli, Rengi, Satış Bedeli sipariş formunda belirtildiği gibidir.
@@ -112,7 +112,7 @@ KVKK'nın 11. maddesi uyarınca; verilerinizin işlenip işlenmediğini öğrenm
 **Email:** iletisim@vantonline.com
 
 **BUYER:**
-The person who places an order on www.vantart.com.
+The person who places an order on www.vantonline.com.
 
 ### 2. SUBJECT
 The subject of this agreement is the determination of the rights and obligations of the parties regarding the sale and delivery of the product ordered electronically by the BUYER from the SELLER's website, pursuant to the Law No. 6502 on the Protection of the Consumer.
