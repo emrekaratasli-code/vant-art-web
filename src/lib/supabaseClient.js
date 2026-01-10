@@ -5,10 +5,11 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
 let supabaseInstance = null;
 
-// Explicitly check for valid non-empty strings
-console.log('🔄 Supabase Bağlantısı Hazırlanıyor...', {
-    urlConfigured: !!supabaseUrl,
-    keyConfigured: !!supabaseAnonKey
+// Safe Debug Log - Showing first 3 chars only for verification
+console.log('🔍 Supabase Environment Check:', {
+    URL_Exists: !!supabaseUrl,
+    ANON_KEY_Exists: !!supabaseAnonKey,
+    KEY_First3: supabaseAnonKey ? supabaseAnonKey.slice(0, 3) + '...' : 'MISSING'
 });
 
 const isConfigured = supabaseUrl && supabaseUrl.length > 0 && supabaseAnonKey && supabaseAnonKey.length > 0;
@@ -28,13 +29,9 @@ if (isConfigured) {
 
     console.error(`🚨 SUPABASE CONFIGURATION ERROR: The following Environment Variables are missing or empty: ${missingVars.join(', ')}`);
     console.warn('Please check your .env file (local) or Vercel Project Settings (Production).');
-
-    // Explicitly throw meaningful error to console for visibility
-    // new Error(`Missing required Supabase configuration: ${missingVars.join(', ')}`); 
 }
 
 // Fallback Dummy Client to prevent "SupabaseUrl is required" crash
-// This allows the app to render, but functionality will show errors.
 const dummyClient = {
     isDummy: true,
     from: (table) => {
