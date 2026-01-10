@@ -29,6 +29,11 @@ export default function AdminPanel() {
   const { settings, updateSetting } = useSettings();
   const { t } = useLanguage();
 
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [sidebarOpen, setSidebarOpen] = useState(true); // Added missing state
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [formData, setFormData] = useState({ name: '', price: '', category: '', image: '', description: '', material: '' });
+
   // WORKER DATA STATE (Moved up for access in handleDelete)
   const [workers, setWorkers] = useState([
     { id: 1, name: 'Ahmet', surname: 'Yılmaz', email: 'ahmet@vantonline.com', position: 'Depo Sorumlusu', role: 'worker', status: 'active', salary: 28000, startDate: '2024-01-15' },
