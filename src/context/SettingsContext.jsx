@@ -10,9 +10,13 @@ export function SettingsProvider({ children }) {
     const [settings, setSettings] = useState(() => {
         // Load from local storage
         const saved = localStorage.getItem('vant_settings');
-        return saved ? JSON.parse(saved) : {
-            showSocialProof: true,
-            maintenanceMode: false
+        const parsed = saved ? JSON.parse(saved) : {};
+
+        // Default to active, and force active if requested (ensuring it starts ON)
+        return {
+            maintenanceMode: false,
+            ...parsed,
+            showSocialProof: true // Enforce true default or override
         };
     });
 
