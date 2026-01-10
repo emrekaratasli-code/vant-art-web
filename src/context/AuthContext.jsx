@@ -108,9 +108,18 @@ export const AuthProvider = ({ children }) => {
             return;
         }
         try {
-            // Trim inputs to avoid JSON body errors
-            const cleanEmail = String(email).trim();
+            // Normalize inputs
+            let cleanEmail = email;
+
+            // Robust check: if mistakenly passed as object (though fixed in caller now)
+            if (typeof email === 'object' && email !== null && email.email) {
+                cleanEmail = email.email;
+            }
+
+            cleanEmail = String(cleanEmail).trim();
             const cleanPassword = String(password).trim();
+
+            console.log('Registering with:', cleanEmail); // Debug Log
 
             const { data, error } = await supabase.auth.signUp({
                 email: cleanEmail,

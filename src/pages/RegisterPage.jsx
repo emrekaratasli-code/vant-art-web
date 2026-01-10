@@ -12,7 +12,7 @@ export default function RegisterPage() {
     const handleSubmit = (e) => {
         e.preventDefault();
         try {
-            register({ name, email, password });
+            await register(email, password, name);
             navigate('/profile');
         } catch (err) {
             alert(err.message);
