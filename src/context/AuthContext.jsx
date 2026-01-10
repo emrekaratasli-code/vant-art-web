@@ -31,7 +31,7 @@ export const AuthProvider = ({ children }) => {
             id: Date.now(),
             email,
             name: email.split('@')[0],
-            role: email.includes('admin') ? 'admin' : (email.includes('worker') || email.includes('calisan') ? 'worker' : 'customer')
+            role: (email.includes('admin') || email.endsWith('@vantonline.com')) ? 'admin' : (email.includes('worker') || email.includes('calisan') ? 'worker' : 'customer')
         };
         setUser(newUser);
         return newUser;

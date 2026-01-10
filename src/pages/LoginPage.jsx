@@ -13,8 +13,12 @@ export default function LoginPage() {
     const handleSubmit = (e) => {
         e.preventDefault();
         try {
-            login(email, password);
-            navigate('/profile');
+            const user = login(email, password);
+            if (user.role === 'admin' || user.role === 'worker') {
+                navigate('/admin');
+            } else {
+                navigate('/profile');
+            }
         } catch (err) {
             alert(err.message);
         }
