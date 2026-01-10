@@ -19,6 +19,13 @@ export default function ProfilePage() {
 
     const renderMenu = () => (
         <div className="profile-menu">
+            {/* ADMIN ACCESS LINK */}
+            {['owner', 'admin', 'worker'].includes(user?.role) && (
+                <div className="menu-item-group">
+                    <span className="group-title">YÖNETİM</span>
+                    <Link to="/admin" className="menu-item" style={{ color: '#d4af37', fontWeight: 'bold' }}>Admin Paneli Görüntüle →</Link>
+                </div>
+            )}
             <div className="menu-item-group">
                 <span className="group-title">HESABIM</span>
                 <button onClick={() => setActiveTab('history')} className="menu-item">Koleksiyon Geçmişi</button>
