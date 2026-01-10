@@ -31,10 +31,10 @@ export default function Header() {
         <nav className="nav-left">
           <ul className="nav-list">
             <li><Link to="/">{t('collection')}</Link></li>
-            <li><a href="#rings">{language === 'TR' ? 'YÜZÜKLER' : 'Rings'}</a></li>
-            <li><a href="#necklaces">{language === 'TR' ? 'KOLYELER' : 'Necklaces'}</a></li>
-            <li><a href="#earrings">{language === 'TR' ? 'KÜPELER' : 'Earrings'}</a></li>
-            <li><a href="#bracelets">{language === 'TR' ? 'BİLEKLİKLER' : 'Bracelets'}</a></li>
+            <li><Link to="/?category=rings">{language === 'TR' ? 'YÜZÜKLER' : 'RINGS'}</Link></li>
+            <li><Link to="/?category=necklaces">{language === 'TR' ? 'KOLYELER' : 'NECKLACES'}</Link></li>
+            <li><Link to="/?category=earrings">{language === 'TR' ? 'KÜPELER' : 'EARRINGS'}</Link></li>
+            <li><Link to="/?category=bracelets">{language === 'TR' ? 'BİLEKLİKLER' : 'BRACELETS'}</Link></li>
           </ul>
         </nav>
 
@@ -97,6 +97,7 @@ export default function Header() {
           color: var(--color-text);
           font-weight: 500;
           letter-spacing: 0.05em;
+          text-transform: uppercase;
         }
         
         /* Logo */
