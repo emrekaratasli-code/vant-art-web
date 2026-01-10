@@ -23,7 +23,7 @@ export const ProductProvider = ({ children }) => {
     };
 
     const deleteProduct = (id) => {
-        setProducts(prev => prev.filter(p => p.id !== id));
+        setProducts(prev => prev.filter(p => String(p.id) !== String(id)));
     };
 
     return (

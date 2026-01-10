@@ -38,11 +38,14 @@ export default function AdminPanel() {
 
   // Custom delete handler with security check
   const handleDeleteProduct = (id) => {
+    console.log("Attempting to delete product:", id);
     // 1. Godmode & Approval Check
     const isGodmode = user?.email === 'emrekaratasli@vantonline.com';
     // Check if current user is an active worker
     const currentWorkerProfile = workers.find(w => w.email === user?.email);
     const isAuthorized = isGodmode || (user?.role === 'admin') || (currentWorkerProfile?.status === 'active');
+
+    console.log("Auth Status:", { isGodmode, role: user?.role, workerStatus: currentWorkerProfile?.status, isAuthorized });
 
     if (!isAuthorized) {
       alert('⛔ Yetkiniz yok! Sadece onaylı çalışanlar veya Godmode (Owner) silebilir.');
@@ -467,27 +470,29 @@ export default function AdminPanel() {
                   </div>
                 ))}
               </div>
-              </div>
 
-          <div className="add-product-form-panel" id="add-form">
-            <h3>⚡ Hızlı Ürün Ekleme</h3>
-            <form onSubmit={handleSubmit} className="grid-form">
-              <div className="form-group"><label>Ürün Adı</label><input name="name" value={formData.name} onChange={handleChange} required /></div>
-              <div className="form-group"><label>Fiyat (₺)</label><input name="price" value={formData.price} onChange={handleChange} type="number" required /></div>
-              <div className="form-group"><label>Görsel URL</label><input name="image" value={formData.image} onChange={handleChange} required /></div>
-              <div className="form-group"><label>Kategori</label>
-                <select name="category" value={formData.category} onChange={handleChange}>
-                  <option value="">Seçiniz</option>
-                  {categories.map(cat => (
-                    <option key={cat.id} value={cat.id}>{cat.icon} {cat.name}</option>
-                  ))}
-                </select>
+
+              <div className="add-product-form-panel" id="add-form">
+                <h3>⚡ Hızlı Ürün Ekleme</h3>
+                <form onSubmit={handleSubmit} className="grid-form">
+                  <div className="form-group"><label>Ürün Adı</label><input name="name" value={formData.name} onChange={handleChange} required /></div>
+                  <div className="form-group"><label>Fiyat (₺)</label><input name="price" value={formData.price} onChange={handleChange} type="number" required /></div>
+                  <div className="form-group"><label>Görsel URL</label><input name="image" value={formData.image} onChange={handleChange} required /></div>
+                  <div className="form-group"><label>Kategori</label>
+                    <select name="category" value={formData.category} onChange={handleChange}>
+                      <option value="">Seçiniz</option>
+                      {categories.map(cat => (
+                        <option key={cat.id} value={cat.id}>{cat.icon} {cat.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <button type="submit" className="submit-btn full-width">Kataloğa Ekle</button>
+                </form>
               </div>
-              <button type="submit" className="submit-btn full-width">Kataloğa Ekle</button>
-            </form>
+            </div>
           )}
 
-          </div>
+        </div>
       </main>
 
       <style>{`
