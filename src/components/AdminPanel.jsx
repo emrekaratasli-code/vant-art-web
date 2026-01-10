@@ -24,15 +24,30 @@ import { useSettings } from '../context/SettingsContext'; // Added
 export default function AdminPanel() {
   const { user } = useAuth(); // Added
   const { products, addProduct, deleteProduct: deleteFromContext } = useProducts(); // Renamed to avoid confusion
-  const { orders } = useOrders();
+  const { orders, updateOrderStatus } = useOrders();
   const { getStats } = useAnalytics();
   const { settings, updateSetting } = useSettings();
   const { t } = useLanguage();
 
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [sidebarOpen, setSidebarOpen] = useState(true); // Added missing state
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [formData, setFormData] = useState({ name: '', price: '', category: '', image: '', description: '', material: '' });
+
+  // CUSTOMER DATA STATE (Persisted)
+  const [customers, setCustomers] = useState(() => {
+    const saved = localStorage.getItem('vant_customers');
+    if (saved) return JSON.parse(saved);
+    return [
+      { id: 101, name: 'Ayşe Yılmaz', email: 'ayse@example.com', phone: '0532 111 22 33', city: 'İstanbul', totalOrders: 3, lastLogin: '2 gün önce' },
+      { id: 102, name: 'Mehmet Demir', email: 'mehmet@example.com', phone: '0555 444 55 66', city: 'Ankara', totalOrders: 1, lastLogin: '1 hafta önce' },
+      { id: 103, name: 'Zeynep Kaya', email: 'zeynep@example.com', phone: '0542 999 88 77', city: 'İzmir', totalOrders: 5, lastLogin: 'Bugün' }
+    ];
+  });
+
+  useEffect(() => {
+    localStorage.setItem('vant_customers', JSON.stringify(customers));
+  }, [customers]);
 
   // WORKER DATA STATE (Persisted)
   const [workers, setWorkers] = useState(() => {
@@ -240,6 +255,10 @@ export default function AdminPanel() {
           <button className={`nav-btn ${activeTab === 'categories' ? 'active' : ''}`} onClick={() => setActiveTab('categories')}>
             <IconDashboard /> <span>Kategoriler</span>
           </button>
+
+          <button className={`nav-btn ${activeTab === 'customers' ? 'active' : ''}`} onClick={() => setActiveTab('customers')}>
+            <IconUsers /> <span>Müşteriler</span>
+          </button>
           {!isWorker && (
             <>
               <button className={`nav-btn ${activeTab === 'workers' ? 'active' : ''}`} onClick={() => setActiveTab('workers')}>
@@ -423,13 +442,13 @@ export default function AdminPanel() {
                   <div className="widget-box">
                     <h3>📦 Kritik Stok</h3>
                     <ul className="stock-list">
-                      {/* SAFE SORT */}
-                      {(products || []).sort((a, b) => (b.stock || 0) - (a.stock || 0)).slice(0, 4).map(p => (
+                      {/* SAFE SORT (Low to high) */}
+                      {(products || []).sort((a, b) => (a.stock || 0) - (b.stock || 0)).slice(0, 4).map(p => (
                         <li key={p.id} className="stock-item">
                           <img src={p.image} alt="" onError={(e) => { e.target.src = 'https://placehold.co/40x40?text=Prod' }} />
                           <div className="info">
                             <span className="name">{p.name}</span>
-                            <span className="status warning">
+                            <span className={`status ${p.stock < 5 ? 'critical' : 'warning'}`}>
                               {p.stock} Adet Kaldı
                             </span>
                           </div>
@@ -589,14 +608,87 @@ export default function AdminPanel() {
                         <tr key={o.id}>
                           <td className="font-mono">#{o.id}</td>
                           <td>{o.billingDetails?.name}<br /><span className="sub-text">{o.billingDetails?.email}</span></td>
-                          <td>{new Date().toLocaleDateString()}</td>
+                          <td>{new Date(o.date).toLocaleDateString()}</td>
                           <td className="font-mono">₺{o.amount}</td>
-                          <td><span className="badge-status pending">{o.status || 'Bekliyor'}</span></td>
+                          <td>
+                            <select
+                              value={o.status}
+                              onChange={(e) => updateOrderStatus(o.id, e.target.value)}
+                              className={`status-select ${o.status === 'Cancelled' ? 'cancelled' : ''}`}
+                              style={{
+                                padding: '6px 10px',
+                                borderRadius: '4px',
+                                border: '1px solid #ddd',
+                                fontSize: '0.8rem',
+                                background: o.status === 'Delivered' ? '#dcfce7' : (o.status === 'Cancelled' ? '#fee2e2' : '#fff'),
+                                color: o.status === 'Delivered' ? '#16a34a' : (o.status === 'Cancelled' ? '#ef4444' : '#333')
+                              }}
+                            >
+                              <option value="Preparing">Hazırlanıyor</option>
+                              <option value="Shipped">Kargolandı</option>
+                              <option value="Delivered">Teslim Edildi</option>
+                              <option value="Cancelled">İptal Edildi</option>
+                            </select>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 }
+              </div>
+            </div>
+          )}
+
+          {/* CUSTOMERS VIEW */}
+          {activeTab === 'customers' && (
+            <div className="customers-view">
+              <div className="section-header"><h2>Müşteri Listesi</h2></div>
+              <div className="data-table-container">
+                <table className="data-table">
+                  <thead><tr><th>Müşteri</th><th>İletişim</th><th>Konum</th><th>Siparişler</th><th>Son Giriş</th><th>İşlem</th></tr></thead>
+                  <tbody>
+                    {customers.map(c => (
+                      <tr key={c.id}>
+                        <td className="font-bold">{c.name}</td>
+                        <td>{c.email}<br /><span className="sub-text">{c.phone}</span></td>
+                        <td>{c.city}</td>
+                        <td><span className="badge-pill">{c.totalOrders} Sipariş</span></td>
+                        <td className="text-muted">{c.lastLogin}</td>
+                        <td>
+                          <button className="icon-action delete" onClick={() => {
+                            if (window.confirm('Bu müşteriyi silmek istediğinize emin misiniz?')) {
+                              setCustomers(customers.filter(cust => cust.id !== c.id));
+                            }
+                          }}>🗑️</button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Mobile Card View for Customers */}
+              <div className="mobile-card-view">
+                {customers.map(c => (
+                  <div key={c.id} className="mobile-card">
+                    <div className="card-details">
+                      <div className="card-header">
+                        <span className="font-bold">{c.name}</span>
+                        <span className="badge-pill">{c.totalOrders} Sipariş</span>
+                      </div>
+                      <p className="text-muted" style={{ fontSize: '0.9rem' }}>{c.email}</p>
+                      <p className="text-muted" style={{ fontSize: '0.9rem' }}>{c.phone}</p>
+
+                      <div className="card-footer" style={{ marginTop: '10px', paddingTop: '10px', borderTop: '1px solid #eee', justifyContent: 'flex-end' }}>
+                        <button className="mobile-btn" style={{ background: '#fee2e2', color: '#ef4444', border: '1px solid #fecaca' }} onClick={() => {
+                          if (window.confirm('Bu müşteriyi silmek istediğinize emin misiniz?')) {
+                            setCustomers(customers.filter(cust => cust.id !== c.id));
+                          }
+                        }}>Sil 🗑️</button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           )}
