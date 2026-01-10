@@ -35,9 +35,25 @@ export default function AdminPanel() {
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [formData, setFormData] = useState({ name: '', price: '', category: '', image: '', description: '', material: '' });
 
+  // WORKER DATA STATE
+  const [workers, setWorkers] = useState([
+    { id: 1, name: 'Ahmet', surname: 'Yılmaz', email: 'ahmet@vantart.com', position: 'Depo Sorumlusu', role: 'worker' },
+    { id: 2, name: 'Zeynep', surname: 'Kaya', email: 'zeynep@vantart.com', position: 'Satış Uzmanı', role: 'worker' },
+    { id: 3, name: 'Mehmet', surname: 'Demir', email: 'mehmet@vantart.com', position: 'Operasyon Müdürü', role: 'admin' }
+  ]);
+  const [workerFormData, setWorkerFormData] = useState({ name: '', surname: '', email: '', position: '', role: 'worker' });
+
+  // CATEGORY DATA STATE
+  const [categories, setCategories] = useState([
+    { id: 'rings', name: 'Yüzükler', icon: '💍', description: 'Eşsiz el yapımı yüzük koleksiyonu.' },
+    { id: 'necklaces', name: 'Kolyeler', icon: '📿', description: 'Zarif ve modern kolye tasarımları.' },
+    { id: 'bracelets', name: 'Bileklikler', icon: '🔱', description: 'Özel tasarım bileklikler.' }
+  ]);
+  const [categoryFormData, setCategoryFormData] = useState({ id: '', name: '', icon: '', description: '' });
+
   // Update active tab if user role changes or on mount to enforce restriction
   // This simple check ensures if they somehow got to dashboard, they are moved to products
-  if (user?.role === 'worker' && ['dashboard', 'customers', 'settings'].includes(activeTab)) {
+  if (user?.role === 'worker' && ['dashboard', 'workers', 'settings'].includes(activeTab)) {
     setActiveTab('products');
   }
 
@@ -125,10 +141,13 @@ export default function AdminPanel() {
           <button className={`nav-btn ${activeTab === 'orders' ? 'active' : ''}`} onClick={() => setActiveTab('orders')}>
             <IconOrders /> <span>Siparişler</span>
           </button>
+          <button className={`nav-btn ${activeTab === 'categories' ? 'active' : ''}`} onClick={() => setActiveTab('categories')}>
+            <IconDashboard /> <span>Kategoriler</span>
+          </button>
           {!isWorker && (
             <>
-              <button className={`nav-btn ${activeTab === 'customers' ? 'active' : ''}`} onClick={() => setActiveTab('customers')}>
-                <IconUsers /> <span>Müşteriler</span>
+              <button className={`nav-btn ${activeTab === 'workers' ? 'active' : ''}`} onClick={() => setActiveTab('workers')}>
+                <IconUsers /> <span>Çalışan Yönetimi</span>
               </button>
               <div className="nav-divider"></div>
               <button className={`nav-btn ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => setActiveTab('settings')}>
@@ -309,7 +328,7 @@ export default function AdminPanel() {
                       {/* SAFE SORT */}
                       {(products || []).sort((a, b) => (b.stock || 0) - (a.stock || 0)).slice(0, 4).map(p => (
                         <li key={p.id} className="stock-item">
-                          <img src={p.image} alt="" />
+                          <img src={p.image} alt="" onError={(e) => { e.target.src = 'https://placehold.co/40x40?text=Prod' }} />
                           <div className="info">
                             <span className="name">{p.name}</span>
                             <span className="status warning">
@@ -367,7 +386,7 @@ export default function AdminPanel() {
                       <tr key={p.id}>
                         <td>
                           <div className="prod-cell-lg">
-                            <img src={p.image} alt={p.name} />
+                            <img src={p.image} alt={p.name} onError={(e) => { e.target.src = 'https://placehold.co/48x48?text=Prod' }} />
                             <div>
                               <strong>{p.name}</strong>
                               <span className="sub-id">SKU: VNT-{p.id}</span>
@@ -383,12 +402,42 @@ export default function AdminPanel() {
                           </div>
                         </td>
                         <td>
-                          <button className="icon-action delete" onClick={() => deleteProduct(p.id)}>🗑️</button>
+                          <button className="icon-action delete" onClick={() => {
+                            if (window.confirm(t('confirmDelete') || 'Silmek istediğinize emin misiniz?')) deleteProduct(p.id);
+                          }}>🗑️</button>
                         </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
+              </div>
+
+              {/* MOBILE CARD VIEW (Visible only on mobile) */}
+              <div className="mobile-card-view">
+                {(products || []).map(p => (
+                  <div key={p.id} className="mobile-card">
+                    <div className="card-image">
+                      <img src={p.image} alt={p.name} onError={(e) => { e.target.src = 'https://placehold.co/100x100?text=No+Image' }} />
+                    </div>
+                    <div className="card-details">
+                      <div className="card-header">
+                        <span className="card-id">#{p.id}</span>
+                        <div className="card-actions">
+                          <button className="icon-action delete" onClick={() => deleteProduct(p.id)}>🗑️</button>
+                        </div>
+                      </div>
+                      <h4>{p.name}</h4>
+                      <p className="card-category">{translateCategory(p.category)}</p>
+
+                      <div className="card-footer">
+                        <span className="card-price">₺{p.price}</span>
+                        <div className="stock-bg">
+                          <span className={`stock-status ${p.stock < 5 ? 'critical' : 'ok'}`}>Stok: {p.stock}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
 
               <div className="add-product-form-panel" id="add-form">
@@ -435,71 +484,179 @@ export default function AdminPanel() {
             </div>
           )}
 
-          {/* CUSTOMERS VIEW */}
-          {activeTab === 'customers' && (
-            <div className="customers-view">
-              <div className="section-header"><h2>Müşteri Listesi</h2></div>
+          {/* WORKERS VIEW (Formerly Customers) */}
+          {activeTab === 'workers' && (
+            <div className="workers-view">
+              <div className="section-header">
+                <h2>Çalışan Yönetimi</h2>
+                <button className="primary-btn" onClick={() => document.getElementById('add-worker-form').scrollIntoView({ behavior: 'smooth' })}>
+                  + Yeni Çalışan Ekle
+                </button>
+              </div>
 
-              {/* Customer Aggregation Logic could be moved to a useMemo for performance in real app */}
               <div className="data-table-container">
                 <table className="data-table">
                   <thead>
                     <tr>
-                      <th>Müşteri Bilgisi</th>
-                      <th>Konum</th>
-                      <th>Toplam Sipariş</th>
-                      <th>Harceama (LTV)</th>
-                      <th>Son Görülme</th>
+                      <th>Ad Soyad</th>
+                      <th>E-posta</th>
+                      <th>Pozisyon</th>
+                      <th>Yetki</th>
                       <th>İşlem</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {/* Aggregating Users from Orders + Mock Data for Demo */}
-                    {[
-                      ...Array.from((orders || []).reduce((acc, order) => {
-                        const email = order.billingDetails?.email || 'unknown';
-                        if (!acc.has(email)) {
-                          acc.set(email, {
-                            id: email,
-                            name: order.billingDetails?.name || 'Müşteri',
-                            email: email,
-                            city: order.billingDetails?.city || 'İstanbul',
-                            count: 0,
-                            spent: 0,
-                            lastDate: order.date
-                          });
-                        }
-                        const user = acc.get(email);
-                        user.count += 1;
-                        user.spent += (order.amount || 0);
-                        if (new Date(order.date) > new Date(user.lastDate)) user.lastDate = order.date;
-                        return acc;
-                      }, new Map()).values()),
-                      // Mock users for empty state demonstration if needed
-                      ...((orders || []).length === 0 ? [
-                        { id: 'demo1', name: 'Ayşe Yılmaz', email: 'ayse@example.com', city: 'İstanbul', count: 3, spent: 45000, lastDate: new Date().toISOString() },
-                        { id: 'demo2', name: 'Mehmet Demir', email: 'mehmet@example.com', city: 'Ankara', count: 1, spent: 12500, lastDate: new Date(Date.now() - 86400000).toISOString() }
-                      ] : [])
-                    ].map(user => (
-                      <tr key={user.id}>
+                    {workers.map(worker => (
+                      <tr key={worker.id}>
                         <td>
                           <div className="user-cell">
-                            <div className="avatar-circle">{user.name.charAt(0)}</div>
-                            <div>
-                              <div className="font-bold">{user.name}</div>
-                              <div className="sub-text">{user.email}</div>
-                            </div>
+                            <div className="avatar-circle">{worker.name.charAt(0)}</div>
+                            <div className="font-bold">{worker.name} {worker.surname}</div>
                           </div>
                         </td>
-                        <td>{user.city}</td>
-                        <td className="text-center"><span className="badge-pill">{user.count} Sipariş</span></td>
-                        <td className="font-mono font-bold">₺{user.spent.toLocaleString()}</td>
-                        <td>{new Date(user.lastDate).toLocaleDateString()}</td>
-                        <td><button className="icon-btn">⋮</button></td>
+                        <td>{worker.email}</td>
+                        <td>{worker.position}</td>
+                        <td><span className={`badge-status ${worker.role === 'admin' ? 'shipped' : 'pending'}`}>{worker.role === 'admin' ? 'Yönetici' : 'Çalışan'}</span></td>
+                        <td>
+                          <button className="icon-action delete" onClick={() => {
+                            if (window.confirm('Bu çalışanı silmek istediğinize emin misiniz?')) {
+                              setWorkers(workers.filter(w => w.id !== worker.id));
+                            }
+                          }}>🗑️</button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
+              </div>
+
+              {/* MOBILE CARD VIEW FOR WORKERS */}
+              <div className="mobile-card-view">
+                {workers.map(worker => (
+                  <div key={worker.id} className="mobile-card">
+                    <div className="card-details">
+                      <div className="card-header">
+                        <span className="card-id">#{worker.id}</span>
+                        <div className="card-actions">
+                          <button className="icon-action delete" onClick={() => {
+                            if (window.confirm('Bu çalışanı silmek istediğinize emin misiniz?')) {
+                              setWorkers(workers.filter(w => w.id !== worker.id));
+                            }
+                          }}>🗑️</button>
+                        </div>
+                      </div>
+                      <h4>{worker.name} {worker.surname}</h4>
+                      <p className="card-category">{worker.position}</p>
+                      <div className="card-footer">
+                        <span>{worker.email}</span>
+                        <span className={`badge-status ${worker.role === 'admin' ? 'shipped' : 'pending'}`}>{worker.role === 'admin' ? 'Yönetici' : 'Çalışan'}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="add-product-form-panel" id="add-worker-form">
+                <h3>👥 Yeni Çalışan Ekle</h3>
+                <form onSubmit={(e) => {
+                  e.preventDefault();
+                  if (!workerFormData.name || !workerFormData.email) return;
+                  setWorkers([...workers, { ...workerFormData, id: Date.now() }]);
+                  setWorkerFormData({ name: '', surname: '', email: '', position: '', role: 'worker' });
+                  alert('Çalışan başarıyla eklendi.');
+                }} className="grid-form">
+                  <div className="form-group"><label>Ad</label><input value={workerFormData.name} onChange={e => setWorkerFormData({ ...workerFormData, name: e.target.value })} required /></div>
+                  <div className="form-group"><label>Soyad</label><input value={workerFormData.surname} onChange={e => setWorkerFormData({ ...workerFormData, surname: e.target.value })} required /></div>
+                  <div className="form-group"><label>E-posta</label><input type="email" value={workerFormData.email} onChange={e => setWorkerFormData({ ...workerFormData, email: e.target.value })} required /></div>
+                  <div className="form-group"><label>Pozisyon</label><input value={workerFormData.position} onChange={e => setWorkerFormData({ ...workerFormData, position: e.target.value })} required placeholder="Örn: Satış Temsilcisi" /></div>
+                  <div className="form-group"><label>Yetki</label>
+                    <select value={workerFormData.role} onChange={e => setWorkerFormData({ ...workerFormData, role: e.target.value })}>
+                      <option value="worker">Çalışan (Kısıtlı Erişim)</option>
+                      <option value="admin">Yönetici (Tam Erişim)</option>
+                    </select>
+                  </div>
+                  <button type="submit" className="submit-btn full-width">Çalışanı Kaydet</button>
+                </form>
+              </div>
+            </div>
+          )}
+
+
+          {/* CATEGORIES VIEW */}
+          {activeTab === 'categories' && (
+            <div className="categories-view">
+              <div className="section-header">
+                <h2>Kategori Yönetimi</h2>
+                <button className="primary-btn" onClick={() => document.getElementById('add-cat-form').scrollIntoView({ behavior: 'smooth' })}>
+                  + Yeni Kategori
+                </button>
+              </div>
+
+              {/* DESKTOP TABLE */}
+              <div className="data-table-container">
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>İkon</th>
+                      <th>Kategori Adı</th>
+                      <th>Açıklama</th>
+                      <th>İşlem</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {categories.map(cat => (
+                      <tr key={cat.id}>
+                        <td style={{ fontSize: '1.5rem' }}>{cat.icon}</td>
+                        <td className="font-bold">{cat.name}</td>
+                        <td className="text-muted">{cat.description}</td>
+                        <td>
+                          <button className="icon-action delete" onClick={() => {
+                            if (window.confirm('Bu kategoriyi silmek istediğinize emin misiniz?')) {
+                              setCategories(categories.filter(c => c.id !== cat.id));
+                            }
+                          }}>🗑️</button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* MOBILE CARD VIEW */}
+              <div className="mobile-card-view">
+                {categories.map(cat => (
+                  <div key={cat.id} className="mobile-card">
+                    <div className="card-details">
+                      <div className="card-header">
+                        <span style={{ fontSize: '1.5rem' }}>{cat.icon}</span>
+                        <button className="icon-action delete" onClick={() => {
+                          if (window.confirm('Bu kategoriyi silmek istediğinize emin misiniz?')) {
+                            setCategories(categories.filter(c => c.id !== cat.id));
+                          }
+                        }}>🗑️</button>
+                      </div>
+                      <h4>{cat.name}</h4>
+                      <p className="text-muted" style={{ fontSize: '0.8rem' }}>{cat.description}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="add-product-form-panel" id="add-cat-form">
+                <h3>📂 Yeni Kategori Ekle</h3>
+                <form onSubmit={(e) => {
+                  e.preventDefault();
+                  if (!categoryFormData.name || !categoryFormData.id) return;
+                  setCategories([...categories, categoryFormData]);
+                  setCategoryFormData({ id: '', name: '', icon: '', description: '' });
+                  alert('Kategori eklendi.');
+                }} className="grid-form">
+                  <div className="form-group"><label>Kategori ID (örn: saatler)</label><input value={categoryFormData.id} onChange={e => setCategoryFormData({ ...categoryFormData, id: e.target.value.toLowerCase().replace(/ /g, '-') })} required /></div>
+                  <div className="form-group"><label>Kategori Adı</label><input value={categoryFormData.name} onChange={e => setCategoryFormData({ ...categoryFormData, name: e.target.value })} required /></div>
+                  <div className="form-group"><label>İkon (Emoji)</label><input value={categoryFormData.icon} onChange={e => setCategoryFormData({ ...categoryFormData, icon: e.target.value })} placeholder="⌚" /></div>
+                  <div className="form-group"><label>Açıklama</label><input value={categoryFormData.description} onChange={e => setCategoryFormData({ ...categoryFormData, description: e.target.value })} /></div>
+                  <button type="submit" className="submit-btn full-width">Kategori Oluştur</button>
+                </form>
               </div>
             </div>
           )}
@@ -684,6 +841,52 @@ export default function AdminPanel() {
         input:checked + .slider { background-color: #d4af37; }
         input:focus + .slider { box-shadow: 0 0 1px #d4af37; }
         input:checked + .slider:before { transform: translateX(24px); }
+
+        /* MOBILE CARDS */
+        .mobile-card-view { display: none; }
+        
+        @media (max-width: 768px) {
+            .data-table-container { display: none; }
+            .mobile-card-view { display: flex; flex-direction: column; gap: 1rem; margin-bottom: 2rem; }
+            
+            .mobile-card {
+              background: #fff;
+              border-radius: 12px;
+              overflow: hidden;
+              box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+              display: flex;
+              border: 1px solid #eee;
+            }
+            .card-image { width: 100px; height: 100%; min-height: 120px; }
+            .card-image img { width: 100%; height: 100%; object-fit: cover; display: block; }
+            
+            .card-details { padding: 12px; flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
+            .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+            .card-id { font-size: 0.7rem; color: #999; font-family: monospace; }
+            
+            .card-details h4 { font-size: 0.95rem; margin: 0; color: #333; font-family: 'Inter', sans-serif; font-weight: 600; }
+            .card-category { font-size: 0.8rem; color: #666; margin-bottom: 8px; }
+            
+            .card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: auto; }
+            .card-price { font-weight: 700; color: #d4af37; font-size: 1rem; }
+            
+            .stock-bg { background: #f9fafb; padding: 4px 8px; border-radius: 4px; }
+            .stock-status { font-size: 0.75rem; font-weight: 600; color: #10b981; }
+            .stock-status.critical { color: #ef4444; }
+
+            /* Adjust Layout for Mobile */
+            .admin-layout { flex-direction: column; height: auto; overflow: auto; }
+            .admin-sidebar { width: 100%; height: auto; flex-shrink: 0; }
+            .sidebar-nav { display: flex; overflow-x: auto; padding: 0.5rem; background: #111; gap: 1rem; }
+            .nav-btn { color: #ccc; padding: 8px 12px; font-size: 0.85rem; border: 1px solid #333; border-radius: 20px; white-space: nowrap; }
+            .nav-btn.active { background: #d4af37; color: #000; border-color: #d4af37; font-weight: bold; }
+            
+            .content-scrollable { padding: 1rem; overflow: visible; }
+            
+            /* Hide topbar search on mobile to save space */
+            .search-bar { display: none; }
+            .admin-topbar { padding: 0 1rem; }
+        }
       `}</style>
     </div>
   );

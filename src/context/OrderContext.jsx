@@ -8,7 +8,11 @@ export const OrderProvider = ({ children }) => {
     const [orders, setOrders] = useState(() => {
         try {
             const saved = localStorage.getItem('orders');
-            return saved ? JSON.parse(saved) : [];
+            return saved ? JSON.parse(saved) : [
+                { id: 'ORD-1024', date: new Date().toISOString(), status: 'Delivered', amount: 1250, billingDetails: { name: 'Ayşe Yılmaz', email: 'ayse@example.com', city: 'İstanbul' } },
+                { id: 'ORD-1025', date: new Date(Date.now() - 86400000).toISOString(), status: 'Shipped', amount: 450, billingDetails: { name: 'Mehmet Demir', email: 'mehmet@example.com', city: 'Ankara' } },
+                { id: 'ORD-1026', date: new Date(Date.now() - 172800000).toISOString(), status: 'Preparing', amount: 3500, billingDetails: { name: 'Zeynep Kaya', email: 'zeynep@example.com', city: 'İzmir' } }
+            ];
         } catch (e) {
             return [];
         }
