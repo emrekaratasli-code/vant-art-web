@@ -10,17 +10,26 @@ export default function LoginPage() {
     const navigate = useNavigate();
     const { t } = useLanguage();
 
-    const handleSubmit = (e) => {
+    const [isLoggingIn, setIsLoggingIn] = useState(false);
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
+        setIsLoggingIn(true);
         try {
-            const user = login(email, password);
-            if (user.role === 'admin' || user.role === 'worker') {
+            const user = await login(email, password);
+            console.log('✅ Giriş Başarılı');
+            if (user?.role === 'admin' || user?.role === 'owner' || user?.role === 'worker') {
                 navigate('/admin');
             } else {
-                navigate('/profile');
+                navigate('/');
             }
         } catch (err) {
-            alert(err.message);
+            console.error('Login Fail:', err);
+            // Alert is already handled in AuthContext but doing it here as backup/custom UI
+            // AuthContext might throw without alerting if we remove alert there later.
+            // For now AuthContext has alert, so we can just log or show supplementary UI.
+        } finally {
+            setIsLoggingIn(false);
         }
     };
 
@@ -38,7 +47,9 @@ export default function LoginPage() {
                         <label>ŞİFRE</label>
                         <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required placeholder="******" />
                     </div>
-                    <button type="submit" className="auth-btn">GİRİŞ YAP</button>
+                    <button type="submit" className="auth-btn" disabled={isLoggingIn}>
+                        {isLoggingIn ? 'GİRİŞ YAPILIYOR...' : 'GİRİŞ YAP'}
+                    </button>
                 </form>
                 <div className="auth-footer">
                     <p>Henüz üye değil misiniz? <Link to="/register">Hemen Kayıt Olun</Link></p>
