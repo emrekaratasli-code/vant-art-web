@@ -62,6 +62,28 @@ export const OrderProvider = ({ children }) => {
         if (error) console.error(error);
     };
 
+    // SEND NOTIFICATION EMAIL
+    const sendShippingEmail = async (orderId, trackingNumber, customerEmail, customerName) => {
+        try {
+            // Only send if we have an email
+            if (!customerEmail) return;
+
+            console.log('Sending email to:', customerEmail);
+
+            await fetch('/api/send-shipping-email', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: customerEmail,
+                    trackingNumber,
+                    customerName
+                })
+            });
+        } catch (err) {
+            console.error('Failed to send email:', err);
+        }
+    };
+
     const updateOrderStatus = async (id, newStatus, trackingNumber = null) => {
         try {
             const updateData = { status: newStatus };
@@ -77,7 +99,20 @@ export const OrderProvider = ({ children }) => {
             if (error) throw error;
 
             // Optimistic UI update
-            setOrders(prev => prev.map(o => o.id === id ? { ...o, ...updateData } : o));
+            const updatedOrders = orders.map(o => o.id === id ? { ...o, ...updateData } : o);
+            setOrders(updatedOrders);
+
+            // TRIGGER EMAIL IF SHIPPED
+            if (newStatus === 'Shipped' && trackingNumber) {
+                const order = orders.find(o => o.id === id);
+                if (order) {
+                    const email = order.billingDetails?.email || order.user?.email;
+                    const name = order.billingDetails?.name;
+                    // Don't await email sending to keep UI snappy
+                    sendShippingEmail(id, trackingNumber, email, name);
+                }
+            }
+
         } catch (error) {
             console.error('Error updating status:', error);
             alert('Durum güncellenemedi.');
