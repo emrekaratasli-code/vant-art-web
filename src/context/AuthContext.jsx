@@ -15,9 +15,14 @@ export const AuthProvider = ({ children }) => {
     useEffect(() => {
         // 1. Check active session
         const getSession = async () => {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                await fetchProfile(session.user);
+            // Fallback handling if supabase client is dummy
+            if (supabase?.auth?.getSession) {
+                const { data: { session }, error } = await supabase.auth.getSession();
+                if (session) {
+                    await fetchProfile(session.user);
+                } else {
+                    setLoading(false);
+                }
             } else {
                 setLoading(false);
             }
@@ -26,16 +31,22 @@ export const AuthProvider = ({ children }) => {
         getSession();
 
         // 2. Listen for auth changes
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-            if (session) {
-                await fetchProfile(session.user);
-            } else {
-                setUser(null);
-                setLoading(false);
-            }
-        });
+        let subscription;
+        if (supabase?.auth?.onAuthStateChange) {
+            const { data } = supabase.auth.onAuthStateChange(async (_event, session) => {
+                if (session) {
+                    await fetchProfile(session.user);
+                } else {
+                    setUser(null);
+                    setLoading(false);
+                }
+            });
+            subscription = data.subscription;
+        }
 
-        return () => subscription.unsubscribe();
+        return () => {
+            if (subscription && subscription.unsubscribe) subscription.unsubscribe();
+        };
     }, []);
 
     const fetchProfile = async (authUser) => {
@@ -72,38 +83,48 @@ export const AuthProvider = ({ children }) => {
     };
 
     const login = async (email, password) => {
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-        return data;
+        try {
+            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+            if (error) throw error;
+            return data;
+        } catch (error) {
+            alert('Giriş Hatası: ' + error.message);
+            throw error;
+        }
     };
 
     const register = async (email, password, fullName) => {
-        const { data, error } = await supabase.auth.signUp({
-            email,
-            password,
-            options: {
-                data: { full_name: fullName }
-            }
-        });
+        try {
+            const { data, error } = await supabase.auth.signUp({
+                email,
+                password,
+                options: {
+                    data: { full_name: fullName }
+                }
+            });
 
-        if (error) throw error;
+            if (error) throw error;
 
-        // If signup successful, trying to create employee record if domain matches
-        if (email.endsWith('@vantonline.com')) {
-            // We rely on a trigger or manual insertion. 
-            // For simplicity in this client-side demo, we insert if user id exists
-            if (data.user) {
-                await supabase.from('employees').insert([{
-                    id: data.user.id,
-                    email: email,
-                    name: fullName,
-                    role: 'worker',
-                    status: 'pending' // Default pending
-                }]);
+            // If signup successful, trying to create employee record if domain matches
+            if (email.endsWith('@vantonline.com')) {
+                // We rely on a trigger or manual insertion. 
+                // For simplicity in this client-side demo, we insert if user id exists
+                if (data.user) {
+                    await supabase.from('employees').insert([{
+                        id: data.user.id,
+                        email: email,
+                        name: fullName,
+                        role: 'worker',
+                        status: 'pending' // Default pending
+                    }]);
+                }
             }
+
+            return data;
+        } catch (error) {
+            alert('Kayıt Hatası: ' + error.message);
+            throw error;
         }
-
-        return data;
     };
 
     const logout = async () => {
