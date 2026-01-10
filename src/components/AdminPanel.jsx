@@ -487,44 +487,52 @@ export default function AdminPanel() {
               </div>
 
               <div className="data-table-container">
-                <table className="data-table">
-                  <thead>
-                    <tr>
-                      <th>Ürün</th>
-                      <th>Kategori</th>
-                      <th>Fiyat</th>
-                      <th>Stok</th>
-                      <th>İşlemler</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {/* SAFE MAP */}
-                    {(products || []).map(p => (
-                      <tr key={p.id}>
-                        <td>
-                          <div className="prod-cell-lg">
-                            <img src={p.image} alt={p.name} onError={(e) => { e.target.src = 'https://placehold.co/48x48?text=Prod' }} />
-                            <div>
-                              <strong style={{ display: 'block', maxWidth: '200px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.name}</strong>
-                              <span className="sub-id">SKU: VNT-{p.id}</span>
-                            </div>
-                          </div>
-                        </td>
-                        <td>{translateCategory(p.category)}</td>
-                        <td className="font-mono">₺{p.price}</td>
-                        <td>
-                          <div className="stock-indicator">
-                            <div className="bar" style={{ width: Math.min(100, (p.stock || 0) * 2) + '%' }}></div>
-                            <span>{p.stock}</span>
-                          </div>
-                        </td>
-                        <td>
-                          <button className="icon-action delete" onClick={() => handleDeleteProduct(p.id)}>🗑️</button>
-                        </td>
+                {(!products || products.length === 0) ? (
+                  <div className="empty-state">
+                    <span style={{ fontSize: '2rem', display: 'block', marginBottom: '10px' }}>📦</span>
+                    <p>Henüz hiç ürün eklenmemiş.</p>
+                    <p className="text-muted text-sm">Yeni ürün ekleyerek kataloğunuzu oluşturmaya başlayın.</p>
+                  </div>
+                ) : (
+                  <table className="data-table">
+                    <thead>
+                      <tr>
+                        <th>Ürün</th>
+                        <th>Kategori</th>
+                        <th>Fiyat</th>
+                        <th>Stok</th>
+                        <th>İşlemler</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {/* SAFE MAP */}
+                      {(products || []).map(p => (
+                        <tr key={p.id}>
+                          <td>
+                            <div className="prod-cell-lg">
+                              <img src={p.image} alt={p.name} onError={(e) => { e.target.src = 'https://placehold.co/48x48?text=Prod' }} />
+                              <div>
+                                <strong style={{ display: 'block', maxWidth: '200px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.name}</strong>
+                                <span className="sub-id">SKU: VNT-{p.id}</span>
+                              </div>
+                            </div>
+                          </td>
+                          <td>{translateCategory(p.category)}</td>
+                          <td className="font-mono">₺{p.price}</td>
+                          <td>
+                            <div className="stock-indicator">
+                              <div className="bar" style={{ width: Math.min(100, (p.stock || 0) * 2) + '%' }}></div>
+                              <span>{p.stock}</span>
+                            </div>
+                          </td>
+                          <td>
+                            <button className="icon-action delete" onClick={() => handleDeleteProduct(p.id)}>🗑️</button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
               </div>
 
               {/* MOBILE CARD VIEW (Visible only on mobile) */}
@@ -644,27 +652,34 @@ export default function AdminPanel() {
             <div className="customers-view">
               <div className="section-header"><h2>Müşteri Listesi</h2></div>
               <div className="data-table-container">
-                <table className="data-table">
-                  <thead><tr><th>Müşteri</th><th>İletişim</th><th>Konum</th><th>Siparişler</th><th>Son Giriş</th><th>İşlem</th></tr></thead>
-                  <tbody>
-                    {customers.map(c => (
-                      <tr key={c.id}>
-                        <td className="font-bold">{c.name}</td>
-                        <td>{c.email}<br /><span className="sub-text">{c.phone}</span></td>
-                        <td>{c.city}</td>
-                        <td><span className="badge-pill">{c.totalOrders} Sipariş</span></td>
-                        <td className="text-muted">{c.lastLogin}</td>
-                        <td>
-                          <button className="icon-action delete" onClick={() => {
-                            if (window.confirm('Bu müşteriyi silmek istediğinize emin misiniz?')) {
-                              setCustomers(customers.filter(cust => cust.id !== c.id));
-                            }
-                          }}>🗑️</button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                {(!customers || customers.length === 0) ? (
+                  <div className="empty-state">
+                    <span style={{ fontSize: '2rem', display: 'block', marginBottom: '10px' }}>👥</span>
+                    <p>Henüz kayıtlı müşteri yok.</p>
+                  </div>
+                ) : (
+                  <table className="data-table">
+                    <thead><tr><th>Müşteri</th><th>İletişim</th><th>Konum</th><th>Siparişler</th><th>Son Giriş</th><th>İşlem</th></tr></thead>
+                    <tbody>
+                      {customers.map(c => (
+                        <tr key={c.id}>
+                          <td className="font-bold">{c.name}</td>
+                          <td>{c.email}<br /><span className="sub-text">{c.phone}</span></td>
+                          <td>{c.city}</td>
+                          <td><span className="badge-pill">{c.totalOrders} Sipariş</span></td>
+                          <td className="text-muted">{c.lastLogin}</td>
+                          <td>
+                            <button className="icon-action delete" onClick={() => {
+                              if (window.confirm('Bu müşteriyi silmek istediğinize emin misiniz?')) {
+                                setCustomers(customers.filter(cust => cust.id !== c.id));
+                              }
+                            }}>🗑️</button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
               </div>
 
               {/* Mobile Card View for Customers */}
@@ -704,60 +719,67 @@ export default function AdminPanel() {
               </div>
 
               <div className="data-table-container">
-                <table className="data-table">
-                  <thead>
-                    <tr>
-                      <th>Ad Soyad</th>
-                      <th>Pozisyon</th>
-                      <th>Maaş</th>
-                      <th>Durum / Yetki</th>
-                      <th>İşe Giriş</th>
-                      <th>İşlem</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {workers.map(worker => (
-                      <tr key={worker.id} style={{ opacity: worker.status === 'pending' ? 0.6 : 1 }}>
-                        <td>
-                          <div className="user-cell">
-                            <div className="avatar-circle" style={{ background: worker.role === 'owner' ? '#d4af37' : '#2a2a2a' }}>{worker.name.charAt(0)}</div>
-                            <div>
-                              <div className="font-bold">{worker.name} {worker.surname}</div>
-                              <div className="sub-text">{worker.email}</div>
-                            </div>
-                          </div>
-                        </td>
-                        <td>{worker.position}</td>
-                        <td className="font-mono">₺{worker.salary ? worker.salary.toLocaleString() : '-'}</td>
-                        <td>
-                          <div style={{ display: 'flex', gap: '6px', flexDirection: 'column' }}>
-                            <span className={`badge-status ${worker.role === 'admin' || worker.role === 'owner' ? 'shipped' : 'pending'}`}>
-                              {worker.role === 'owner' ? 'OWNER' : (worker.role === 'admin' ? 'Yönetici' : 'Çalışan')}
-                            </span>
-                            {worker.status === 'pending' && <span className="badge-status critical" style={{ fontSize: '0.65rem' }}>Onay Bekliyor</span>}
-                          </div>
-                        </td>
-                        <td>{worker.startDate}</td>
-                        <td>
-                          <div style={{ display: 'flex', gap: '5px' }}>
-                            {worker.status === 'pending' && user.role === 'owner' && (
-                              <button className="primary-btn" style={{ padding: '4px 8px', fontSize: '0.7rem' }} onClick={() => {
-                                setWorkers(workers.map(w => w.id === worker.id ? { ...w, status: 'active' } : w));
-                              }}>✅ Onayla</button>
-                            )}
-                            {worker.role !== 'owner' && (
-                              <button className="icon-action delete" onClick={() => {
-                                if (window.confirm('Bu çalışanı silmek istediğinize emin misiniz?')) {
-                                  setWorkers(workers.filter(w => w.id !== worker.id));
-                                }
-                              }}>🗑️</button>
-                            )}
-                          </div>
-                        </td>
+                {(!workers || workers.length === 0) ? (
+                  <div className="empty-state">
+                    <span style={{ fontSize: '2rem', display: 'block', marginBottom: '10px' }}>👔</span>
+                    <p>Henüz çalışan eklenmemiş.</p>
+                  </div>
+                ) : (
+                  <table className="data-table">
+                    <thead>
+                      <tr>
+                        <th>Ad Soyad</th>
+                        <th>Pozisyon</th>
+                        <th>Maaş</th>
+                        <th>Durum / Yetki</th>
+                        <th>İşe Giriş</th>
+                        <th>İşlem</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {workers.map(worker => (
+                        <tr key={worker.id} style={{ opacity: worker.status === 'pending' ? 0.6 : 1 }}>
+                          <td>
+                            <div className="user-cell">
+                              <div className="avatar-circle" style={{ background: worker.role === 'owner' ? '#d4af37' : '#2a2a2a' }}>{worker.name.charAt(0)}</div>
+                              <div>
+                                <div className="font-bold">{worker.name} {worker.surname}</div>
+                                <div className="sub-text">{worker.email}</div>
+                              </div>
+                            </div>
+                          </td>
+                          <td>{worker.position}</td>
+                          <td className="font-mono">₺{worker.salary ? worker.salary.toLocaleString() : '-'}</td>
+                          <td>
+                            <div style={{ display: 'flex', gap: '6px', flexDirection: 'column' }}>
+                              <span className={`badge-status ${worker.role === 'admin' || worker.role === 'owner' ? 'shipped' : 'pending'}`}>
+                                {worker.role === 'owner' ? 'OWNER' : (worker.role === 'admin' ? 'Yönetici' : 'Çalışan')}
+                              </span>
+                              {worker.status === 'pending' && <span className="badge-status critical" style={{ fontSize: '0.65rem' }}>Onay Bekliyor</span>}
+                            </div>
+                          </td>
+                          <td>{worker.startDate}</td>
+                          <td>
+                            <div style={{ display: 'flex', gap: '5px' }}>
+                              {worker.status === 'pending' && user.role === 'owner' && (
+                                <button className="primary-btn" style={{ padding: '4px 8px', fontSize: '0.7rem' }} onClick={() => {
+                                  setWorkers(workers.map(w => w.id === worker.id ? { ...w, status: 'active' } : w));
+                                }}>✅ Onayla</button>
+                              )}
+                              {worker.role !== 'owner' && (
+                                <button className="icon-action delete" onClick={() => {
+                                  if (window.confirm('Bu çalışanı silmek istediğinize emin misiniz?')) {
+                                    setWorkers(workers.filter(w => w.id !== worker.id));
+                                  }
+                                }}>🗑️</button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
               </div>
 
               {/* MOBILE CARD VIEW FOR WORKERS */}
@@ -865,32 +887,39 @@ export default function AdminPanel() {
 
               {/* DESKTOP TABLE */}
               <div className="data-table-container">
-                <table className="data-table">
-                  <thead>
-                    <tr>
-                      <th>İkon</th>
-                      <th>Kategori Adı</th>
-                      <th>Açıklama</th>
-                      <th>İşlem</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {categories.map(cat => (
-                      <tr key={cat.id}>
-                        <td style={{ fontSize: '1.5rem' }}>{cat.icon}</td>
-                        <td className="font-bold">{cat.name}</td>
-                        <td className="text-muted">{cat.description}</td>
-                        <td>
-                          <button className="icon-action delete" onClick={() => {
-                            if (window.confirm('Bu kategoriyi silmek istediğinize emin misiniz?')) {
-                              setCategories(categories.filter(c => c.id !== cat.id));
-                            }
-                          }}>🗑️</button>
-                        </td>
+                {(!categories || categories.length === 0) ? (
+                  <div className="empty-state">
+                    <span style={{ fontSize: '2rem', display: 'block', marginBottom: '10px' }}>🏷️</span>
+                    <p>Kategori bulunamadı.</p>
+                  </div>
+                ) : (
+                  <table className="data-table">
+                    <thead>
+                      <tr>
+                        <th>İkon</th>
+                        <th>Kategori Adı</th>
+                        <th>Açıklama</th>
+                        <th>İşlem</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {categories.map(cat => (
+                        <tr key={cat.id}>
+                          <td style={{ fontSize: '1.5rem' }}>{cat.icon}</td>
+                          <td className="font-bold">{cat.name}</td>
+                          <td className="text-muted">{cat.description}</td>
+                          <td>
+                            <button className="icon-action delete" onClick={() => {
+                              if (window.confirm('Bu kategoriyi silmek istediğinize emin misiniz?')) {
+                                setCategories(categories.filter(c => c.id !== cat.id));
+                              }
+                            }}>🗑️</button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
               </div>
 
               {/* MOBILE CARD VIEW */}
@@ -989,6 +1018,8 @@ export default function AdminPanel() {
         .badge-pill { background: #f3f4f6; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; color: #555; }
         .text-center { text-align: center; }
         .font-bold { font-weight: 600; }
+        
+        .empty-state { text-align: center; padding: 3rem; color: #666; font-size: 0.95rem; }
         
         /* LAYOUT */
         .admin-layout { display: flex; height: 100vh; background: #f4f5f7; font-family: var(--font-body); overflow: hidden; }
