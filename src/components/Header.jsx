@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useLanguage } from '../context/LanguageContext';
+import { useAuth } from '../context/AuthContext'; // Added useAuth
 import logo from '../assets/VANT.png';
 
 
@@ -12,9 +13,17 @@ const ShoppingBagIcon = () => (
   </svg>
 );
 
+const UserIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+    <circle cx="12" cy="7" r="4"></circle>
+  </svg>
+);
+
 export default function Header() {
   const { toggleCart, cartCount } = useCart();
   const { language, toggleLanguage, t } = useLanguage();
+  const { isAuthenticated } = useAuth(); // Get auth state
 
   return (
     <header className="header luxury-bg">
@@ -47,7 +56,12 @@ export default function Header() {
               onClick={() => toggleLanguage('EN')}
             >EN</button>
           </div>
-          <button className="cart-btn" onClick={toggleCart} aria-label="Open Cart">
+
+          <Link to={isAuthenticated ? "/profile" : "/login"} className="icon-btn-header" aria-label="Profile">
+            <UserIcon />
+          </Link>
+
+          <button className="cart-btn icon-btn-header" onClick={toggleCart} aria-label="Open Cart">
             <ShoppingBagIcon />
             {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
           </button>
@@ -129,18 +143,20 @@ export default function Header() {
           color: var(--color-accent);
           font-weight: bold;
         }
-        .cart-btn {
+        .icon-btn-header {
           background: none;
           border: none;
           color: var(--color-accent);
           cursor: pointer;
-          transition: color 0.3s;
+          transition: all 0.3s;
           display: flex;
           align-items: center;
           position: relative;
+          text-decoration: none;
         }
-        .cart-btn:hover {
-          color: #fff;
+        .icon-btn-header:hover {
+          color: var(--color-text); /* Darker on hover for visibility */
+          transform: scale(1.1);
         }
         .cart-badge {
             position: absolute;
