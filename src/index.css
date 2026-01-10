@@ -1,7 +1,7 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Script:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
 
 :root {
-  --font-heading: 'Playfair Script', cursive;
+  --font-heading: 'Playfair Display', serif;
   --font-body: 'Inter', sans-serif;
 
   /* VANT ART Luxury Palette: Black & Gold */
@@ -164,8 +164,20 @@ button:active,
 }
 
 /* Base Mobile Optimization */
+/* Base Mobile Optimization */
 @media (max-width: 768px) {
   .container {
     padding: 0 1rem;
+  }
+
+  /* Accessibility: Min touch target size */
+  button,
+  .nav-btn,
+  .mobile-btn,
+  .icon-action,
+  input,
+  select {
+    min-height: 44px;
+    min-width: 44px;
   }
 }

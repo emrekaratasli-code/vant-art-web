@@ -991,14 +991,14 @@ export default function AdminPanel() {
         .font-bold { font-weight: 600; }
         
         /* LAYOUT */
-        .admin-layout { display: flex; height: 100vh; background: #f4f5f7; font-family: 'Inter', sans-serif; overflow: hidden; }
+        .admin-layout { display: flex; height: 100vh; background: #f4f5f7; font-family: var(--font-body); overflow: hidden; }
         .admin-sidebar { width: 260px; background: #1a1a1a; color: #fff; display: flex; flex-direction: column; flex-shrink: 0; transition: width 0.3s; }
         .admin-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
         .content-scrollable { flex: 1; overflow-y: auto; padding: 2rem; }
 
         /* SIDEBAR */
         .sidebar-header { padding: 1.5rem; border-bottom: 1px solid #333; }
-        .sidebar-header h2 { font-family: 'Playfair Display', serif; font-size: 1.5rem; letter-spacing: 1px; }
+        .sidebar-header h2 { font-family: var(--font-heading); font-size: 1.5rem; letter-spacing: 1px; }
         .gold { color: #d4af37; }
         .sidebar-nav { padding: 1rem 0; flex: 1; }
         .nav-btn { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 24px; background: none; border: none; color: #999; text-align: left; cursor: pointer; transition: 0.2s; font-size: 0.95rem; }
@@ -1070,6 +1070,10 @@ export default function AdminPanel() {
         /* DATA TABLES */
         .data-table-container { background: #fff; border-radius: 12px; border: 1px solid #e5e5e5; overflow: hidden; margin-bottom: 2rem; }
         .data-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        
+        @media (max-width: 768px) {
+            .data-table-container { display: none; }
+        }
         .data-table th { background: #f9fafb; padding: 12px 16px; text-align: left; font-weight: 600; color: #666; border-bottom: 1px solid #e5e5e5; }
         .data-table td { padding: 16px; border-bottom: 1px solid #f5f5f5; vertical-align: middle; color: #333; }
         .prod-cell-lg { display: flex; gap: 12px; align-items: center; }
