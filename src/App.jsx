@@ -100,6 +100,25 @@ function Footer() {
 }
 
 
+import { useAuth } from './context/AuthContext';
+import { Navigate } from 'react-router-dom';
+
+function ProtectedRoute({ children, adminOnly = false }) {
+  const { user, loading } = useAuth();
+
+  if (loading) return null; // AuthContext handles main loading, but double check
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (adminOnly && user.role !== 'owner' && user.role !== 'admin' && user.role !== 'worker') {
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
+}
+
 function AppContent() {
   return (
     <Router>
@@ -108,11 +127,23 @@ function AppContent() {
           <Route path="/" element={<><Hero /><ProductGrid /></>} />
           <Route path="/product/:id" element={<ProductDetail />} />
           <Route path="/cart" element={<CartPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/checkout" element={<CheckoutPage />} />
+          <Route path="/profile" element={
+            <ProtectedRoute>
+              <ProfilePage />
+            </ProtectedRoute>
+          } />
+          <Route path="/checkout" element={
+            <ProtectedRoute>
+              <CheckoutPage />
+            </ProtectedRoute>
+          } />
           <Route path="/contact" element={<Contact />} />
           <Route path="/our-story" element={<OurStory />} />
-          <Route path="/admin" element={<AdminPanel />} />
+          <Route path="/admin" element={
+            <ProtectedRoute adminOnly={true}>
+              <AdminPanel />
+            </ProtectedRoute>
+          } />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
 

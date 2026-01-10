@@ -161,9 +161,34 @@ export const AuthProvider = ({ children }) => {
         setUser(null);
     };
 
+    const LoadingScreen = () => (
+        <div style={{
+            height: '100vh',
+            width: '100vw',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            background: '#000',
+            color: '#d4af37',
+            flexDirection: 'column',
+            gap: '1rem'
+        }}>
+            <div className="spinner" style={{
+                width: '40px',
+                height: '40px',
+                border: '3px solid rgba(212, 175, 55, 0.3)',
+                borderRadius: '50%',
+                borderTopColor: '#d4af37',
+                animation: 'spin 1s ease-in-out infinite'
+            }}></div>
+            <p style={{ fontFamily: 'sans-serif', letterSpacing: '2px' }}>VANT LOADING</p>
+            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+        </div>
+    );
+
     return (
         <AuthContext.Provider value={{ user, login, register, logout, loading }}>
-            {!loading && children}
+            {loading ? <LoadingScreen /> : children}
         </AuthContext.Provider>
     );
 };

@@ -66,7 +66,7 @@ export default function ProfilePage() {
 
     return (
         <div className="profile-page container">
-            <h1 className="page-title">{isAuthenticated ? `${t('welcome')}, ${user.name}` : t('myProfile')}</h1>
+            <h1 className="page-title">{isAuthenticated ? `${t('welcome')}, ${user?.name || 'Kullanıcı'}` : t('myProfile')}</h1>
 
             {!isAuthenticated ? (
                 <div className="auth-section">
