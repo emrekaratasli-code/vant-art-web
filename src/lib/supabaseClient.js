@@ -6,6 +6,11 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 let supabaseInstance = null;
 
 // Explicitly check for valid non-empty strings
+console.log('🔄 Supabase Bağlantısı Hazırlanıyor...', {
+    urlConfigured: !!supabaseUrl,
+    keyConfigured: !!supabaseAnonKey
+});
+
 const isConfigured = supabaseUrl && supabaseUrl.length > 0 && supabaseAnonKey && supabaseAnonKey.length > 0;
 
 if (isConfigured) {
