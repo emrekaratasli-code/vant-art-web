@@ -9,78 +9,80 @@ export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    // GODMODE EMAIL
     const OWNER_EMAIL = 'emrekaratasli@vantonline.com';
 
     useEffect(() => {
         let mounted = true;
+        console.log('🚀 Auth Provider Mounted. Starting Init...');
 
-        // 1. SAFETY TIMEOUT: Force load after 5 seconds
+        // 1. EMERGENCY BRAKE: Force stop loading after 5 seconds no matter what
         const safetyTimeout = setTimeout(() => {
             if (mounted && loading) {
-                console.warn('⚠️ CRITICAL: Auth check timed out (5s). Forcing app to load.');
+                console.error('🛑 AUTH TIMEOUT (5s): Forcing loading to false. Potential connection hang.');
                 setLoading(false);
             }
         }, 5000);
 
         const initAuth = async () => {
+            console.log('🔄 InitAuth started...');
             try {
-                // Fallback handling if supabase client is dummy or missing
-                if (!supabase?.auth?.getSession) {
-                    console.warn('Supabase client invalid. Skipping auth check.');
+                // Check if Supabase client is valid
+                if (!supabase || !supabase.auth) {
+                    console.warn('⚠️ Supabase client seems invalid (dummy?). Skipping auth.');
                     return;
                 }
 
                 // Get Session
+                console.log('📡 Fetching Session...');
                 const { data: { session }, error } = await supabase.auth.getSession();
 
                 if (error) {
-                    // If session check fails (network?), just log and continue as guest
-                    console.error('Session Check Error:', error);
+                    console.error('❌ Session Error:', error.message);
+                    // Network error or configuration error
                     return;
                 }
 
                 if (session) {
+                    console.log('✅ Session Found for:', session.user.email);
                     await fetchProfile(session.user);
+                } else {
+                    console.log('ℹ️ No Session (Guest)');
                 }
+
             } catch (err) {
-                console.error('Auth Uncaught Error:', err);
+                console.error('💥 CRITICAL AUTH ERROR:', err);
             } finally {
-                // ALWAYS finish loading
                 if (mounted) {
-                    clearTimeout(safetyTimeout);
+                    console.log('🏁 InitAuth FINALLY block reached. Setting loading=false');
                     setLoading(false);
+                    clearTimeout(safetyTimeout); // Clear the safety timer if we finished normally
                 }
             }
         };
 
-        // Run Init
         initAuth();
 
-        // 2. Listen for auth changes
-        let subscription;
-        if (supabase?.auth?.onAuthStateChange) {
-            const { data } = supabase.auth.onAuthStateChange(async (event, session) => {
-                if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-                    if (session) await fetchProfile(session.user);
-                } else if (event === 'SIGNED_OUT') {
-                    setUser(null);
-                    setLoading(false);
-                }
-            });
-            subscription = data.subscription;
-        }
+        // Listen for changes
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+            console.log(`🔔 Auth State Change: ${event}`);
+            if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+                if (session) await fetchProfile(session.user);
+            } else if (event === 'SIGNED_OUT') {
+                setUser(null);
+                setLoading(false);
+            }
+        });
 
         return () => {
             mounted = false;
             clearTimeout(safetyTimeout);
-            if (subscription && subscription.unsubscribe) subscription.unsubscribe();
+            if (subscription) subscription.unsubscribe();
         };
     }, []);
 
     const fetchProfile = async (authUser) => {
+        console.log('👤 Fetching Profile...');
         try {
-            // Fetch extra profile data from 'employees' table
             const { data: profile, error } = await supabase
                 .from('employees')
                 .select('*')
@@ -88,99 +90,70 @@ export const AuthProvider = ({ children }) => {
                 .single();
 
             if (error && error.code !== 'PGRST116') {
-                console.error('Error fetching profile:', error);
+                console.warn('⚠️ Profile Fetch Warning:', error.message);
             }
 
-            // GODMODE OVERRIDE
             const isOwner = authUser.email === OWNER_EMAIL;
-
             const userData = {
                 id: authUser.id,
                 email: authUser.email,
-                // Fallback to Auth Metadata if Profile Table is empty/missing
                 name: profile?.name || authUser.user_metadata?.full_name || 'Kullanıcı',
                 role: isOwner ? 'owner' : (profile?.role || 'customer'),
                 status: isOwner ? 'active' : (profile?.status || 'pending'),
                 is_approved: isOwner ? true : (profile?.status === 'active')
             };
 
+            console.log('✅ Profile Loaded:', userData.email);
             setUser(userData);
         } catch (error) {
-            console.error('Critical Profile Error:', error);
-            // Fallback: If DB fails, still let user in as basic user
+            console.error('❌ Profile Fetch Failed:', error);
+            // Fallback for resiliency
             setUser({
                 id: authUser.id,
                 email: authUser.email,
-                name: authUser.email.split('@')[0],
+                name: 'Kullanıcı (Hata)',
                 role: 'customer',
-                status: 'pending'
+                status: 'active'
             });
         }
-        // fetchProfile is usually called inside initAuth or onAuthStateChange
-        // We do NOT set loading(false) here because initAuth handles the main loading state via finally.
-        // However, if called from onAuthStateChange, we might need to verify loading state logic.
-        // But the 5s timeout + initAuth finally block covers the initial load.
     };
 
     const login = async (email, password) => {
-        if (supabase.isDummy) {
-            alert('SİSTEM HATASI: Supabase API anahtarları bulunamadı. Lütfen yönetici ile iletişime geçin.');
-            return;
-        }
+        if (supabase.isDummy) { alert('SİSTEM HATASI: API Anahtarları Eksik'); return; }
         try {
             const cleanEmail = String(email).trim();
-            const cleanPassword = String(password).trim();
-
-            const { data, error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password: cleanPassword });
+            const { data, error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password });
             if (error) throw error;
             return data;
         } catch (error) {
-            console.error('Login Error:', error);
-            alert('Giriş Başarısız: ' + (error.message || error.error_description || 'Bilinmeyen hata'));
+            alert('Giriş Başarısız: ' + error.message);
             throw error;
         }
     };
 
     const register = async (email, password, fullName) => {
-        if (supabase.isDummy) {
-            alert('SİSTEM HATASI: Kayıt işlemi için API anahtarları eksik. Lütfen yönetici ile iletişime geçin.');
-            return;
-        }
+        if (supabase.isDummy) { alert('SİSTEM HATASI: API Anahtarları Eksik'); return; }
         try {
             let cleanEmail = email;
-            if (typeof email === 'object' && email !== null && email.email) {
-                cleanEmail = email.email;
-            }
+            if (typeof email === 'object' && email?.email) cleanEmail = email.email;
             cleanEmail = String(cleanEmail).trim();
-            const cleanPassword = String(password).trim();
 
             const { data, error } = await supabase.auth.signUp({
                 email: cleanEmail,
-                password: cleanPassword,
-                options: {
-                    data: { full_name: fullName }
-                }
+                password,
+                options: { data: { full_name: fullName } }
             });
-
             if (error) throw error;
 
-            console.log('Register Success:', data);
-
-            if (email.endsWith('@vantonline.com') && data.user) {
-                const { error: insertError } = await supabase.from('employees').insert([{
-                    id: data.user.id,
-                    email: email,
-                    name: fullName,
-                    role: 'worker',
-                    status: 'pending'
+            // Auto-create employee entry
+            if (cleanEmail.endsWith('@vantonline.com') && data.user) {
+                await supabase.from('employees').insert([{
+                    id: data.user.id, email: cleanEmail, name: fullName, role: 'worker', status: 'pending'
                 }]);
-                if (insertError) console.error('Employee Insert Error:', insertError);
             }
-
             return data;
         } catch (error) {
-            console.error('Register Error:', error);
-            alert('Kayıt Başarısız: ' + (error.message || error.error_description || 'Beklenmeyen sunucu hatası'));
+            alert('Kayıt Başarısız: ' + error.message);
             throw error;
         }
     };
@@ -191,27 +164,13 @@ export const AuthProvider = ({ children }) => {
     };
 
     const LoadingScreen = () => (
-        <div style={{
-            height: '100vh',
-            width: '100vw',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            background: '#000',
-            color: '#d4af37',
-            flexDirection: 'column',
-            gap: '1rem'
-        }}>
+        <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#000', color: '#d4af37' }}>
             <div className="spinner" style={{
-                width: '40px',
-                height: '40px',
-                border: '3px solid rgba(212, 175, 55, 0.3)',
-                borderRadius: '50%',
-                borderTopColor: '#d4af37',
-                animation: 'spin 1s ease-in-out infinite'
+                width: 40, height: 40, border: '3px solid rgba(212,175,55,0.3)',
+                borderTopColor: '#d4af37', borderRadius: '50%', animation: 'spin 1s infinite'
             }}></div>
-            <p style={{ fontFamily: 'sans-serif', letterSpacing: '2px' }}>VANT LOADING</p>
-            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+            <p style={{ marginTop: 20, letterSpacing: 2 }}>VANT LOADING...</p>
+            <style>{`@keyframes spin { 100% { transform: rotate(360deg); } }`}</style>
         </div>
     );
 
