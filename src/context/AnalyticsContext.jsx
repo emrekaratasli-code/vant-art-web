@@ -1,126 +1,94 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from '../lib/supabaseClient';
 
 const AnalyticsContext = createContext();
 
 export const useAnalytics = () => useContext(AnalyticsContext);
 
 export const AnalyticsProvider = ({ children }) => {
-    const [events, setEvents] = useState(() => {
-        try {
-            const saved = localStorage.getItem('vant_analytics');
-            return saved ? JSON.parse(saved) : [];
-        } catch {
-            return [];
-        }
+    // 1. Real Data Containers
+    const [stats, setStats] = useState({
+        activityData: [],
+        visitors: 0,
+        recentActivity: [],
+        totalRevenue: 0,
+        totalOrders: 0
     });
 
+    // 2. Fetch Real Stats
+    const fetchRealStats = async () => {
+        try {
+            // -- Visit / Session Mock (Analitik tool entegrasyonu olmadığı için) --
+            // Gerçekte Google Analytics vs. bağlanır
+            const mockVisitors = Math.floor(Math.random() * 500) + 100;
+
+            // -- Real Orders from Supabase --
+            const { data: orders, error } = await supabase
+                .from('orders')
+                .select('created_at, amount, status, user_id, guest_email')
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+
+            // Calculate Total Revenue
+            const revenue = orders.reduce((acc, order) => {
+                // Sadece ödeme alınmış siparişleri katmak isterseniz status kontrolü ekleyin
+                // Şimdilik tüm siparişleri ciro kabul ediyoruz
+                return acc + (parseFloat(order.amount) || 0);
+            }, 0);
+
+            // Generate "Activity Data" for Chart (Last 5 'windows' of time)
+            // This is simulated for chart visual appeal based on real totals if possible, 
+            // or just kept as 'live' simulation since we don't have hourly granularity easily without SQL grouping
+            const chartData = [
+                { time: '09:00', visitors: Math.floor(mockVisitors * 0.2), sales: Math.floor(revenue * 0.1) },
+                { time: '12:00', visitors: Math.floor(mockVisitors * 0.5), sales: Math.floor(revenue * 0.3) },
+                { time: '15:00', visitors: Math.floor(mockVisitors * 0.8), sales: Math.floor(revenue * 0.4) },
+                { time: '18:00', visitors: mockVisitors, sales: Math.floor(revenue * 0.15) },
+                { time: '21:00', visitors: Math.floor(mockVisitors * 0.4), sales: Math.floor(revenue * 0.05) },
+            ];
+
+            // Recent Activity Feed
+            const recentActivity = orders.slice(0, 5).map(o => ({
+                user: o.guest_email || 'Kullanıcı',
+                action: 'Sipariş (Ödendi)',
+                detail: `₺${o.amount} - ${o.status}`,
+                time: new Date(o.created_at).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })
+            }));
+
+            setStats({
+                activityData: chartData,
+                visitors: mockVisitors,
+                recentActivity: recentActivity,
+                totalRevenue: revenue,
+                totalOrders: orders.length
+            });
+
+        } catch (e) {
+            console.error('Analytics Fetch Error:', e);
+        }
+    };
+
     useEffect(() => {
-        localStorage.setItem('vant_analytics', JSON.stringify(events));
-    }, [events]);
+        fetchRealStats();
+        // Subscribe to real-time updates for LIVE dashboard
+        const channel = supabase
+            .channel('dashboard-stats')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => {
+                fetchRealStats();
+            })
+            .subscribe();
 
-    const trackEvent = (eventName, data = {}) => {
-        const newEvent = {
-            id: Date.now(),
-            event: eventName,
-            timestamp: new Date().toISOString(),
-            data
+        return () => {
+            supabase.removeChannel(channel);
         };
-        // Keep only last 1000 events to avoid quota issues
-        setEvents(prev => [newEvent, ...prev].slice(0, 1000));
-        console.log(`[Analytics] ${eventName}`, data);
-    };
+    }, []);
 
-    const getStats = () => {
-        // Simple aggregation for real events
-        const productViews = {};
-        const cartAdds = {};
-        const wishlistAdds = {}; // Added
-        const categoryClicks = {};
-
-        events.forEach(e => {
-            if (e.event === 'view_product') {
-                const name = e.data.productName;
-                if (!productViews[name]) productViews[name] = 0;
-                productViews[name]++;
-            }
-            if (e.event === 'add_to_cart') {
-                const name = e.data.productName;
-                if (!cartAdds[name]) cartAdds[name] = 0;
-                cartAdds[name]++;
-            }
-            if (e.event === 'add_to_wishlist') { // Added logic
-                const name = e.data.productName;
-                if (!wishlistAdds[name]) wishlistAdds[name] = 0;
-                wishlistAdds[name]++;
-            }
-            if (e.event === 'category_click') {
-                const cat = e.data.category;
-                if (!categoryClicks[cat]) categoryClicks[cat] = 0;
-                categoryClicks[cat]++;
-            }
-        });
-
-        // Generate Real Recent Activity from Events
-        // Map last 5 events to activity format
-        const realRecentActivity = events.slice(0, 5).map(e => {
-            let action = 'İşlem';
-            let detail = 'Detay';
-
-            switch (e.event) {
-                case 'view_product': action = 'Ürün İnceleme'; detail = e.data.productName; break;
-                case 'add_to_cart': action = 'Sepete Ekleme'; detail = e.data.productName; break;
-                case 'add_to_wishlist': action = 'Favorilere Ekleme'; detail = e.data.productName; break;
-                case 'checkout_start': action = 'Ödeme Başlatma'; detail = 'Checkout'; break;
-                default: action = e.event; detail = JSON.stringify(e.data).substring(0, 20);
-            }
-
-            // Calculate relative time (simple)
-            const diff = Math.floor((new Date() - new Date(e.timestamp)) / 60000);
-            const timeStr = diff < 1 ? 'Şimdi' : `${diff} dk önce`;
-
-            return {
-                user: 'Ziyaretçi', // We don't track user name in events yet widely, default to Visitor
-                action,
-                detail,
-                time: timeStr
-            };
-        });
-
-        // Smart Platform Mock Data for "Live" Feel (Charts etc)
-        const activityData = [
-            { time: '09:00', visitors: 120, sales: 5 },
-            { time: '12:00', visitors: 350, sales: 25 },
-            { time: '15:00', visitors: 450, sales: 42 },
-            { time: '18:00', visitors: 620, sales: 68 },
-            { time: '21:00', visitors: 210, sales: 15 },
-        ];
-
-        // Fallback or mix real activity
-        const recentActivity = realRecentActivity.length > 0 ? realRecentActivity : [
-            { user: 'Ahmet Y.', action: 'Sepete Ekleme', detail: 'Zultanit Yüzük', time: '2 dk önce' },
-            { user: 'Selin K.', action: 'Sipariş', detail: '₺5.400', time: '5 dk önce' },
-            { user: 'Misafir', action: 'Ürün İnceleme', detail: 'Safir Kolye', time: '12 dk önce' },
-        ];
-
-        const abandonedCarts = [
-            { id: 101, user: 'cansu@mail.com', total: 12500, time: '1 saat önce', items: ['Zümrüt Yüzük', 'Altın Zincir'] },
-            { id: 102, user: 'Misafir (IP: 88.2.)', total: 4500, time: '3 saat önce', items: ['Gümüş Bileklik'] },
-        ];
-
-        return {
-            productViews,
-            cartAdds,
-            wishlistAdds, // Exported
-            categoryClicks,
-            totalEvents: events.length,
-            activityData,
-            recentActivity,
-            abandonedCarts
-        };
-    };
+    // Helper for AdminPanel to access
+    const getStats = () => stats;
 
     return (
-        <AnalyticsContext.Provider value={{ trackEvent, getStats, events }}>
+        <AnalyticsContext.Provider value={{ getStats }}>
             {children}
         </AnalyticsContext.Provider>
     );
