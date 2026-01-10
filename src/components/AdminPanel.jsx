@@ -50,26 +50,75 @@ export default function AdminPanel() {
     localStorage.setItem('vant_workers', JSON.stringify(workers));
   }, [workers]);
 
-  // Custom delete handler with security check
-  const handleDeleteProduct = (id) => {
-    console.log("Attempting to delete product:", id);
-    // 1. Godmode & Approval Check
+  // Transactional Delete Product (Async + Optimistic UI + Rollback)
+  const handleDeleteProduct = async (id) => {
+    // 1. Authorization Check (Godmode > Owner > Active Worker)
     const isGodmode = user?.email === 'emrekaratasli@vantonline.com';
-    // Check if current user is an active worker
+    const isOwner = user?.role === 'owner';
     const currentWorkerProfile = workers.find(w => w.email === user?.email);
-    const isAuthorized = isGodmode || (user?.role === 'admin') || (currentWorkerProfile?.status === 'active');
+    const isActiveWorker = user?.role === 'worker' && currentWorkerProfile?.status === 'active';
 
-    console.log("Auth Status:", { isGodmode, role: user?.role, workerStatus: currentWorkerProfile?.status, isAuthorized });
-
-    if (!isAuthorized) {
-      alert('⛔ Yetkiniz yok! Sadece onaylı çalışanlar veya Godmode (Owner) silebilir.');
+    if (!isGodmode && !isOwner && !isActiveWorker) {
+      alert('⛔ Yetkiniz yok! Bu işlem için onaylı personel veya yönetici olmalısınız.');
       return;
     }
 
-    if (window.confirm('Bu ürünü silmek istediğinize emin misiniz?')) {
-      deleteFromContext(id);
+    // 2. Confirmation Modal
+    if (!window.confirm('⚠️ Bu ürünü silmek üzeresiniz. Bu işlem geri alınamaz!\n\nDevam etmek istiyor musunuz?')) {
+      return;
+    }
+
+    // 3. Optimistic UI Logic
+    const previousProducts = [...products]; // Backup for rollback
+    // Optimistically remove from context (simulated here since context is local-only)
+    deleteFromContext(id);
+
+    try {
+      // 4. Simulate Async Backend Request
+      await new Promise((resolve, reject) => {
+        setTimeout(() => {
+          // Simulate 10% failure chance for robust testing
+          const success = Math.random() > 0.1;
+          success ? resolve() : reject(new Error('Sunucu yanıt vermedi.'));
+        }, 600);
+      });
+      // Success Notification (Toast would be better, using alert for now as per minimal deps)
+      // console.log('Product deleted successfully');
+    } catch (error) {
+      // 5. Rollback on Failure
+      console.error('Delete failed, rolling back:', error);
+      alert('❌ Silme işlemi başarısız oldu! Değişiklikler geri alınıyor.');
+      // Ideally we would have a 'setProducts' exposed or 'addProduct' back, 
+      // but since we rely on sync context, we might need a reload or a restore function.
+      // For this "Production" mock, we'll verify the concept. 
+      // Since context set is one-way here, let's warn. In real app, we'd dispatch({ type: 'RESTORE', payload: previousProducts });
+      // Reloading is a brute-force rollback for this specific architecture.
+      window.location.reload();
     }
   };
+
+  // Local Media Pipeline
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (!file.type.match('image.*')) {
+        alert('Lütfen geçerli bir resim dosyası (.jpg, .png) seçiniz.');
+        return;
+      }
+      const objectUrl = URL.createObjectURL(file);
+      setFormData({ ...formData, image: objectUrl });
+    }
+  };
+
+  // ... (existing helper functions)
+
+  // ...
+
+  // Update form render
+  {/* <div className="form-group"><label>Görsel URL</label><input name="image" value={formData.image} onChange={handleChange} required /></div> */ }
+
+  // We need to replace the form part later in the file.
+  // This replacement block focuses on the logic handlers.
   const [workerFormData, setWorkerFormData] = useState({ name: '', surname: '', email: '', position: 'Satış Temsilcisi', role: 'worker', salary: '', startDate: '' });
 
   // CATEGORY DATA STATE
@@ -494,7 +543,25 @@ export default function AdminPanel() {
                 <form onSubmit={handleSubmit} className="grid-form">
                   <div className="form-group"><label>Ürün Adı</label><input name="name" value={formData.name} onChange={handleChange} required /></div>
                   <div className="form-group"><label>Fiyat (₺)</label><input name="price" value={formData.price} onChange={handleChange} type="number" required /></div>
-                  <div className="form-group"><label>Görsel URL</label><input name="image" value={formData.image} onChange={handleChange} required /></div>
+                  <div className="form-group">
+                    <label>Ürün Görseli</label>
+                    <div className="image-upload-container" style={{ border: '2px dashed #ccc', padding: '1rem', textAlign: 'center', borderRadius: '8px', cursor: 'pointer' }}>
+                      <input type="file" id="prod-img" accept="image/*" onChange={handleImageUpload} style={{ display: 'none' }} />
+                      <label htmlFor="prod-img" style={{ cursor: 'pointer', display: 'block', width: '100%' }}>
+                        {formData.image ? (
+                          <div style={{ position: 'relative' }}>
+                            <img src={formData.image} alt="Preview" style={{ maxHeight: '150px', maxWidth: '100%', borderRadius: '4px' }} />
+                            <div style={{ marginTop: '8px', fontSize: '0.8rem', color: '#666' }}>Görseli Değiştir</div>
+                          </div>
+                        ) : (
+                          <div style={{ padding: '20px' }}>
+                            <span style={{ fontSize: '2rem' }}>📷</span>
+                            <p>Fotoğraf Yükle veya Sürükle</p>
+                          </div>
+                        )}
+                      </label>
+                    </div>
+                  </div>
                   <div className="form-group"><label>Kategori</label>
                     <select name="category" value={formData.category} onChange={handleChange}>
                       <option value="">Seçiniz</option>
@@ -641,14 +708,31 @@ export default function AdminPanel() {
                 <h3>👥 Yeni Çalışan Ekle (Pasif Olarak Eklenir)</h3>
                 <form onSubmit={(e) => {
                   e.preventDefault();
-                  if (!workerFormData.name || !workerFormData.email) return;
+                  // Regex Validations
+                  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                  const phoneRegex = /^[0-9]{10,11}$/;
+
+                  if (!workerFormData.name || !workerFormData.email || !workerFormData.phone) {
+                    alert('Lütfen tüm zorunlu alanları doldurunuz.');
+                    return;
+                  }
+                  if (!emailRegex.test(workerFormData.email)) {
+                    alert('Geçerli bir e-posta adresi giriniz.');
+                    return;
+                  }
+                  if (!phoneRegex.test(workerFormData.phone)) {
+                    alert('Geçerli bir telefon numarası giriniz (10-11 hane, sadece rakam).');
+                    return;
+                  }
+
                   setWorkers([...workers, { ...workerFormData, id: Date.now(), status: 'pending' }]);
-                  setWorkerFormData({ name: '', surname: '', email: '', position: 'Satış Temsilcisi', role: 'worker', salary: '', startDate: '' });
+                  setWorkerFormData({ name: '', surname: '', email: '', phone: '', position: 'Satış Temsilcisi', role: 'worker', salary: '', startDate: '' });
                   alert('Çalışan başarıyla listeye eklendi. Erişim için yönetici onayı gereklidir.');
                 }} className="grid-form">
                   <div className="form-group"><label>Ad</label><input value={workerFormData.name} onChange={e => setWorkerFormData({ ...workerFormData, name: e.target.value })} required /></div>
                   <div className="form-group"><label>Soyad</label><input value={workerFormData.surname} onChange={e => setWorkerFormData({ ...workerFormData, surname: e.target.value })} required /></div>
                   <div className="form-group"><label>E-posta (@vantonline.com)</label><input type="email" value={workerFormData.email} onChange={e => setWorkerFormData({ ...workerFormData, email: e.target.value })} required /></div>
+                  <div className="form-group"><label>Telefon</label><input type="tel" placeholder="05551234567" value={workerFormData.phone} onChange={e => setWorkerFormData({ ...workerFormData, phone: e.target.value })} required /></div>
 
                   <div className="form-group"><label>Pozisyon</label>
                     <select value={workerFormData.position} onChange={e => setWorkerFormData({ ...workerFormData, position: e.target.value })}>
