@@ -83,17 +83,26 @@ export const AuthProvider = ({ children }) => {
     };
 
     const login = async (email, password) => {
+        if (supabase.isDummy) {
+            alert('SİSTEM HATASI: Supabase API anahtarları bulunamadı. Lütfen yönetici ile iletişime geçin.');
+            return;
+        }
         try {
             const { data, error } = await supabase.auth.signInWithPassword({ email, password });
             if (error) throw error;
             return data;
         } catch (error) {
-            alert('Giriş Hatası: ' + error.message);
+            console.error('Login Error:', error);
+            alert('Giriş Başarısız: ' + (error.message || error.error_description || 'Bilinmeyen hata'));
             throw error;
         }
     };
 
     const register = async (email, password, fullName) => {
+        if (supabase.isDummy) {
+            alert('SİSTEM HATASI: Kayıt işlemi için API anahtarları eksik. Lütfen yönetici ile iletişime geçin.');
+            return;
+        }
         try {
             const { data, error } = await supabase.auth.signUp({
                 email,
@@ -105,24 +114,27 @@ export const AuthProvider = ({ children }) => {
 
             if (error) throw error;
 
-            // If signup successful, trying to create employee record if domain matches
-            if (email.endsWith('@vantonline.com')) {
-                // We rely on a trigger or manual insertion. 
-                // For simplicity in this client-side demo, we insert if user id exists
-                if (data.user) {
-                    await supabase.from('employees').insert([{
-                        id: data.user.id,
-                        email: email,
-                        name: fullName,
-                        role: 'worker',
-                        status: 'pending' // Default pending
-                    }]);
-                }
+            console.log('Register Success:', data);
+
+            // If signup successful, trying to create employee record
+            // Note: This might duplicate if you have a database trigger. 
+            // Better to rely on DB trigger for security, but keeping it here for now as requested.
+            if (email.endsWith('@vantonline.com') && data.user) {
+                const { error: insertError } = await supabase.from('employees').insert([{
+                    id: data.user.id,
+                    email: email,
+                    name: fullName,
+                    role: 'worker',
+                    status: 'pending'
+                }]);
+                if (insertError) console.error('Employee Insert Error:', insertError);
             }
 
             return data;
         } catch (error) {
-            alert('Kayıt Hatası: ' + error.message);
+            console.error('Register Error:', error);
+            // Show the actual Supabase error message
+            alert('Kayıt Başarısız: ' + (error.message || error.error_description || 'Beklenmeyen sunucu hatası'));
             throw error;
         }
     };
