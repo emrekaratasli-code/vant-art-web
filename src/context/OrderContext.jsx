@@ -1,46 +1,88 @@
-import { createContext, useState, useContext, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from '../lib/supabaseClient';
 
 const OrderContext = createContext();
 
 export const useOrders = () => useContext(OrderContext);
 
 export const OrderProvider = ({ children }) => {
-    const [orders, setOrders] = useState(() => {
+    const [orders, setOrders] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    // FETCH ORDERS
+    const fetchOrders = async () => {
         try {
-            const saved = localStorage.getItem('orders');
-            return saved ? JSON.parse(saved) : [
-                { id: 'ORD-1024', date: new Date().toISOString(), status: 'Delivered', amount: 1250, billingDetails: { name: 'Ayşe Yılmaz', email: 'ayse@example.com', city: 'İstanbul' } },
-                { id: 'ORD-1025', date: new Date(Date.now() - 86400000).toISOString(), status: 'Shipped', amount: 450, billingDetails: { name: 'Mehmet Demir', email: 'mehmet@example.com', city: 'Ankara' } },
-                { id: 'ORD-1026', date: new Date(Date.now() - 172800000).toISOString(), status: 'Preparing', amount: 3500, billingDetails: { name: 'Zeynep Kaya', email: 'zeynep@example.com', city: 'İzmir' } }
-            ];
-        } catch (e) {
-            return [];
+            setLoading(true);
+            const { data, error } = await supabase
+                .from('orders')
+                .select(`
+          *,
+          user:user_id (email)
+        `)
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+
+            // Transform Data: Ensure fields match UI expectation
+            const formattedOrders = (data || []).map(o => ({
+                ...o,
+                date: o.created_at,
+                billingDetails: {
+                    name: o.guest_email || o.user?.email || 'Misafir',
+                    email: o.guest_email || o.user?.email
+                }
+            }));
+
+            setOrders(formattedOrders);
+        } catch (error) {
+            console.error('Error fetching orders:', error);
+        } finally {
+            setLoading(false);
         }
-    });
-
-    useEffect(() => {
-        localStorage.setItem('orders', JSON.stringify(orders));
-    }, [orders]);
-
-    const addOrder = (orderData) => {
-        const newOrder = {
-            id: `ORD-${Date.now().toString().slice(-6)}`,
-            date: new Date().toISOString(),
-            status: 'Preparing', // Preparing, Shipped, Delivered, Cancelled
-            ...orderData
-        };
-        setOrders(prev => [newOrder, ...prev]);
-        return newOrder.id;
     };
 
-    const updateOrderStatus = (orderId, status) => {
-        setOrders(prev => prev.map(order =>
-            order.id === orderId ? { ...order, status } : order
-        ));
+    useEffect(() => {
+        fetchOrders();
+
+        // REALTIME
+        const channel = supabase
+            .channel('public:orders')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => {
+                fetchOrders(); // Refetch to get relational data simpler than manual merge
+            })
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, []);
+
+    const addOrder = async (orderData) => {
+        // This would typically be called by webhook or client after payment
+        // Included here for manual testing or 'Cash on Delivery' flow
+        const { error } = await supabase.from('orders').insert([orderData]);
+        if (error) console.error(error);
+    };
+
+    const updateOrderStatus = async (id, newStatus) => {
+        try {
+            const { error } = await supabase
+                .from('orders')
+                .update({ status: newStatus })
+                .eq('id', id);
+
+            if (error) throw error;
+
+            // Optimistic UI update
+            setOrders(prev => prev.map(o => o.id === id ? { ...o, status: newStatus } : o));
+        } catch (error) {
+            console.error('Error updating status:', error);
+            alert('Durum güncellenemedi.');
+        }
     };
 
     return (
-        <OrderContext.Provider value={{ orders, addOrder, updateOrderStatus }}>
+        <OrderContext.Provider value={{ orders, addOrder, updateOrderStatus, loading }}>
             {children}
         </OrderContext.Provider>
     );

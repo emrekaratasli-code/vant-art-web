@@ -1,74 +1,119 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
+import { supabase } from '../lib/supabaseClient';
 
 const AuthContext = createContext();
 
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
-    const [user, setUser] = useState(() => {
-        try {
-            const saved = localStorage.getItem('vant_user');
-            return saved ? JSON.parse(saved) : null;
-        } catch {
-            return null;
-        }
-    });
+    const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    // GODMODE EMAIL
+    const OWNER_EMAIL = 'emrekaratasli@vantonline.com';
 
     useEffect(() => {
-        if (user) {
-            localStorage.setItem('vant_user', JSON.stringify(user));
-        } else {
-            localStorage.removeItem('vant_user');
+        // 1. Check active session
+        const getSession = async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                await fetchProfile(session.user);
+            } else {
+                setLoading(false);
+            }
+        };
+
+        getSession();
+
+        // 2. Listen for auth changes
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+            if (session) {
+                await fetchProfile(session.user);
+            } else {
+                setUser(null);
+                setLoading(false);
+            }
+        });
+
+        return () => subscription.unsubscribe();
+    }, []);
+
+    const fetchProfile = async (authUser) => {
+        try {
+            // Fetch extra profile data from 'employees' table
+            const { data: profile, error } = await supabase
+                .from('employees')
+                .select('*')
+                .eq('id', authUser.id)
+                .single();
+
+            if (error && error.code !== 'PGRST116') { // PGRST116 means no rows found (expected for new users)
+                console.error('Error fetching profile:', error);
+            }
+
+            // GODMODE OVERRIDE
+            const isOwner = authUser.email === OWNER_EMAIL;
+
+            const userData = {
+                id: authUser.id,
+                email: authUser.email,
+                name: profile?.name || authUser.user_metadata?.full_name || 'Kullanıcı',
+                role: isOwner ? 'owner' : (profile?.role || 'customer'),
+                status: isOwner ? 'active' : (profile?.status || 'pending'),
+                is_approved: isOwner ? true : (profile?.status === 'active')
+            };
+
+            setUser(userData);
+        } catch (error) {
+            console.error('Profile fetch error:', error);
+        } finally {
+            setLoading(false);
         }
-    }, [user]);
+    };
 
-    const login = (email, password) => {
-        // Mock login
-        if (!email.includes('@')) throw new Error('Geçersiz e-posta adresi');
+    const login = async (email, password) => {
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        return data;
+    };
 
-        let role = 'customer';
-        let name = email.split('@')[0];
-
-        // GODMODE CHECK
-        if (email === 'emrekaratasli@vantonline.com') {
-            role = 'owner';
-            name = 'Emre Karataşlı';
-        }
-        // Admin/Worker Domain Check
-        else if (email.endsWith('@vantonline.com')) {
-            // Default to 'worker' but pending approval in real app context. 
-            // For this mock auth, we'll assign 'worker' role but the AdminPanel will check status.
-            role = 'worker';
-        }
-
-        const newUser = {
-            id: Date.now(),
+    const register = async (email, password, fullName) => {
+        const { data, error } = await supabase.auth.signUp({
             email,
-            name: name,
-            role: role
-        };
-        setUser(newUser);
-        return newUser;
+            password,
+            options: {
+                data: { full_name: fullName }
+            }
+        });
+
+        if (error) throw error;
+
+        // If signup successful, trying to create employee record if domain matches
+        if (email.endsWith('@vantonline.com')) {
+            // We rely on a trigger or manual insertion. 
+            // For simplicity in this client-side demo, we insert if user id exists
+            if (data.user) {
+                await supabase.from('employees').insert([{
+                    id: data.user.id,
+                    email: email,
+                    name: fullName,
+                    role: 'worker',
+                    status: 'pending' // Default pending
+                }]);
+            }
+        }
+
+        return data;
     };
 
-    const register = (data) => {
-        const newUser = {
-            id: Date.now(),
-            email: data.email,
-            name: data.name,
-            role: 'customer'
-        };
-        setUser(newUser);
-        return newUser;
-    };
-
-    const logout = () => {
+    const logout = async () => {
+        await supabase.auth.signOut();
         setUser(null);
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, register, logout, isAuthenticated: !!user }}>
-            {children}
+        <AuthContext.Provider value={{ user, login, register, logout, loading }}>
+            {!loading && children}
         </AuthContext.Provider>
     );
 };
