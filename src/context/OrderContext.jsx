@@ -23,7 +23,7 @@ export const OrderProvider = ({ children }) => {
 
             if (error) throw error;
 
-            // Transform Data: Ensure fields match UI expectation
+            // Transform Data
             const formattedOrders = (data || []).map(o => ({
                 ...o,
                 date: o.created_at,
@@ -48,7 +48,7 @@ export const OrderProvider = ({ children }) => {
         const channel = supabase
             .channel('public:orders')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => {
-                fetchOrders(); // Refetch to get relational data simpler than manual merge
+                fetchOrders();
             })
             .subscribe();
 
@@ -58,23 +58,26 @@ export const OrderProvider = ({ children }) => {
     }, []);
 
     const addOrder = async (orderData) => {
-        // This would typically be called by webhook or client after payment
-        // Included here for manual testing or 'Cash on Delivery' flow
         const { error } = await supabase.from('orders').insert([orderData]);
         if (error) console.error(error);
     };
 
-    const updateOrderStatus = async (id, newStatus) => {
+    const updateOrderStatus = async (id, newStatus, trackingNumber = null) => {
         try {
+            const updateData = { status: newStatus };
+            if (trackingNumber !== null) {
+                updateData.tracking_number = trackingNumber;
+            }
+
             const { error } = await supabase
                 .from('orders')
-                .update({ status: newStatus })
+                .update(updateData)
                 .eq('id', id);
 
             if (error) throw error;
 
             // Optimistic UI update
-            setOrders(prev => prev.map(o => o.id === id ? { ...o, status: newStatus } : o));
+            setOrders(prev => prev.map(o => o.id === id ? { ...o, ...updateData } : o));
         } catch (error) {
             console.error('Error updating status:', error);
             alert('Durum güncellenemedi.');
