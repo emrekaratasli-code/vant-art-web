@@ -26,41 +26,36 @@ export default function RegisterPage() {
                 alert('⚠️ Bu e-posta zaten kayıtlı. Giriş sayfasına yönlendiriliyorsunuz.');
                 navigate('/login');
             } else {
-                // Fallback error (handled in context mostly but good to safeguard)
-                // Context shows alert, so we might just log here or if context doesn't throw, we wouldn't be here.
+                // Fallback error
             }
         }
     };
-} catch (err) {
-    alert(err.message);
-}
-    };
 
-return (
-    <div className="auth-page container">
-        <div className="auth-card">
-            <h2>Aramıza Katılın</h2>
-            <p className="auth-desc">VANT ART'ın ayrıcalıklı dünyasına hoş geldiniz.</p>
-            <form onSubmit={handleSubmit}>
-                <div className="form-group">
-                    <label>AD SOYAD</label>
-                    <input type="text" value={name} onChange={(e) => setName(e.target.value)} required placeholder="İsim Soyisim" />
+    return (
+        <div className="auth-page container">
+            <div className="auth-card">
+                <h2>Aramıza Katılın</h2>
+                <p className="auth-desc">VANT ART'ın ayrıcalıklı dünyasına hoş geldiniz.</p>
+                <form onSubmit={handleSubmit}>
+                    <div className="form-group">
+                        <label>AD SOYAD</label>
+                        <input type="text" value={name} onChange={(e) => setName(e.target.value)} required placeholder="İsim Soyisim" />
+                    </div>
+                    <div className="form-group">
+                        <label>E-POSTA ADRESİ</label>
+                        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="ornek@vantart.com" />
+                    </div>
+                    <div className="form-group">
+                        <label>ŞİFRE</label>
+                        <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required placeholder="******" />
+                    </div>
+                    <button type="submit" className="auth-btn">KAYIT OL</button>
+                </form>
+                <div className="auth-footer">
+                    <p>Zaten üye misiniz? <Link to="/login">Giriş Yapın</Link></p>
                 </div>
-                <div className="form-group">
-                    <label>E-POSTA ADRESİ</label>
-                    <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="ornek@vantart.com" />
-                </div>
-                <div className="form-group">
-                    <label>ŞİFRE</label>
-                    <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required placeholder="******" />
-                </div>
-                <button type="submit" className="auth-btn">KAYIT OL</button>
-            </form>
-            <div className="auth-footer">
-                <p>Zaten üye misiniz? <Link to="/login">Giriş Yapın</Link></p>
             </div>
-        </div>
-        <style>{`
+            <style>{`
                 .auth-page {
                     padding: 8rem 1rem;
                     min-height: 80vh;
@@ -129,6 +124,6 @@ return (
                     color: var(--color-accent);
                 }
             `}</style>
-    </div>
-);
+        </div>
+    );
 }
