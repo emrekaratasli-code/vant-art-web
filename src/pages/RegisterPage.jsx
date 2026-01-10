@@ -9,17 +9,18 @@ export default function RegisterPage() {
     const { register } = useAuth();
     const navigate = useNavigate();
 
+    const [isRegistering, setIsRegistering] = useState(false);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (isRegistering) return; // Prevent double click
+
+        setIsRegistering(true);
         try {
             await register(email, password, name);
             // Success Feedback
             alert('✅ Kayıt Başarılı! Giriş sayfasına yönlendiriliyorsunuz...');
-
-            setTimeout(() => {
-                navigate('/login');
-            }, 2000);
-
+            navigate('/login');
         } catch (err) {
             // Error Handling
             if (err.message && (err.message.includes('registered') || err.message.includes('exists'))) {
@@ -28,6 +29,8 @@ export default function RegisterPage() {
             } else {
                 // Fallback error
             }
+        } finally {
+            setIsRegistering(false);
         }
     };
 
@@ -39,17 +42,19 @@ export default function RegisterPage() {
                 <form onSubmit={handleSubmit}>
                     <div className="form-group">
                         <label>AD SOYAD</label>
-                        <input type="text" value={name} onChange={(e) => setName(e.target.value)} required placeholder="İsim Soyisim" />
+                        <input type="text" value={name} onChange={(e) => setName(e.target.value)} required placeholder="İsim Soyisim" disabled={isRegistering} />
                     </div>
                     <div className="form-group">
                         <label>E-POSTA ADRESİ</label>
-                        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="ornek@vantart.com" />
+                        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="ornek@vantart.com" disabled={isRegistering} />
                     </div>
                     <div className="form-group">
                         <label>ŞİFRE</label>
-                        <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required placeholder="******" />
+                        <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required placeholder="******" disabled={isRegistering} />
                     </div>
-                    <button type="submit" className="auth-btn">KAYIT OL</button>
+                    <button type="submit" className="auth-btn" disabled={isRegistering}>
+                        {isRegistering ? 'KAYDEDİLİYOR...' : 'KAYIT OL'}
+                    </button>
                 </form>
                 <div className="auth-footer">
                     <p>Zaten üye misiniz? <Link to="/login">Giriş Yapın</Link></p>
