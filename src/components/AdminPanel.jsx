@@ -34,12 +34,21 @@ export default function AdminPanel() {
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [formData, setFormData] = useState({ name: '', price: '', category: '', image: '', description: '', material: '' });
 
-  // WORKER DATA STATE (Moved up for access in handleDelete)
-  const [workers, setWorkers] = useState([
-    { id: 1, name: 'Ahmet', surname: 'Yılmaz', email: 'ahmet@vantonline.com', position: 'Depo Sorumlusu', role: 'worker', status: 'active', salary: 28000, startDate: '2024-01-15' },
-    { id: 2, name: 'Zeynep', surname: 'Kaya', email: 'zeynep@vantonline.com', position: 'Satış Uzmanı', role: 'worker', status: 'active', salary: 32000, startDate: '2023-11-20' },
-    { id: 3, name: 'Can', surname: 'Vural', email: 'can@vantonline.com', position: 'Stajyer', role: 'worker', status: 'pending', salary: 17002, startDate: '2025-01-09' }
-  ]);
+  // WORKER DATA STATE (Persisted)
+  const [workers, setWorkers] = useState(() => {
+    const saved = localStorage.getItem('vant_workers');
+    if (saved) return JSON.parse(saved);
+    return [
+      { id: 1, name: 'Ahmet', surname: 'Yılmaz', email: 'ahmet@vantonline.com', position: 'Depo Sorumlusu', role: 'worker', status: 'active', salary: 28000, startDate: '2024-01-15' },
+      { id: 2, name: 'Zeynep', surname: 'Kaya', email: 'zeynep@vantonline.com', position: 'Satış Uzmanı', role: 'worker', status: 'active', salary: 32000, startDate: '2023-11-20' },
+      { id: 3, name: 'Can', surname: 'Vural', email: 'can@vantonline.com', position: 'Stajyer', role: 'worker', status: 'pending', salary: 17002, startDate: '2025-01-09' }
+    ];
+  });
+
+  // Save workers to LocalStorage whenever usage changes
+  useEffect(() => {
+    localStorage.setItem('vant_workers', JSON.stringify(workers));
+  }, [workers]);
 
   // Custom delete handler with security check
   const handleDeleteProduct = (id) => {
