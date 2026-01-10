@@ -469,7 +469,10 @@ export default function AdminPanel() {
 
                       <div className="card-footer">
                         <span className="card-price">₺{p.price}</span>
-                        <button className="icon-action delete mobile-btn" onClick={() => handleDeleteProduct(p.id)}>Sil 🗑️</button>
+                        <button className="mobile-btn" style={{ background: '#fee2e2', color: '#ef4444', border: '1px solid #fecaca', zIndex: 10, cursor: 'pointer' }} onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteProduct(p.id);
+                        }}>Sil 🗑️</button>
                       </div>
                     </div>
                   </div>
