@@ -1,7 +1,7 @@
-export const products = [
+const products = [
   {
     id: 1,
-    name: "Ethereal Gold Necklace",
+    name: "VANT Soleil Gold Pendant",
     price: 1250,
     category: "Necklaces",
     image: "https://images.unsplash.com/photo-1599643477877-5313557d87bc?q=80&w=1000&auto=format&fit=crop",
@@ -10,7 +10,7 @@ export const products = [
   },
   {
     id: 2,
-    name: "Diamond Stud Earrings",
+    name: "VANT Eternal Diamond Studs",
     price: 3500,
     category: "Earrings",
     image: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?q=80&w=1000&auto=format&fit=crop",
@@ -19,7 +19,7 @@ export const products = [
   },
   {
     id: 3,
-    name: "Obsidian Signet Ring",
+    name: "VANT Noir Obsidian Signet",
     price: 450,
     category: "Rings",
     image: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?q=80&w=1000&auto=format&fit=crop",
@@ -28,7 +28,7 @@ export const products = [
   },
   {
     id: 4,
-    name: "Pearl Drop Pendant",
+    name: "VANT Luna Pearl Drop",
     price: 890,
     category: "Necklaces",
     image: "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?q=80&w=1000&auto=format&fit=crop",
@@ -37,7 +37,7 @@ export const products = [
   },
   {
     id: 5,
-    name: "Gold Cuban Link Bracelet",
+    name: "VANT Royal Cuban Bond",
     price: 2100,
     category: "Bracelets",
     image: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?q=80&w=1000&auto=format&fit=crop",
@@ -46,7 +46,7 @@ export const products = [
   },
   {
     id: 6,
-    name: "Rose Gold Hoop Earrings",
+    name: "VANT Rosé Classic Hoops",
     price: 650,
     category: "Earrings",
     image: "https://images.unsplash.com/photo-1630019852942-e5e1237e3690?q=80&w=1000&auto=format&fit=crop",
@@ -55,7 +55,7 @@ export const products = [
   },
   {
     id: 7,
-    name: "Sapphire Halo Ring",
+    name: "VANT Sapphire Halo Ring",
     price: 4200,
     category: "Rings",
     image: "https://images.unsplash.com/photo-1603561591411-07134e71a2a9?q=80&w=1000&auto=format&fit=crop",
@@ -64,7 +64,7 @@ export const products = [
   },
   {
     id: 8,
-    name: "Emerald Cut Tennis Bracelet",
+    name: "VANT Crystal Tennis Bracelet",
     price: 5500,
     category: "Bracelets",
     image: "https://images.unsplash.com/photo-1573408301185-9146fe634ad0?q=80&w=1000&auto=format&fit=crop",
@@ -72,3 +72,5 @@ export const products = [
     material: "Sterling Silver, Cubic Zirconia"
   }
 ];
+
+export { products };

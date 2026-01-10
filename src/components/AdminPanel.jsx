@@ -497,6 +497,299 @@ export default function AdminPanel() {
             </div>
           )}
 
+          {/* ORDERS VIEW */}
+          {activeTab === 'orders' && (
+            <div className="orders-view">
+              <div className="section-header"><h2>Sipariş Yönetimi</h2></div>
+              <div className="data-table-container">
+                {(!orders || orders.length === 0) ? <div className="empty-state">Henüz sipariş yok.</div> :
+                  <table className="data-table">
+                    <thead><tr><th>Sipariş No</th><th>Müşteri</th><th>Tarih</th><th>Tutar</th><th>Durum</th></tr></thead>
+                    <tbody>
+                      {(orders || []).map(o => (
+                        <tr key={o.id}>
+                          <td className="font-mono">#{o.id}</td>
+                          <td>{o.billingDetails?.name}<br /><span className="sub-text">{o.billingDetails?.email}</span></td>
+                          <td>{new Date().toLocaleDateString()}</td>
+                          <td className="font-mono">₺{o.amount}</td>
+                          <td><span className="badge-status pending">{o.status || 'Bekliyor'}</span></td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                }
+              </div>
+            </div>
+          )}
+
+          {/* WORKERS VIEW */}
+          {activeTab === 'workers' && (
+            <div className="workers-view">
+              <div className="section-header">
+                <h2>Çalışan Yönetimi</h2>
+                <button className="primary-btn" onClick={() => document.getElementById('add-worker-form').scrollIntoView({ behavior: 'smooth' })}>
+                  + Yeni Çalışan Ekle
+                </button>
+              </div>
+
+              <div className="data-table-container">
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>Ad Soyad</th>
+                      <th>Pozisyon</th>
+                      <th>Maaş</th>
+                      <th>Durum / Yetki</th>
+                      <th>İşe Giriş</th>
+                      <th>İşlem</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {workers.map(worker => (
+                      <tr key={worker.id} style={{ opacity: worker.status === 'pending' ? 0.6 : 1 }}>
+                        <td>
+                          <div className="user-cell">
+                            <div className="avatar-circle" style={{ background: worker.role === 'owner' ? '#d4af37' : '#2a2a2a' }}>{worker.name.charAt(0)}</div>
+                            <div>
+                              <div className="font-bold">{worker.name} {worker.surname}</div>
+                              <div className="sub-text">{worker.email}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td>{worker.position}</td>
+                        <td className="font-mono">₺{worker.salary ? worker.salary.toLocaleString() : '-'}</td>
+                        <td>
+                          <div style={{ display: 'flex', gap: '6px', flexDirection: 'column' }}>
+                            <span className={`badge-status ${worker.role === 'admin' || worker.role === 'owner' ? 'shipped' : 'pending'}`}>
+                              {worker.role === 'owner' ? 'OWNER' : (worker.role === 'admin' ? 'Yönetici' : 'Çalışan')}
+                            </span>
+                            {worker.status === 'pending' && <span className="badge-status critical" style={{ fontSize: '0.65rem' }}>Onay Bekliyor</span>}
+                          </div>
+                        </td>
+                        <td>{worker.startDate}</td>
+                        <td>
+                          <div style={{ display: 'flex', gap: '5px' }}>
+                            {worker.status === 'pending' && user.role === 'owner' && (
+                              <button className="primary-btn" style={{ padding: '4px 8px', fontSize: '0.7rem' }} onClick={() => {
+                                setWorkers(workers.map(w => w.id === worker.id ? { ...w, status: 'active' } : w));
+                              }}>✅ Onayla</button>
+                            )}
+                            {worker.role !== 'owner' && (
+                              <button className="icon-action delete" onClick={() => {
+                                if (window.confirm('Bu çalışanı silmek istediğinize emin misiniz?')) {
+                                  setWorkers(workers.filter(w => w.id !== worker.id));
+                                }
+                              }}>🗑️</button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* MOBILE CARD VIEW FOR WORKERS */}
+              <div className="mobile-card-view">
+                {workers.map(worker => (
+                  <div key={worker.id} className="mobile-card" style={{ opacity: worker.status === 'pending' ? 0.7 : 1 }}>
+                    <div className="card-details">
+                      <div className="card-header">
+                        <span className="card-id">#{worker.id}</span>
+                        <span className={`badge-status ${worker.status === 'active' ? 'shipped' : 'pending'}`}>{worker.status === 'active' ? 'Aktif' : 'Onay Bekliyor'}</span>
+                      </div>
+                      <h4>{worker.name} {worker.surname}</h4>
+                      <p className="card-category">{worker.position}</p>
+
+                      <span style={{ fontSize: '0.8rem', color: '#666' }}>{worker.email}</span>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto', paddingTop: '10px', borderTop: '1px solid #eee' }}>
+                        <span className="font-mono" style={{ fontWeight: 'bold' }}>₺{worker.salary}</span>
+
+                        <div className="card-actions" style={{ display: 'flex', gap: '10px' }}>
+                          {worker.status === 'pending' && user.role === 'owner' && (
+                            <button className="primary-btn" style={{ padding: '6px 12px', fontSize: '0.8rem' }} onClick={() => {
+                              setWorkers(workers.map(w => w.id === worker.id ? { ...w, status: 'active' } : w));
+                            }}>Onayla ✅</button>
+                          )}
+                          {worker.role !== 'owner' && (
+                            <button className="icon-action delete mobile-btn" onClick={() => {
+                              if (window.confirm('Bu çalışanı silmek istediğinize emin misiniz?')) {
+                                setWorkers(workers.filter(w => w.id !== worker.id));
+                              }
+                            }}>Sil 🗑️</button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="add-product-form-panel" id="add-worker-form">
+                <h3>👥 Yeni Çalışan Ekle (Pasif Olarak Eklenir)</h3>
+                <form onSubmit={(e) => {
+                  e.preventDefault();
+                  if (!workerFormData.name || !workerFormData.email) return;
+                  setWorkers([...workers, { ...workerFormData, id: Date.now(), status: 'pending' }]);
+                  setWorkerFormData({ name: '', surname: '', email: '', position: 'Satış Temsilcisi', role: 'worker', salary: '', startDate: '' });
+                  alert('Çalışan başarıyla listeye eklendi. Erişim için yönetici onayı gereklidir.');
+                }} className="grid-form">
+                  <div className="form-group"><label>Ad</label><input value={workerFormData.name} onChange={e => setWorkerFormData({ ...workerFormData, name: e.target.value })} required /></div>
+                  <div className="form-group"><label>Soyad</label><input value={workerFormData.surname} onChange={e => setWorkerFormData({ ...workerFormData, surname: e.target.value })} required /></div>
+                  <div className="form-group"><label>E-posta (@vantonline.com)</label><input type="email" value={workerFormData.email} onChange={e => setWorkerFormData({ ...workerFormData, email: e.target.value })} required /></div>
+
+                  <div className="form-group"><label>Pozisyon</label>
+                    <select value={workerFormData.position} onChange={e => setWorkerFormData({ ...workerFormData, position: e.target.value })}>
+                      <option value="Satış Temsilcisi">Satış Temsilcisi</option>
+                      <option value="Depo Sorumlusu">Depo Sorumlusu</option>
+                      <option value="Operasyon Müdürü">Operasyon Müdürü</option>
+                      <option value="Stajyer">Stajyer</option>
+                      <option value="Muhasebe">Muhasebe</option>
+                    </select>
+                  </div>
+
+                  <div className="form-group"><label>Maaş (₺)</label><input type="number" value={workerFormData.salary} onChange={e => setWorkerFormData({ ...workerFormData, salary: e.target.value })} required /></div>
+                  <div className="form-group"><label>İşe Giriş Tarihi</label><input type="date" value={workerFormData.startDate} onChange={e => setWorkerFormData({ ...workerFormData, startDate: e.target.value })} required /></div>
+
+                  <div className="form-group"><label>Yetki Seviyesi</label>
+                    <select value={workerFormData.role} onChange={e => setWorkerFormData({ ...workerFormData, role: e.target.value })}>
+                      <option value="worker">Çalışan (Kısıtlı)</option>
+                      <option value="admin">Yönetici (Tam Yetki)</option>
+                    </select>
+                  </div>
+                  <button type="submit" className="submit-btn full-width">Kayıt Oluştur</button>
+
+                </form>
+              </div>
+            </div>
+          )}
+
+
+          {/* CATEGORIES VIEW */}
+          {activeTab === 'categories' && (
+            <div className="categories-view">
+              <div className="section-header">
+                <h2>Kategori Yönetimi</h2>
+                <button className="primary-btn" onClick={() => document.getElementById('add-cat-form').scrollIntoView({ behavior: 'smooth' })}>
+                  + Yeni Kategori
+                </button>
+              </div>
+
+              {/* DESKTOP TABLE */}
+              <div className="data-table-container">
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>İkon</th>
+                      <th>Kategori Adı</th>
+                      <th>Açıklama</th>
+                      <th>İşlem</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {categories.map(cat => (
+                      <tr key={cat.id}>
+                        <td style={{ fontSize: '1.5rem' }}>{cat.icon}</td>
+                        <td className="font-bold">{cat.name}</td>
+                        <td className="text-muted">{cat.description}</td>
+                        <td>
+                          <button className="icon-action delete" onClick={() => {
+                            if (window.confirm('Bu kategoriyi silmek istediğinize emin misiniz?')) {
+                              setCategories(categories.filter(c => c.id !== cat.id));
+                            }
+                          }}>🗑️</button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* MOBILE CARD VIEW */}
+              <div className="mobile-card-view">
+                {categories.map(cat => (
+                  <div key={cat.id} className="mobile-card">
+                    <div className="card-details">
+                      <div className="card-header">
+                        <span style={{ fontSize: '1.5rem' }}>{cat.icon}</span>
+                      </div>
+                      <h4>{cat.name}</h4>
+                      <p className="text-muted" style={{ fontSize: '0.8rem', marginBottom: '10px' }}>{cat.description}</p>
+
+                      <div className="card-footer" style={{ borderTop: '1px solid #eee', paddingTop: '8px', justifyContent: 'flex-end' }}>
+                        <button className="icon-action delete mobile-btn" onClick={() => {
+                          if (window.confirm('Bu kategoriyi silmek istediğinize emin misiniz?')) {
+                            setCategories(categories.filter(c => c.id !== cat.id));
+                          }
+                        }}>Kategoriyi Sil 🗑️</button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="add-product-form-panel" id="add-cat-form">
+                <h3>📂 Yeni Kategori Ekle</h3>
+                <form onSubmit={(e) => {
+                  e.preventDefault();
+                  if (!categoryFormData.name || !categoryFormData.id) return;
+                  setCategories([...categories, categoryFormData]);
+                  setCategoryFormData({ id: '', name: '', icon: '', description: '' });
+                  alert('Kategori eklendi.');
+                }} className="grid-form">
+                  <div className="form-group"><label>Kategori ID (örn: saatler)</label><input value={categoryFormData.id} onChange={e => setCategoryFormData({ ...categoryFormData, id: e.target.value.toLowerCase().replace(/ /g, '-') })} required /></div>
+                  <div className="form-group"><label>Kategori Adı</label><input value={categoryFormData.name} onChange={e => setCategoryFormData({ ...categoryFormData, name: e.target.value })} required /></div>
+                  <div className="form-group"><label>İkon (Emoji)</label><input value={categoryFormData.icon} onChange={e => setCategoryFormData({ ...categoryFormData, icon: e.target.value })} placeholder="⌚" /></div>
+                  <div className="form-group"><label>Açıklama</label><input value={categoryFormData.description} onChange={e => setCategoryFormData({ ...categoryFormData, description: e.target.value })} /></div>
+                  <button type="submit" className="submit-btn full-width">Kategori Oluştur</button>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* SETTINGS VIEW */}
+          {activeTab === 'settings' && (
+            <div className="settings-view">
+              <div className="section-header"><h2>Panel Ayarları</h2></div>
+
+              <div className="widget-box" style={{ maxWidth: '600px' }}>
+                <h3>📢 Sosyal Kanıt Yönetimi</h3>
+                <div className="setting-row">
+                  <div className="setting-info">
+                    <h4>Aktif Ziyaretçi Gösterimi</h4>
+                    <p className="text-muted text-sm">Ürün detay sayfalarında "Şu an X kişi inceliyor" uyarısını göster.</p>
+                  </div>
+                  <label className="switch">
+                    <input
+                      type="checkbox"
+                      checked={settings.showSocialProof}
+                      onChange={(e) => updateSetting('showSocialProof', e.target.checked)}
+                    />
+                    <span className="slider round"></span>
+                  </label>
+                </div>
+              </div>
+
+              <div className="widget-box" style={{ maxWidth: '600px', marginTop: '2rem' }}>
+                <h3>⚠️ Bakım Modu</h3>
+                <div className="setting-row">
+                  <div className="setting-info">
+                    <h4>Siteyi Bakım Moduna Al</h4>
+                    <p className="text-muted text-sm">Sadece adminler siteye erişebilir. Ziyaretçiler bakım sayfası görür.</p>
+                  </div>
+                  <label className="switch">
+                    <input
+                      type="checkbox"
+                      checked={settings.maintenanceMode}
+                      onChange={(e) => updateSetting('maintenanceMode', e.target.checked)}
+                    />
+                    <span className="slider round"></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          )}
+
         </div>
       </main>
 
