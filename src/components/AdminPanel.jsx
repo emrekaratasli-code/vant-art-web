@@ -43,48 +43,49 @@ export default function AdminPanel() {
 
   // FETCH EMPLOYEES & CATEGORIES & CUSTOMERS
   useEffect(() => {
-    if (!user || !user.id) return;
+    // If no user, ensure we aren't stuck in loading
+    if (!user || !user.id) {
+      setIsLoading(false);
+      return;
+    }
 
     const fetchAuxData = async () => {
       setIsLoading(true);
-
-      // Fetch Employees
       try {
-        const { data: empData, error } = await supabase
-          .from('employees')
-          .select('id, first_name, last_name, email, is_approved');
+        // Fetch Employees
+        try {
+          const { data: empData, error } = await supabase
+            .from('employees')
+            .select('id, first_name, last_name, email, is_approved');
 
-        if (error) {
-          console.error("❌ Employees fetch error:", error.message);
-        } else {
+          if (error) throw error;
           setEmployees(empData || []);
+        } catch (err) {
+          console.error("❌ Failed to fetch employees:", err);
         }
-      } catch (err) {
-        console.error("❌ Failed to fetch employees:", err);
-      }
 
-      // Fetch Customers (Profiles)
-      try {
-        const { data: custData, error } = await supabase.from('profiles').select('*');
-        if (error) {
-          console.warn("Profiles fetch error:", error.message);
-        } else {
-          setCustomers(custData || []);
+        // Fetch Customers
+        try {
+          const { data: custData, error } = await supabase.from('profiles').select('*');
+          if (error) console.warn("Profiles fetch error:", error.message);
+          else setCustomers(custData || []);
+        } catch (err) {
+          console.error("Failed to fetch customers:", err);
         }
-      } catch (err) {
-        console.error("Failed to fetch customers:", err);
-      }
 
-      // Fetch Categories
-      try {
-        const { data: catData, error } = await supabase.from('categories').select('*');
-        if (error) throw error;
-        if (catData) setCategories(catData || []);
-      } catch (err) {
-        console.error("Failed to fetch categories:", err);
+        // Fetch Categories
+        try {
+          const { data: catData, error } = await supabase.from('categories').select('*');
+          if (error) throw error;
+          if (catData) setCategories(catData || []);
+        } catch (err) {
+          console.error("Failed to fetch categories:", err);
+        }
+      } catch (globalErr) {
+        console.error("Global Data Fetch Error:", globalErr);
+      } finally {
+        setIsLoading(false);
       }
-
-      setIsLoading(false);
     };
 
     fetchAuxData();
@@ -498,8 +499,8 @@ export default function AdminPanel() {
                         {employees.length === 0 && (
                           <tr>
                             <td colSpan="3" style={{ textAlign: 'center', padding: '2rem', color: '#ff4d4d' }}>
-                              <div style={{ fontWeight: 'bold' }}>Veri bulunamadı veya Erişim Engellendi.</div>
-                              <div style={{ fontSize: '0.8rem', marginTop: '5px' }}>Lütfen konsolu (F12) kontrol edin veya RLS kurallarını gözden geçirin.</div>
+                              <div style={{ fontWeight: 'bold' }}>Veri bulunamadı.</div>
+                              <div style={{ fontSize: '0.8rem', marginTop: '5px' }}>Veritabanı bağlantısında veya yetkilendirmede sorun olabilir.</div>
                             </td>
                           </tr>
                         )}
