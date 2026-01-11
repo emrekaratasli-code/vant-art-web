@@ -45,10 +45,25 @@ export default function AdminPanel() {
   useEffect(() => {
     const fetchAuxData = async () => {
       setIsLoading(true);
-      const { data: empData } = await supabase.from('employees').select('*');
-      if (empData) setEmployees(empData);
-      const { data: catData } = await supabase.from('categories').select('*');
-      if (catData) setCategories(catData);
+
+      // Fetch Employees (Robust)
+      try {
+        const { data: empData, error } = await supabase.from('employees').select('id, first_name, last_name, email, status, is_approved');
+        if (error) throw error;
+        if (empData) setEmployees(empData);
+      } catch (err) {
+        console.error("Failed to fetch employees:", err);
+        // Don't set empty here if you want to keep old data, but initial is empty anyway.
+      }
+
+      // Fetch Categories
+      try {
+        const { data: catData } = await supabase.from('categories').select('*');
+        if (catData) setCategories(catData);
+      } catch (err) {
+        console.error("Failed to fetch categories:", err);
+      }
+
       setIsLoading(false);
     };
     fetchAuxData();
@@ -290,7 +305,7 @@ export default function AdminPanel() {
                   <tbody>
                     {employees.map(w => (
                       <tr key={w.id}>
-                        <td>{w.name} {w.surname}</td>
+                        <td>{w.first_name} {w.last_name}</td>
                         <td>{w.status === 'pending' ? <span className="badge-status critical">Onay Bekliyor</span> : <span className="badge-status shipped">Aktif</span>}</td>
                         <td>{w.email} <br /><span style={{ fontSize: '0.8rem', color: '#999' }}>{w.position}</span></td>
                         <td>{w.status === 'pending' && user.email === 'emrekaratasli@vantonline.com' && (<button className="primary-btn" style={{ fontSize: '0.8rem', padding: '4px 8px' }} onClick={() => handleApproveWorker(w.id)}>Onayla ✅</button>)}</td>
