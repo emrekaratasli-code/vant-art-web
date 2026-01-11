@@ -24,14 +24,21 @@ export const OrderProvider = ({ children }) => {
             if (error) throw error;
 
             // Transform Data
-            const formattedOrders = (data || []).map(o => ({
-                ...o,
-                date: o.created_at,
-                billingDetails: {
-                    name: o.guest_email || o.user?.email || 'Misafir',
-                    email: o.guest_email || o.user?.email
-                }
-            }));
+            const formattedOrders = (data || []).map(o => {
+                // Extract Name from Shipping Address (JSONB) or User fallback
+                const firstName = o.shipping_address?.name || '';
+                const lastName = o.shipping_address?.surname || '';
+                const fullName = (firstName + ' ' + lastName).trim();
+
+                return {
+                    ...o,
+                    date: o.created_at,
+                    billingDetails: {
+                        name: fullName || o.guest_email || o.user?.email || 'Misafir',
+                        email: o.shipping_address?.email || o.guest_email || o.user?.email
+                    }
+                };
+            });
 
             setOrders(formattedOrders);
         } catch (error) {

@@ -428,23 +428,24 @@ export default function AdminPanel() {
                 <table className="admin-table">
                   <thead><tr><th>Sipariş ID</th><th>Müşteri</th><th>Tutar</th><th>Durum</th><th>İşlem</th></tr></thead>
                   <tbody>
-                    {orders?.map(o => (
-                      <tr key={o.id}>
-                        <td>#{o.id.slice(0, 8)}</td>
-                        <td>{o.billingDetails?.name || o.user?.email || 'Misafir'}</td>
-                        <td>₺{o.amount}</td>
-                        <td><span className={`status-badge ${o.status.toLowerCase()}`}>{o.status}</span></td>
-                        <td>
-                          <select value={o.status} onChange={(e) => handleStatusChange(o.id, e.target.value)} className="status-select">
-                            <option value="Processing">İşleniyor</option>
-                            <option value="Shipped">Kargolandı</option>
-                            <option value="Delivered">Teslim Edildi</option>
-                            <option value="Cancelled">İptal</option>
-                          </select>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
+                    <tbody>
+                      {Array.isArray(orders) && orders.map(o => (
+                        <tr key={o.id}>
+                          <td>#{o.id ? o.id.slice(0, 8) : 'N/A'}</td>
+                          <td>{o.billingDetails?.name || o.user?.email || 'Misafir'}</td>
+                          <td>₺{parseFloat(o.amount || 0).toLocaleString('tr-TR')}</td>
+                          <td><span className={`status-badge ${o.status ? o.status.toLowerCase() : 'processing'}`}>{o.status || 'Processing'}</span></td>
+                          <td>
+                            <select value={o.status || 'Processing'} onChange={(e) => handleStatusChange(o.id, e.target.value)} className="status-select">
+                              <option value="Processing">İşleniyor</option>
+                              <option value="Shipped">Kargolandı</option>
+                              <option value="Delivered">Teslim Edildi</option>
+                              <option value="Cancelled">İptal</option>
+                            </select>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
                 </table>
               </div>
               <div className="mobile-card-grid">
