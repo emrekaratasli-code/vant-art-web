@@ -33,7 +33,7 @@ export default function AdminPanel() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
-  const [formData, setFormData] = useState({ name: '', price: '', category: '', image: '', description: '', material: '' });
+  const [formData, setFormData] = useState({ name: '', price: '', category: '', image: '', description: '', material: '', stock: '' });
 
   // FETCHED DATA STATES
   const [employees, setEmployees] = useState([]);
@@ -159,10 +159,10 @@ export default function AdminPanel() {
         ...formData,
         image: imageUrl,
         price: parseFloat(formData.price),
-        stock: 10 // Default stock
+        stock: parseInt(formData.stock || 10) // Input or Default
       });
 
-      setFormData({ name: '', price: '', category: '', image: '', description: '', material: '' });
+      setFormData({ name: '', price: '', category: '', image: '', description: '', material: '', stock: '' });
       alert('✅ Ürün başarıyla eklendi!');
     } catch (error) {
       console.error('Save Product Error:', error);
@@ -301,6 +301,7 @@ export default function AdminPanel() {
                     {categories.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
                   </select>
                   <input type="text" placeholder="Materyal (Altın, Gümüş...)" value={formData.material} onChange={e => setFormData({ ...formData, material: e.target.value })} />
+                  <input type="number" placeholder="Stok Adedi" value={formData.stock} onChange={e => setFormData({ ...formData, stock: e.target.value })} />
                   <input type="file" onChange={handleImageUpload} className="file-input" />
                   <textarea placeholder="Ürün Açıklaması" value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} rows="3"></textarea>
                   <button type="submit" className="submit-btn full-width">Ürünü Kaydet</button>
