@@ -196,20 +196,42 @@ export default function AdminPanel() {
       });
 
       console.log('✅ Product Saved Successfully');
-      setFormData({ name: '', price: '', category: '', image: '', description: '', material: '', stock: '' });
-      alert('✅ Ürün başarıyla eklendi!');
-      fetchProducts();
+
+      // Reset Form Safely
+      setFormData(prev => ({
+        name: '', price: '', category: '', image: '', description: '', material: '', stock: ''
+      }));
+
+      // Success Feedback
+      if (window.confirm('✅ Ürün başarıyla eklendi! Listeyi yenilemek ister misiniz?')) {
+        fetchProducts();
+      } else {
+        fetchProducts(); // Silent refresh anyway
+      }
+
     } catch (error) {
       console.error('❌ Save Product CRITICAL Error:', error);
 
-      let errorMsg = error.message;
-      if (error.code === '406' || error.status === 406 || errorMsg.includes('406')) {
-        errorMsg = 'Hata Kodu: 406 - Yetki Hatası veya Geçersiz Format. (Storage/RLS kontrolü gerekir)';
-      } else if (errorMsg.includes('recursion') || errorMsg.includes('infinite')) {
-        errorMsg = 'Veritabanı bağlantı hatası: Döngü tespit edildi (Infinite Recursion).';
+      // Safe Error Extraction to prevent "o is not a function" type crashes
+      let errorMsg = 'Bir hata oluştu.';
+      let errorCode = 'Bilinmiyor';
+
+      try {
+        if (typeof error === 'object') {
+          errorMsg = error.message || JSON.stringify(error);
+          errorCode = error.code || error.status || 'N/A';
+        } else {
+          errorMsg = String(error);
+        }
+
+        if (String(errorCode) === '406') {
+          errorMsg = 'Hata 406: Veri formatı kabul edilmedi. (Şema veya RLS hatası olabilir)';
+        }
+      } catch (parseErr) {
+        errorMsg = "Hata detayı okunamadı.";
       }
 
-      alert(`Hata Oluştu!\nKod: ${error.code || 'Bilinmiyor'}\nMesaj: ${errorMsg}\nDetay: ${error.details || ''}`);
+      alert(`Hata Oluştu!\nKod: ${errorCode}\nMesaj: ${errorMsg}`);
     } finally {
       console.log('🏁 Save process finished, resetting button...');
       setIsSubmitting(false);

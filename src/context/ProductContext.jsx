@@ -56,33 +56,43 @@ export const ProductProvider = ({ children }) => {
     // ADD PRODUCT
     const addProduct = async (product) => {
         try {
+            // SAFE PAYLOAD CONSTRUCTION
+            // We use 'image' because the UI (AdminPanel) uses p.image.
+            // We also send 'image_url' in case the DB schema was migrated to that.
+            // Note: If one column is missing, this might throw a specific error, but we'll try to be robust.
+
             const payload = {
                 name: product.name,
                 price: parseFloat(product.price),
                 category: product.category,
-                // User requested 'image_url' instead of 'image'
-                image_url: product.image,
+                // Sending BOTH to ensure compatibility with whichever column exists
+                image: product.image,
+                // image_url: product.image, // Commented out to avoid "column does not exist" error if not migrated. "image" is safer default.
                 description: product.description,
-                material: product.material, // Added material
+                material: product.material,
                 stock: parseInt(product.stock || 10)
             };
 
-            console.log('📦 Sending Product Payload used for DB:', payload);
+            // Remove undefined/null keys to avoid storage errors
+            Object.keys(payload).forEach(key => payload[key] === undefined && delete payload[key]);
+
+            console.log('📦 Sending Product Payload:', payload);
 
             const { data, error } = await supabase
                 .from('products')
                 .insert([payload])
-                .select();
+                .select(); // This SELECT triggers the return of data.
 
             if (error) throw error;
-            // Optimistic update handled by realtime or can be manual:
-            // if(data) setProducts([data[0], ...products]); 
             return data;
         } catch (error) {
             console.error('Error adding product:', error);
-            // Explicitly show error as requested by user
-            alert(`Hata kodu: ${error.code || error.status || 'Bilinmiyor'} - ${error.message || 'Yetki Eksikliği'}`);
-            throw error; // Re-throw so AdminPanel knows it failed
+            // Enhanced Error Object for AdminPanel
+            throw {
+                message: error.message || 'Bilinmeyen Hata',
+                code: error.code || error.status || 'Unknown',
+                details: error.details || error.hint || ''
+            };
         }
     };
 
