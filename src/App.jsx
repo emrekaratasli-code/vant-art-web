@@ -172,6 +172,7 @@ const WhatsappIcon = () => (
 import { WishlistProvider } from './context/WishlistContext'; // Import Added
 
 import { SettingsProvider } from './context/SettingsContext'; // Import Added
+import { AddressProvider } from './context/AddressContext';
 
 export default function App() {
   return (
@@ -180,21 +181,23 @@ export default function App() {
         <Preloader />
         <CookieBanner />
         <SettingsProvider> {/* Provider Added */}
-          <ProductProvider>
-            <ToastProvider>
-              <OrderProvider>
-                <CartProvider> {/* Cart uses Toast */}
-                  <AnalyticsProvider> {/* Analytics is independent */}
-                    <WishlistProvider> {/* Wishlist uses Analytics & Toast */}
-                      <AuthProvider>
-                        <AppContent />
-                      </AuthProvider>
-                    </WishlistProvider>
-                  </AnalyticsProvider>
-                </CartProvider>
-              </OrderProvider>
-            </ToastProvider>
-          </ProductProvider>
+          <AddressProvider>
+            <ProductProvider>
+              <ToastProvider>
+                <OrderProvider>
+                  <CartProvider> {/* Cart uses Toast */}
+                    <AnalyticsProvider> {/* Analytics is independent */}
+                      <WishlistProvider> {/* Wishlist uses Analytics & Toast */}
+                        <AuthProvider>
+                          <AppContent />
+                        </AuthProvider>
+                      </WishlistProvider>
+                    </AnalyticsProvider>
+                  </CartProvider>
+                </OrderProvider>
+              </ToastProvider>
+            </ProductProvider>
+          </AddressProvider>
         </SettingsProvider>
       </LanguageProvider>
     </ErrorBoundary>

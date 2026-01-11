@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { useOrders } from '../context/OrderContext';
 import { useNavigate } from 'react-router-dom';
 
 export default function CheckoutPage() {
     const { cartItems, cartTotal, clearCart } = useCart();
     const { user } = useAuth();
+    const { addOrder } = useOrders();
     const navigate = useNavigate();
 
     const [loading, setLoading] = useState(false);
@@ -36,6 +38,26 @@ export default function CheckoutPage() {
         if (paymentMethod === 'test') {
             // Simulate processing delay
             setTimeout(() => {
+                const newOrder = {
+                    user_id: user?.id,
+                    guest_email: user ? null : formData.email,
+                    total_amount: cartTotal,
+                    status: 'Processing',
+                    items: cartItems,
+                    shipping_address: {
+                        ...formData,
+                        zipCode: '34000'
+                    },
+                    billing_address: {
+                        ...formData,
+                        zipCode: '34000'
+                    },
+                    payment_method: 'Test Order',
+                    created_at: new Date().toISOString()
+                };
+
+                addOrder(newOrder); // Save to history
+
                 setLoading(false);
                 clearCart();
                 alert('Test Siparişiniz Başarıyla Alındı! Teşekkür ederiz.');

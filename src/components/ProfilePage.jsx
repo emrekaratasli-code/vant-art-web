@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useWishlist } from '../context/WishlistContext';
+import { useOrders } from '../context/OrderContext';
+import { useAddress } from '../context/AddressContext';
 import ProductCard from './ProductCard';
 
 export default function ProfilePage() {
@@ -10,11 +12,33 @@ export default function ProfilePage() {
     const { user, logout, isAuthenticated } = useAuth();
     const navigate = useNavigate();
     const { wishlist } = useWishlist();
+    const { orders } = useOrders();
+    const { addresses, addAddress, removeAddress } = useAddress();
+
+    // Tab State
     const [activeTab, setActiveTab] = useState('menu'); // menu, favorites, history, address
+
+    // Address Form State
+    const [showAddressForm, setShowAddressForm] = useState(false);
+    const [newAddress, setNewAddress] = useState({ title: '', fullAddress: '', city: '', phone: '' });
 
     const handleLogout = () => {
         logout();
         navigate('/');
+    };
+
+    const myOrders = orders.filter(o => {
+        // Match by ID if available, otherwise fallback to email for guests/legacy
+        if (user?.id && o.user_id === user.id) return true;
+        if (user?.email && (o.billingDetails?.email === user.email || o.guest_email === user.email)) return true;
+        return false;
+    });
+
+    const handleSaveAddress = (e) => {
+        e.preventDefault();
+        addAddress(newAddress);
+        setShowAddressForm(false);
+        setNewAddress({ title: '', fullAddress: '', city: '', phone: '' });
     };
 
     const renderMenu = () => (
@@ -28,9 +52,9 @@ export default function ProfilePage() {
             )}
             <div className="menu-item-group">
                 <span className="group-title">HESABIM</span>
-                <button onClick={() => setActiveTab('history')} className="menu-item">Koleksiyon Geçmişi</button>
+                <button onClick={() => setActiveTab('history')} className="menu-item">Koleksiyon Geçmişi ({myOrders.length})</button>
                 <button onClick={() => setActiveTab('favorites')} className="menu-item">Favorilerim ({wishlist.length})</button>
-                <button onClick={() => setActiveTab('address')} className="menu-item">Kayıtlı Adreslerim</button>
+                <button onClick={() => setActiveTab('address')} className="menu-item">Kayıtlı Adreslerim ({addresses.length})</button>
             </div>
             <div className="menu-item-group">
                 <span className="group-title">TERCİHLER</span>
@@ -41,7 +65,7 @@ export default function ProfilePage() {
     );
 
     const renderFavorites = () => (
-        <div className="favorites-view">
+        <div className="view-container">
             <button onClick={() => setActiveTab('menu')} className="back-link">← Menüye Dön</button>
             <h2 className="view-title">Favorilerim</h2>
             {wishlist.length === 0 ? (
@@ -56,11 +80,104 @@ export default function ProfilePage() {
         </div>
     );
 
-    const renderPlaceholder = (title) => (
-        <div className="placeholder-view">
+    const renderHistory = () => (
+        <div className="view-container">
             <button onClick={() => setActiveTab('menu')} className="back-link">← Menüye Dön</button>
-            <h2 className="view-title">{title}</h2>
-            <p className="empty-msg">Bu özellik yakında eklenecek.</p>
+            <h2 className="view-title">Koleksiyon Geçmişi</h2>
+            {myOrders.length === 0 ? (
+                <p className="empty-msg">Henüz vermiş olduğunuz bir sipariş bulunmuyor.</p>
+            ) : (
+                <div className="history-list">
+                    {myOrders.map(order => (
+                        <div key={order.id} className="history-item">
+                            <div className="history-header">
+                                <span className="order-date">{new Date(order.created_at).toLocaleDateString('tr-TR')}</span>
+                                <span className={`order-status status-${order.status?.toLowerCase()}`}>{order.status}</span>
+                            </div>
+                            <div className="history-body">
+                                <span className="order-summary">{order.items?.length || 0} Parça Ürün</span>
+                                <span className="order-total">{order.total_amount?.toLocaleString('tr-TR')} TL</span>
+                            </div>
+                            <div className="history-footer">
+                                <span className="order-id">Sipariş No: #{order.id.slice(0, 8)}</span>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+
+    const renderAddresses = () => (
+        <div className="view-container">
+            <button onClick={() => setActiveTab('menu')} className="back-link">← Menüye Dön</button>
+            <h2 className="view-title">Kayıtlı Adreslerim</h2>
+
+            {!showAddressForm ? (
+                <>
+                    <button onClick={() => setShowAddressForm(true)} className="add-address-btn">+ YENİ ADRES EKLE</button>
+                    {addresses.length === 0 ? (
+                        <p className="empty-msg">Kayıtlı adresiniz bulunmuyor.</p>
+                    ) : (
+                        <div className="address-list">
+                            {addresses.map(addr => (
+                                <div key={addr.id} className="address-card">
+                                    <div className="address-header">
+                                        <span className="address-title">{addr.title}</span>
+                                        <button onClick={() => removeAddress(addr.id)} className="delete-btn">SİL</button>
+                                    </div>
+                                    <p className="address-detail">{addr.fullAddress}</p>
+                                    <p className="address-meta">{addr.city} / {addr.phone}</p>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </>
+            ) : (
+                <form onSubmit={handleSaveAddress} className="address-form">
+                    <div className="form-group">
+                        <label>Adres Başlığı (Ev, İş vb.)</label>
+                        <input
+                            required
+                            value={newAddress.title}
+                            onChange={e => setNewAddress({ ...newAddress, title: e.target.value })}
+                            placeholder="Örn: Evim"
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label>Telefon</label>
+                        <input
+                            required
+                            value={newAddress.phone}
+                            onChange={e => setNewAddress({ ...newAddress, phone: e.target.value })}
+                            placeholder="0555 555 55 55"
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label>Şehir</label>
+                        <input
+                            required
+                            value={newAddress.city}
+                            onChange={e => setNewAddress({ ...newAddress, city: e.target.value })}
+                            placeholder="İstanbul"
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label>Açık Adres</label>
+                        <textarea
+                            required
+                            rows="3"
+                            value={newAddress.fullAddress}
+                            onChange={e => setNewAddress({ ...newAddress, fullAddress: e.target.value })}
+                            placeholder="Mahalle, Sokak, No..."
+                        />
+                    </div>
+                    <div className="form-actions">
+                        <button type="button" onClick={() => setShowAddressForm(false)} className="cancel-btn">İptal</button>
+                        <button type="submit" className="save-btn">KAYDET</button>
+                    </div>
+                </form>
+            )}
         </div>
     );
 
@@ -82,8 +199,8 @@ export default function ProfilePage() {
                 <div className="profile-dashboard">
                     {activeTab === 'menu' && renderMenu()}
                     {activeTab === 'favorites' && renderFavorites()}
-                    {activeTab === 'history' && renderPlaceholder('Koleksiyon Geçmişi')}
-                    {activeTab === 'address' && renderPlaceholder('Kayıtlı Adreslerim')}
+                    {activeTab === 'history' && renderHistory()}
+                    {activeTab === 'address' && renderAddresses()}
                 </div>
             )}
 
@@ -219,6 +336,139 @@ export default function ProfilePage() {
                     display: grid;
                     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
                     gap: 1.5rem;
+                }
+                
+                /* Address Styles */
+                .add-address-btn {
+                    width: 100%;
+                    padding: 1rem;
+                    border: 1px dashed var(--color-accent);
+                    color: var(--color-accent);
+                    background: transparent;
+                    margin-bottom: 2rem;
+                    cursor: pointer;
+                    transition: all 0.3s;
+                }
+                .add-address-btn:hover {
+                    background: rgba(212, 175, 55, 0.05);
+                }
+                .address-list {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 1rem;
+                }
+                .address-card {
+                    background: rgba(255,255,255,0.03);
+                    border: 1px solid var(--color-border);
+                    padding: 1.5rem;
+                }
+                .address-header {
+                    display: flex;
+                    justify-content: space-between;
+                    margin-bottom: 0.5rem;
+                }
+                .address-title {
+                    color: var(--color-accent);
+                    font-weight: bold;
+                }
+                .delete-btn {
+                    color: #ff4d4d;
+                    background: none;
+                    border: none;
+                    cursor: pointer;
+                    font-size: 0.8rem;
+                }
+                .address-detail {
+                    color: var(--color-text);
+                    margin-bottom: 0.5rem;
+                    line-height: 1.4;
+                }
+                .address-meta {
+                    color: var(--color-text-muted);
+                    font-size: 0.85rem;
+                }
+                
+                /* Address Form */
+                .address-form {
+                    background: rgba(255,255,255,0.03);
+                    padding: 2rem;
+                    border: 1px solid var(--color-border);
+                }
+                .form-group {
+                    margin-bottom: 1.5rem;
+                }
+                .form-group label {
+                    display: block;
+                    color: var(--color-text-muted);
+                    font-size: 0.8rem;
+                    margin-bottom: 0.5rem;
+                }
+                .form-group input, .form-group textarea {
+                    width: 100%;
+                    background: rgba(0,0,0,0.3);
+                    border: 1px solid var(--color-border);
+                    padding: 0.8rem;
+                    color: white;
+                    outline: none;
+                }
+                .form-group input:focus, .form-group textarea:focus {
+                    border-color: var(--color-accent);
+                }
+                .form-actions {
+                    display: flex;
+                    gap: 1rem;
+                }
+                .save-btn, .cancel-btn {
+                    flex: 1;
+                    padding: 1rem;
+                    border: none;
+                    cursor: pointer;
+                    font-weight: bold;
+                }
+                .save-btn {
+                    background: var(--color-accent);
+                    color: black;
+                }
+                .cancel-btn {
+                    background: transparent;
+                    border: 1px solid var(--color-border);
+                    color: white;
+                }
+
+                /* History Styles */
+                .history-list {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 1rem;
+                }
+                .history-item {
+                    border: 1px solid var(--color-border);
+                    padding: 1rem;
+                    background: rgba(255,255,255,0.02);
+                }
+                .history-header {
+                    display: flex;
+                    justify-content: space-between;
+                    margin-bottom: 0.5rem;
+                    font-size: 0.9rem;
+                    color: var(--color-text-muted);
+                }
+                .status-processing { color: #ffd700; }
+                .status-shipped { color: #4caf50; }
+                .status-delivered { color: #4caf50; }
+                .status-cancelled { color: #ff4d4d; }
+                
+                .history-body {
+                    display: flex;
+                    justify-content: space-between;
+                    font-size: 1.1rem;
+                    color: var(--color-text);
+                    margin-bottom: 0.5rem;
+                }
+                .history-footer {
+                    font-size: 0.8rem;
+                    color: var(--color-text-muted);
+                    text-align: right;
                 }
             `}</style>
         </div>
