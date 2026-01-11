@@ -53,16 +53,22 @@ export const ProductProvider = ({ children }) => {
     // ADD PRODUCT
     const addProduct = async (product) => {
         try {
+            const payload = {
+                name: product.name,
+                price: parseFloat(product.price),
+                category: product.category,
+                // User requested 'image_url' instead of 'image'
+                image_url: product.image,
+                description: product.description,
+                material: product.material, // Added material
+                stock: parseInt(product.stock || 10)
+            };
+
+            console.log('📦 Sending Product Payload used for DB:', payload);
+
             const { data, error } = await supabase
                 .from('products')
-                .insert([{
-                    name: product.name,
-                    price: parseFloat(product.price),
-                    category: product.category,
-                    image: product.image,
-                    description: product.description,
-                    stock: parseInt(product.stock || 10)
-                }])
+                .insert([payload])
                 .select();
 
             if (error) throw error;
