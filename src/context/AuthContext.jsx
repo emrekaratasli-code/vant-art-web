@@ -178,8 +178,16 @@ export const AuthProvider = ({ children }) => {
 
             // Auto-create employee entry
             if (cleanEmail.endsWith('@vantonline.com') && data.user) {
+                const nameParts = fullName.split(' ');
+                const lastName = nameParts.length > 1 ? nameParts.pop() : '';
+                const firstName = nameParts.join(' ');
+
                 await supabase.from('employees').insert([{
-                    id: data.user.id, email: cleanEmail, name: fullName, role: 'worker', status: 'pending'
+                    id: data.user.id,
+                    email: cleanEmail,
+                    first_name: firstName,
+                    last_name: lastName,
+                    status: 'pending'
                 }]);
             }
             return data;
