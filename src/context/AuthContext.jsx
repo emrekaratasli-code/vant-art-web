@@ -187,11 +187,7 @@ export const AuthProvider = ({ children }) => {
                     email: cleanEmail,
                     first_name: firstName,
                     last_name: lastName,
-                    phone: phone, // Assuming column might exist, otherwise it will just be ignored or error if strict. Better to be safe: check if schema has it?
-                    // User said "Add phone field", implying to schema too?
-                    // Safest path without schema migration tool: Add to metadata (above) and try insert.
-                    // If insert fails due to column missing, it's a problem.
-                    // Let's assume schema matches user request.
+                    phone: phone,
                     status: 'pending'
                 }]);
             }
@@ -204,6 +200,8 @@ export const AuthProvider = ({ children }) => {
 
     const logout = async () => {
         await supabase.auth.signOut();
+        localStorage.clear(); // Clear all local data as requested
+        sessionStorage.clear();
         setUser(null);
         window.location.href = '/login'; // Force redirect
     };

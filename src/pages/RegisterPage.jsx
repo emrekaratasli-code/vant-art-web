@@ -20,7 +20,7 @@ export default function RegisterPage() {
         try {
             await register(email, password, name, phone);
             // SUCCESS FEEDBACK
-            alert('✅ Kayıt Başarılı! Şimdi giriş yapabilirsiniz.');
+            alert('✅ Kaydınız başarıyla oluşturuldu! Lütfen giriş yapın.');
             navigate('/login');
         } catch (error) {
             console.error(error);
