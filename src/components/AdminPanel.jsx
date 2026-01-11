@@ -41,7 +41,30 @@ export default function AdminPanel() {
   const [categories, setCategories] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const [fetchError, setFetchError] = useState(null);
+  // REUSABLE FETCH FUNCTIONS
+  const fetchCategoriesData = async () => {
+    try {
+      const { data: catData, error } = await supabase.from('categories').select('*');
+      if (error) throw error;
+      setCategories(catData || []);
+    } catch (err) {
+      console.error("Failed to fetch categories:", err);
+    }
+  };
+
+  const fetchEmployeesData = async () => {
+    try {
+      const { data: empData, error } = await supabase
+        .from('employees')
+        .select('id, first_name, last_name, email, is_approved');
+
+      if (error) throw error;
+      setEmployees(empData || []);
+    } catch (err) {
+      console.error("❌ Failed to fetch employees:", err);
+      setFetchError(err.message);
+    }
+  };
 
   // FETCH EMPLOYEES & CATEGORIES & CUSTOMERS
   useEffect(() => {
@@ -51,40 +74,21 @@ export default function AdminPanel() {
       return;
     }
 
-    const fetchAuxData = async () => {
+    const fetchAllData = async () => {
       setIsLoading(true);
       setFetchError(null);
       try {
-        // Fetch Employees
-        try {
-          const { data: empData, error } = await supabase
-            .from('employees')
-            .select('id, first_name, last_name, email, is_approved');
-
-          if (error) throw error;
-          setEmployees(empData || []);
-        } catch (err) {
-          console.error("❌ Failed to fetch employees:", err);
-          setFetchError(err.message); // Show direct technical error
-        }
-
-        // Fetch Customers
-        try {
-          const { data: custData, error } = await supabase.from('profiles').select('*');
-          if (error) console.warn("Profiles fetch error:", error.message);
-          else setCustomers(custData || []);
-        } catch (err) {
-          console.error("Failed to fetch customers:", err);
-        }
-
-        // Fetch Categories
-        try {
-          const { data: catData, error } = await supabase.from('categories').select('*');
-          if (error) throw error;
-          if (catData) setCategories(catData || []);
-        } catch (err) {
-          console.error("Failed to fetch categories:", err);
-        }
+        await Promise.all([
+          fetchEmployeesData(),
+          fetchCategoriesData(),
+          (async () => {
+            try {
+              const { data: custData, error } = await supabase.from('profiles').select('*');
+              if (error) console.warn("Profiles fetch error:", error.message);
+              else setCustomers(custData || []);
+            } catch (err) { console.error("Failed to fetch customers:", err); }
+          })()
+        ]);
       } catch (globalErr) {
         console.error("Global Data Fetch Error:", globalErr);
         setFetchError("Veri yüklenirken beklenmedik bir hata oluştu.");
@@ -93,9 +97,8 @@ export default function AdminPanel() {
       }
     };
 
-    fetchAuxData();
+    fetchAllData();
   }, [activeTab, user]);
-
 
   // Placeholder state for new Category
   const [newCatName, setNewCatName] = useState('');
@@ -114,7 +117,13 @@ export default function AdminPanel() {
 
   const handleDeleteProduct = async (id) => {
     if (!window.confirm('Bu ürünü silmek istediğinize emin misiniz?')) return;
-    try { await deleteFromContext(id); } catch (e) { alert('Silinemedi: ' + e.message); }
+    try {
+      await deleteFromContext(id);
+      alert('Ürün silindi.');
+      fetchProducts(); // Refresh list immediately
+    } catch (e) {
+      alert('Silinemedi: ' + e.message);
+    }
   };
 
   const handleApproveWorker = async (workerId) => {
@@ -213,24 +222,13 @@ export default function AdminPanel() {
       console.log('📂 Adding Category:', newCatName);
       const { data, error } = await supabase.from('categories').insert([{ name: newCatName }]).select();
 
-      if (error) {
-        console.error('❌ Category Insert Error:', error);
-        throw error;
-      }
+      if (error) throw error;
 
       console.log('✅ Category Added:', data);
 
-      // Update local state strictly
-      if (data && data.length > 0) {
-        setCategories(prev => [...prev, data[0]]);
-      } else {
-        // Fallback if select fails but insert worked (rare)
-        const { data: reData } = await supabase.from('categories').select('*');
-        setCategories(reData || []);
-      }
-
       setNewCatName('');
       alert('Kategori eklendi');
+      fetchCategoriesData(); // Refresh dropdown immediately 
     } catch (err) {
       console.error('❌ Add Category Failed:', err);
       alert('Kategori eklenemedi: ' + err.message);
@@ -242,7 +240,8 @@ export default function AdminPanel() {
     try {
       const { error } = await supabase.from('categories').delete().eq('id', id);
       if (error) throw error;
-      setCategories(categories.filter(c => c.id !== id));
+      alert('Kategori silindi.');
+      fetchCategoriesData(); // Refresh list immediately
     } catch (err) {
       alert('Silinemedi: ' + err.message);
     }
