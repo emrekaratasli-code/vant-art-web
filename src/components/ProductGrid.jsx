@@ -1,6 +1,7 @@
 import ProductCard from './ProductCard';
 import { useProducts } from '../context/ProductContext';
 import { useLanguage } from '../context/LanguageContext';
+import { useEffect } from 'react';
 
 import { useLocation } from 'react-router-dom';
 
