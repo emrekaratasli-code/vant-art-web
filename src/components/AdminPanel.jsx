@@ -162,13 +162,13 @@ export default function AdminPanel() {
               <button onClick={() => { setActiveTab('workers'); setMobileMenuOpen(false); }}>Çalışanlar</button>
               <button onClick={() => { setActiveTab('settings'); setMobileMenuOpen(false); }}>Ayarlar</button>
             </nav>
-            <div className="drawer-footer" style={{ marginTop: 'auto', borderTop: '1px solid #222', paddingTop: '1rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <div className="avatar" style={{ width: 40, height: 40, background: '#d4af37', color: '#000', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>
+            <div className="drawer-footer" style={{ marginTop: 'auto', borderTop: '1px solid #222', paddingTop: '1rem', display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div className="avatar" style={{ width: 40, height: 40, background: '#d4af37', color: '#000', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', flexShrink: 0 }}>
                 {user.name?.charAt(0)}
               </div>
-              <div>
-                <div style={{ color: '#fff', fontWeight: 'bold', fontSize: '0.9rem' }}>{user.name}</div>
-                <div style={{ color: '#666', fontSize: '0.8rem' }}>{isWorker ? 'Employee' : 'Owner'}</div>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <span style={{ color: '#fff', fontWeight: 'bold', fontSize: '0.9rem', lineHeight: '1.2' }}>{user.name}</span>
+                <span style={{ color: '#666', fontSize: '0.8rem', marginTop: '2px' }}>{isWorker ? 'Employee' : 'Owner'}</span>
               </div>
             </div>
           </div>
@@ -365,47 +365,61 @@ export default function AdminPanel() {
           {activeTab === 'workers' && (
             <div className="workers-view">
               <div className="section-header"><h2>Personel Listesi</h2></div>
-              <div className="desktop-table-container">
-                <table className="admin-table">
-                  <thead><tr><th>Ad Soyad</th><th>Email</th><th>Durum</th><th>Onay</th></tr></thead>
-                  <tbody>
+              {isLoading ? (
+                <div style={{ padding: '2rem', textAlign: 'center', color: '#d4af37' }}>
+                  <div className="spinner" style={{ width: 30, height: 30, border: '3px solid rgba(212,175,55,0.3)', borderTopColor: '#d4af37', borderRadius: '50%', animation: 'spin 1s infinite', margin: '0 auto 1rem' }}></div>
+                  Veriler Yükleniyor...
+                </div>
+              ) : (
+                <>
+                  <div className="desktop-table-container">
+                    <table className="admin-table">
+                      <thead><tr><th>Ad Soyad</th><th>Email</th><th>Durum</th><th>Onay</th></tr></thead>
+                      <tbody>
+                        {employees.map(w => (
+                          <tr key={w.id}>
+                            {/* SCHEMA FIX: Use first_name last_name */}
+                            <td>{w.first_name} {w.last_name}</td>
+                            <td>{w.email}</td>
+                            <td><span className={`status-badge ${w.status}`}>{w.status}</span></td>
+                            <td>
+                              {!w.is_approved && (
+                                <button className="gold-btn small" onClick={() => handleApproveWorker(w.id)}>Onayla</button>
+                              )}
+                              {w.is_approved && <span className="text-green">✔ Onaylı</span>}
+                            </td>
+                          </tr>
+                        ))}
+                        {employees.length === 0 && (
+                          <tr>
+                            <td colSpan="4" style={{ textAlign: 'center', padding: '2rem', color: '#ff4d4d' }}>
+                              Personel bulunamadı. (Veritabanı RLS Politikalarını kontrol edin)
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                  <div className="mobile-card-grid">
                     {employees.map(w => (
-                      <tr key={w.id}>
-                        {/* SCHEMA FIX: Use first_name last_name */}
-                        <td>{w.first_name} {w.last_name}</td>
-                        <td>{w.email}</td>
-                        <td><span className={`status-badge ${w.status}`}>{w.status}</span></td>
-                        <td>
-                          {!w.is_approved && (
-                            <button className="gold-btn small" onClick={() => handleApproveWorker(w.id)}>Onayla</button>
-                          )}
+                      <div className="mobile-card" key={w.id}>
+                        <div className="mobile-card-header">{w.first_name} {w.last_name}</div>
+                        <div className="mobile-card-body">
+                          <p>{w.email}</p>
+                          <p>Durum: {w.status}</p>
+                          {!w.is_approved && <button className="gold-btn small" onClick={() => handleApproveWorker(w.id)}>Onayla</button>}
                           {w.is_approved && <span className="text-green">✔ Onaylı</span>}
-                        </td>
-                      </tr>
+                        </div>
+                      </div>
                     ))}
                     {employees.length === 0 && (
-                      <tr>
-                        <td colSpan="4" style={{ textAlign: 'center', padding: '2rem', color: '#ff4d4d' }}>
-                          Personel bulunamadı. (Veritabanı RLS Politikalarını kontrol edin)
-                        </td>
-                      </tr>
+                      <div style={{ textAlign: 'center', padding: '2rem', color: '#ff4d4d' }}>
+                        Personel bulunamadı. (RLS Politikası?)
+                      </div>
                     )}
-                  </tbody>
-                </table>
-              </div>
-              <div className="mobile-card-grid">
-                {employees.map(w => (
-                  <div className="mobile-card" key={w.id}>
-                    <div className="mobile-card-header">{w.first_name} {w.last_name}</div>
-                    <div className="mobile-card-body">
-                      <p>{w.email}</p>
-                      <p>Durum: {w.status}</p>
-                      {!w.is_approved && <button className="gold-btn small" onClick={() => handleApproveWorker(w.id)}>Onayla</button>}
-                      {w.is_approved && <span className="text-green">✔ Onaylı</span>}
-                    </div>
                   </div>
-                ))}
-              </div>
+                </>
+              )}
             </div>
           )}
 
