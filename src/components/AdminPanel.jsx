@@ -43,62 +43,52 @@ export default function AdminPanel() {
 
   // FETCH EMPLOYEES & CATEGORIES & CUSTOMERS
   useEffect(() => {
-    // 1. Auth Check - Don't fetch if no user
     if (!user || !user.id) return;
-
-    const controller = new AbortController();
-    const signal = controller.signal;
 
     const fetchAuxData = async () => {
       setIsLoading(true);
 
-      // Fetch Employees (Robust)
+      // Fetch Employees
       try {
-        console.log('🔍 Fetching Employees for:', user?.email);
         const { data: empData, error } = await supabase
           .from('employees')
-          .select('id, first_name, last_name, email, is_approved')
-          .abortSignal(signal);
+          .select('id, first_name, last_name, email, is_approved');
 
         if (error) {
-          if (error.name !== 'AbortError') console.error("❌ Employees fetch error:", error.message);
+          console.error("❌ Employees fetch error:", error.message);
         } else {
           setEmployees(empData || []);
         }
       } catch (err) {
-        if (err.name !== 'AbortError') console.error("❌ Failed to fetch employees:", err);
+        console.error("❌ Failed to fetch employees:", err);
       }
 
       // Fetch Customers (Profiles)
       try {
-        const { data: custData, error } = await supabase.from('profiles').select('*').abortSignal(signal);
+        const { data: custData, error } = await supabase.from('profiles').select('*');
         if (error) {
-          if (error.name !== 'AbortError') console.warn("Profiles fetch error:", error.message);
+          console.warn("Profiles fetch error:", error.message);
         } else {
           setCustomers(custData || []);
         }
       } catch (err) {
-        if (err.name !== 'AbortError') console.error("Failed to fetch customers:", err);
+        console.error("Failed to fetch customers:", err);
       }
 
       // Fetch Categories
       try {
-        const { data: catData, error } = await supabase.from('categories').select('*').abortSignal(signal);
+        const { data: catData, error } = await supabase.from('categories').select('*');
         if (error) throw error;
         if (catData) setCategories(catData || []);
       } catch (err) {
-        if (err.name !== 'AbortError') console.error("Failed to fetch categories:", err);
+        console.error("Failed to fetch categories:", err);
       }
 
-      if (!signal.aborted) setIsLoading(false);
+      setIsLoading(false);
     };
 
     fetchAuxData();
-
-    return () => {
-      controller.abort(); // Cancel requests on unmount/re-run
-    };
-  }, [activeTab, user]); // Added user to dependencies
+  }, [activeTab, user]);
 
 
   // Placeholder state for new Category
@@ -141,9 +131,13 @@ export default function AdminPanel() {
     }
   };
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleSubmitProduct = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
     try {
+      console.log('🚀 Starting Product Submit...');
       // 0. AUTH CHECK
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       if (sessionError || !session) {
@@ -154,13 +148,17 @@ export default function AdminPanel() {
 
       // 1. Upload Image if file exists
       if (formData.imageFile) {
+        console.log('📸 Uploading Image:', formData.imageFile.name);
         const fileExt = formData.imageFile.name.split('.').pop();
         const fileName = `${Date.now()}.${fileExt}`;
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from('product-images')
           .upload(fileName, formData.imageFile);
 
-        if (uploadError) throw uploadError;
+        if (uploadError) {
+          console.error('❌ Image Upload Error:', uploadError);
+          throw uploadError;
+        }
 
         // Get Public URL
         const { data: { publicUrl } } = supabase.storage
@@ -170,21 +168,26 @@ export default function AdminPanel() {
         imageUrl = publicUrl;
       }
 
-      // 2. Insert into DB (via Context or Direct)
-      // Using Context's addProduct but ensuring it handles the image URL correctly
+      // 2. Insert into DB
+      console.log('💾 Saving to DB:', { ...formData, image: imageUrl });
+
+      // Using Context's addProduct
       await addProduct({
         ...formData,
         image: imageUrl,
         price: parseFloat(formData.price),
-        stock: parseInt(formData.stock || 10) // Input or Default
+        stock: parseInt(formData.stock || 10)
       });
 
+      console.log('✅ Product Saved Successfully');
       setFormData({ name: '', price: '', category: '', image: '', description: '', material: '', stock: '' });
       alert('✅ Ürün başarıyla eklendi!');
-      fetchProducts(); // Refresh list
+      fetchProducts();
     } catch (error) {
-      console.error('Save Product Error:', error);
+      console.error('❌ Save Product CRITICAL Error:', error);
       alert('Hata: ' + error.message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -192,12 +195,29 @@ export default function AdminPanel() {
     e.preventDefault();
     if (!newCatName.trim()) return;
     try {
+      console.log('📂 Adding Category:', newCatName);
       const { data, error } = await supabase.from('categories').insert([{ name: newCatName }]).select();
-      if (error) throw error;
-      setCategories([...categories, ...data]);
+
+      if (error) {
+        console.error('❌ Category Insert Error:', error);
+        throw error;
+      }
+
+      console.log('✅ Category Added:', data);
+
+      // Update local state strictly
+      if (data && data.length > 0) {
+        setCategories(prev => [...prev, data[0]]);
+      } else {
+        // Fallback if select fails but insert worked (rare)
+        const { data: reData } = await supabase.from('categories').select('*');
+        setCategories(reData || []);
+      }
+
       setNewCatName('');
       alert('Kategori eklendi');
     } catch (err) {
+      console.error('❌ Add Category Failed:', err);
       alert('Kategori eklenemedi: ' + err.message);
     }
   };
@@ -322,7 +342,9 @@ export default function AdminPanel() {
                   <input type="number" placeholder="Stok Adedi" value={formData.stock} onChange={e => setFormData({ ...formData, stock: e.target.value })} />
                   <input type="file" onChange={handleImageUpload} className="file-input" />
                   <textarea placeholder="Ürün Açıklaması" value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} rows="3"></textarea>
-                  <button type="submit" className="submit-btn full-width">Ürünü Kaydet</button>
+                  <button type="submit" className="submit-btn full-width" disabled={isSubmitting}>
+                    {isSubmitting ? 'Kaydediliyor...' : 'Ürünü Kaydet'}
+                  </button>
                 </form>
               </div>
 
