@@ -44,7 +44,7 @@ export default function ProfilePage() {
     const renderMenu = () => (
         <div className="profile-menu">
             {/* ADMIN ACCESS LINK */}
-            {['owner', 'admin', 'worker'].includes(user?.role) && (
+            {user?.isAdmin && (
                 <div className="menu-item-group">
                     <span className="group-title">YÖNETİM</span>
                     <Link to="/admin" className="menu-item" style={{ color: '#d4af37', fontWeight: 'bold' }}>Admin Paneli Görüntüle →</Link>

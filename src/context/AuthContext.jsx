@@ -108,42 +108,45 @@ export const AuthProvider = ({ children }) => {
     const fetchProfile = async (authUser) => {
         console.log('👤 Fetching Profile...');
         try {
+            // EXPLICIT SELECT: Do NOT select '*' to avoid issues if schema drifts.
+            // DEFINITELY do not select 'role'.
             const { data: profile, error } = await supabase
                 .from('employees')
-                .select('*')
+                .select('id, name, status, is_approved')
                 .eq('id', authUser.id)
                 .single();
 
             if (error && error.code !== 'PGRST116') {
                 console.warn('⚠️ Profile Fetch Warning:', error.message);
-                alert(`Profil Verisi Alınamadı: ${error.message}\n(Tablo: employees)`);
+                // alert(`Profil Verisi Alınamadı: ${error.message}\n(Tablo: employees)`);
             }
 
-            // RELAXED CHECK: If user is not in employees table, treat as CUSTOMER.
+            // PERMISSION LOGIC:
             const isOwner = authUser.email === OWNER_EMAIL;
 
+            // Allow access if Owner OR if database says is_approved = true
+            const isApproved = isOwner || (profile?.is_approved === true);
+
             if (!profile) {
-                console.log('ℹ️ User has no profile in employees table. Defaulting to Customer.');
+                console.log('ℹ️ User has no profile in employees table.');
             }
 
             const userData = {
                 id: authUser.id,
                 email: authUser.email,
                 name: profile?.name || authUser.user_metadata?.full_name || 'Kullanıcı',
-                role: isOwner ? 'owner' : (profile?.role || 'customer'),
                 status: isOwner ? 'active' : (profile?.status || 'active'),
-                is_approved: true
+                is_approved: isApproved,
+                isAdmin: isApproved // Virtual property for easy checking in UI
             };
 
-            console.log('✅ Profile Loaded (or Defaulted):', userData.email);
-            // MERGE with existing user state so we don't lose the early access session
+            console.log('✅ Profile Loaded:', userData.email, '| Approved:', isApproved);
+            // MERGE with existing user state
             setUser(prev => ({ ...prev, ...userData }));
         } catch (error) {
             console.error('❌ Profile Fetch Failed:', error);
-            // Alert user but don't crash app flow
-            alert('Arka Plan Hatası: Profil güncellenemedi. ' + error.message);
+            alert('Profil yüklenirken hata oluştu: ' + error.message);
         }
-        // No finally block needed for loading, it's already false.
     };
 
 

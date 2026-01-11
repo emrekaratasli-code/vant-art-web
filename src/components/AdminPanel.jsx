@@ -55,8 +55,7 @@ export default function AdminPanel() {
   }, [activeTab]);
 
   // --- ACCESS CHECK ---
-  if (!user || user.role === 'customer') return <div className="admin-loading"><h3>Erişim Yetkisi Yok</h3></div>;
-  if (user.role !== 'owner' && user.status !== 'active') return <div className="admin-loading"><h3>⏳ Onay Bekliyor</h3></div>;
+  if (!user || !user.isAdmin) return <div className="admin-loading"><h3>Erişim Yetkisi Yok</h3></div>;
 
   // --- ACTION HANDLERS ---
   const handleViewSite = () => window.open('/', '_blank');
@@ -73,9 +72,10 @@ export default function AdminPanel() {
   };
 
   const handleApproveWorker = async (workerId) => {
-    if (user.role !== 'owner') return;
+    // Only owner email can approve
+    if (user.email !== 'emrekaratasli@vantonline.com') return;
     try {
-      const { error } = await supabase.from('employees').update({ status: 'active', role: 'worker' }).eq('id', workerId);
+      const { error } = await supabase.from('employees').update({ status: 'active', is_approved: true }).eq('id', workerId);
       if (error) throw error;
       setEmployees(prev => prev.map(w => w.id === workerId ? { ...w, status: 'active' } : w));
     } catch (e) { alert('Onay hatası: ' + e.message); }
@@ -107,7 +107,7 @@ export default function AdminPanel() {
     }
   };
 
-  const isWorker = user.role === 'worker';
+  const isWorker = user.email !== 'emrekaratasli@vantonline.com'; // Simple check for sidebar hiding logic if needed
 
   return (
     <div className="admin-layout">
@@ -147,7 +147,7 @@ export default function AdminPanel() {
           <button className={`nav-btn ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => setActiveTab('settings')}><IconSettings /> <span>Ayarlar</span></button>
         </nav>
         <div className="sidebar-footer">
-          <div className="admin-user"><div className="avatar">{user.name?.charAt(0)}</div><div className="user-info"><span className="name">{user.name}</span><span className="role">{user.role}</span></div></div>
+          <div className="admin-user"><div className="avatar">{user.name?.charAt(0)}</div><div className="user-info"><span className="name">{user.name}</span><span className="role">{isWorker ? 'Employee' : 'Owner'}</span></div></div>
         </div>
       </aside>
 
@@ -293,7 +293,7 @@ export default function AdminPanel() {
                         <td>{w.name} {w.surname}</td>
                         <td>{w.status === 'pending' ? <span className="badge-status critical">Onay Bekliyor</span> : <span className="badge-status shipped">Aktif</span>}</td>
                         <td>{w.email} <br /><span style={{ fontSize: '0.8rem', color: '#999' }}>{w.position}</span></td>
-                        <td>{w.status === 'pending' && user.role === 'owner' && (<button className="primary-btn" style={{ fontSize: '0.8rem', padding: '4px 8px' }} onClick={() => handleApproveWorker(w.id)}>Onayla ✅</button>)}</td>
+                        <td>{w.status === 'pending' && user.email === 'emrekaratasli@vantonline.com' && (<button className="primary-btn" style={{ fontSize: '0.8rem', padding: '4px 8px' }} onClick={() => handleApproveWorker(w.id)}>Onayla ✅</button>)}</td>
                       </tr>
                     ))}
                   </tbody>
