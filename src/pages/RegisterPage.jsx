@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 export default function RegisterPage() {
-    const [name, setName] = useState('');
+    const [fullName, setFullName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [phone, setPhone] = useState('');
@@ -18,7 +18,7 @@ export default function RegisterPage() {
 
         setIsSubmitting(true);
         try {
-            await register(email, password, name, phone);
+            await register(email, password, fullName, phone);
             // SUCCESS FEEDBACK
             alert('✅ Kaydınız başarıyla oluşturuldu! Lütfen giriş yapın.');
             navigate('/login');
@@ -37,7 +37,7 @@ export default function RegisterPage() {
                 <form onSubmit={handleSubmit}>
                     <div className="form-group">
                         <label>AD SOYAD</label>
-                        <input type="text" value={name} onChange={(e) => setName(e.target.value)} required placeholder="Adınız Soyadınız" />
+                        <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} required placeholder="Adınız Soyadınız" />
                     </div>
                     <div className="form-group">
                         <label>TELEFON NUMARASI</label>

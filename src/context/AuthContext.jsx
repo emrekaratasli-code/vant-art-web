@@ -45,6 +45,7 @@ export const AuthProvider = ({ children }) => {
                     console.log('✅ Session Found for:', session.user.email);
                     // IMMEDIATE ACCESS: Set user with basic info and stop loading.
                     // Profile will load in background.
+                    // 1. Set basic user
                     const basicUser = {
                         id: session.user.id,
                         email: session.user.email,
@@ -52,12 +53,16 @@ export const AuthProvider = ({ children }) => {
                         status: 'active'
                     };
                     setUser(basicUser);
-                    setLoading(false);
 
-                    // Background Profile Fetch
-                    fetchProfile(session.user).catch(e => console.error("Background Profile Load Failed", e));
+                    // 2. AWAIT Profile Fetch so we have admin rights BEFORE app renders
+                    console.log('⏳ Awaiting Profile Load for Persistence...');
+                    await fetchProfile(session.user);
+
+                    // 3. NOW release loading
+                    setLoading(false);
                 } else {
                     console.log('ℹ️ No Session (Guest)');
+                    setLoading(false); // Guest is ready immediately
                 }
 
             } catch (err) {
@@ -86,10 +91,12 @@ export const AuthProvider = ({ children }) => {
                         status: 'active'
                     };
                     // Update user immediately for responsiveness
+                    // Update user immediately for responsiveness but keep loading if needed? 
+                    // Actually for auth change we might not want to block UI, but for correctness we should.
                     setUser(prev => ({ ...basicUser, ...prev }));
-                    setLoading(false);
 
                     await fetchProfile(session.user);
+                    setLoading(false);
                 }
             } else if (event === 'SIGNED_OUT') {
                 setUser(null);
