@@ -48,12 +48,12 @@ export default function AdminPanel() {
 
       // Fetch Employees (Robust)
       try {
+        // EXPLICITLY SELECT first_name, last_name. DO NOT USE 'name'.
         const { data: empData, error } = await supabase.from('employees').select('id, first_name, last_name, email, status, is_approved');
         if (error) throw error;
         if (empData) setEmployees(empData);
       } catch (err) {
         console.error("Failed to fetch employees:", err);
-        // Don't set empty here if you want to keep old data, but initial is empty anyway.
       }
 
       // Fetch Categories
