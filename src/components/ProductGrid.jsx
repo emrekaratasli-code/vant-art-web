@@ -16,18 +16,31 @@ export default function ProductGrid() {
 
   // Filter products
   // Filter products (Case Insensitive)
+  // Debug: Log what we are comparing
   const filteredProducts = (categoryFilter && categoryFilter.toLowerCase() !== 'all')
-    ? products.filter(p => p.category?.toLowerCase() === categoryFilter.toLowerCase())
+    ? products.filter(p => {
+      const pCat = p.category?.toLowerCase();
+      const fCat = categoryFilter.toLowerCase();
+      const match = pCat === fCat;
+      // console.log(`🔍 Comparing '${pCat}' === '${fCat}' ? ${match}`); // Trace per item
+      return match;
+    })
     : products;
 
   // Debugging Frontend Sync
   useEffect(() => {
-    console.log('🛒 ProductGrid Mounted/Updated');
-    console.log('📦 All Products from Context:', products);
-    console.log('🏷️ Active Category Filter:', categoryFilter || 'None');
-    console.log('🔍 Filtered Products Count:', filteredProducts.length);
-    if (products.length === 0) console.warn('⚠️ No products in Context! check ProductProvider.');
+    console.log('🛒 ProductGrid Filter Logic:');
+    console.log('   - Raw Category Filter:', categoryFilter);
+    console.log('   - Total Products:', products.length);
+    console.log('   - Filtered Count:', filteredProducts.length);
+
+    if (products.length > 0 && filteredProducts.length === 0) {
+      console.warn('⚠️ Mismatch detected! Products exist but none matched the category.');
+      console.log('   - Available Product Categories:', products.map(p => p.category));
+    }
   }, [products, categoryFilter, filteredProducts.length]);
+
+  console.log('🎨 Rendering Products:', filteredProducts);
 
   return (
     <section className="product-section" id="shop">
