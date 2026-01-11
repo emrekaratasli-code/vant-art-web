@@ -374,6 +374,13 @@ export default function AdminPanel() {
                         </td>
                       </tr>
                     ))}
+                    {employees.length === 0 && (
+                      <tr>
+                        <td colSpan="4" style={{ textAlign: 'center', padding: '2rem', color: '#ff4d4d' }}>
+                          Personel bulunamadı. (Veritabanı RLS Politikalarını kontrol edin)
+                        </td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>

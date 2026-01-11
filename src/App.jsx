@@ -22,6 +22,8 @@ import OurStory from './components/OurStory';
 import { useLanguage } from './context/LanguageContext';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 import Preloader from './components/Preloader';
 import CookieBanner from './components/CookieBanner';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -146,6 +148,8 @@ function AppContent() {
           } />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
 
           {/* Legal Routes */}
           <Route path="/sozlesmeler/mesafeli-satis" element={<LegalDocument type="distanceSales" />} />

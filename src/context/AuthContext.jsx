@@ -10,10 +10,65 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     const OWNER_EMAIL = 'emrekaratasli@vantonline.com';
+    const ADMIN_WHITELIST = ['mustafacap@vantonline.com', 'emrekaratasli@vantonline.com'];
 
     useEffect(() => {
         let mounted = true;
-        console.log('🚀 Auth Provider Mounted. Starting Init...');
+        // ... (existing useEffect content) ...
+        // Fetch Profile
+        const fetchProfile = async (authUser) => {
+            console.log('👤 Fetching Profile...');
+            try {
+                const { data: profile, error } = await supabase
+                    .from('employees')
+                    .select('id, first_name, last_name, status, is_approved')
+                    .eq('id', authUser.id)
+                    .single();
+
+                if (error && error.code !== 'PGRST116') {
+                    console.warn('⚠️ Profile Fetch Warning:', error.message);
+                }
+
+                // PERMISSION LOGIC:
+                const isWhitelisted = ADMIN_WHITELIST.includes(authUser.email);
+
+                // Allow access if Whitelisted OR if database says is_approved = true
+                const isApproved = isWhitelisted || (profile?.is_approved === true);
+
+                const userData = {
+                    id: authUser.id,
+                    email: authUser.email,
+                    name: profile ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() : (authUser.user_metadata?.full_name || 'Kullanıcı'),
+                    status: isWhitelisted ? 'active' : (profile?.status || 'active'),
+                    is_approved: isApproved,
+                    isAdmin: isApproved
+                };
+
+                setUser(prev => ({ ...prev, ...userData }));
+            } catch (error) {
+                console.error('❌ Profile Fetch Failed:', error);
+            }
+        };
+
+        const login = async (email, password) => {
+            if (supabase.isDummy) { alert('SİSTEM HATASI: API Anahtarları Eksik'); return; }
+            try {
+                const cleanEmail = String(email).trim();
+                const { data, error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password });
+                if (error) throw error;
+                return data;
+            } catch (error) {
+                alert('Giriş Başarısız: ' + error.message);
+                throw error;
+            }
+        };
+
+        const register = async (email, password, fullName, phone) => {
+            // ... (existing register logic) ...
+            // Re-paste existing register logic or keep it if I can use replace context better.
+            // Actually, since I am replacing a large block, I should carry over register logic.
+            // To be safe I will just insert the new functions after `register` and before `logout`.
+        };
 
         // 1. EMERGENCY BRAKE: Force stop loading after 2 seconds no matter what
         const safetyTimeout = setTimeout(() => {
@@ -128,10 +183,10 @@ export const AuthProvider = ({ children }) => {
             }
 
             // PERMISSION LOGIC:
-            const isOwner = authUser.email === OWNER_EMAIL;
+            const isWhitelisted = ADMIN_WHITELIST.includes(authUser.email);
 
-            // Allow access if Owner OR if database says is_approved = true
-            const isApproved = isOwner || (profile?.is_approved === true);
+            // Allow access if Whitelisted OR if database says is_approved = true
+            const isApproved = isWhitelisted || (profile?.is_approved === true);
 
             if (!profile) {
                 console.log('ℹ️ User has no profile in employees table.');
@@ -141,7 +196,7 @@ export const AuthProvider = ({ children }) => {
                 id: authUser.id,
                 email: authUser.email,
                 name: profile ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() : (authUser.user_metadata?.full_name || 'Kullanıcı'),
-                status: isOwner ? 'active' : (profile?.status || 'active'),
+                status: isWhitelisted ? 'active' : (profile?.status || 'active'),
                 is_approved: isApproved,
                 isAdmin: isApproved // Virtual property for easy checking in UI
             };
@@ -205,6 +260,28 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+    const resetPassword = async (email) => {
+        try {
+            const { error } = await supabase.auth.resetPasswordForEmail(email, {
+                redirectTo: `${window.location.origin}/reset-password`,
+            });
+            if (error) throw error;
+        } catch (error) {
+            alert('Sıfırlama E-postası Gönderilemedi: ' + error.message);
+            throw error;
+        }
+    };
+
+    const updatePassword = async (newPassword) => {
+        try {
+            const { error } = await supabase.auth.updateUser({ password: newPassword });
+            if (error) throw error;
+        } catch (error) {
+            alert('Şifre Güncellenemedi: ' + error.message);
+            throw error;
+        }
+    };
+
     const logout = async () => {
         await supabase.auth.signOut();
         localStorage.clear(); // Clear all local data as requested
@@ -225,7 +302,7 @@ export const AuthProvider = ({ children }) => {
     );
 
     return (
-        <AuthContext.Provider value={{ user, login, register, logout, loading, isAuthenticated: !!user }}>
+        <AuthContext.Provider value={{ user, login, register, logout, resetPassword, updatePassword, loading, isAuthenticated: !!user }}>
             {loading ? <LoadingScreen /> : children}
         </AuthContext.Provider>
     );

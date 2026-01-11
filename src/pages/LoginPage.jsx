@@ -46,6 +46,9 @@ export default function LoginPage() {
                     <button type="submit" className="auth-btn" disabled={isLoggingIn}>
                         {isLoggingIn ? 'GİRİŞ YAPILIYOR...' : 'GİRİŞ YAP'}
                     </button>
+                    <div style={{ marginTop: '1rem', textAlign: 'center' }}>
+                        <Link to="/forgot-password" style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', textDecoration: 'underline' }}>Şifremi Unuttum</Link>
+                    </div>
                 </form>
                 <div className="auth-footer">
                     <p>Henüz üye değil misiniz? <Link to="/register">Hemen Kayıt Olun</Link></p>
