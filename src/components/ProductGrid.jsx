@@ -18,6 +18,15 @@ export default function ProductGrid() {
     ? products.filter(p => p.category === categoryFilter)
     : products;
 
+  // Debugging Frontend Sync
+  useEffect(() => {
+    console.log('🛒 ProductGrid Mounted/Updated');
+    console.log('📦 All Products from Context:', products);
+    console.log('🏷️ Active Category Filter:', categoryFilter || 'None');
+    console.log('🔍 Filtered Products Count:', filteredProducts.length);
+    if (products.length === 0) console.warn('⚠️ No products in Context! check ProductProvider.');
+  }, [products, categoryFilter, filteredProducts.length]);
+
   return (
     <section className="product-section" id="shop">
       <div className="container">
