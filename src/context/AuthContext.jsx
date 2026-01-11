@@ -111,7 +111,7 @@ export const AuthProvider = ({ children }) => {
             // DEFINITELY do not select 'role'.
             const { data: profile, error } = await supabase
                 .from('employees')
-                .select('id, name, status, is_approved')
+                .select('id, first_name, last_name, status, is_approved')
                 .eq('id', authUser.id)
                 .single();
 
@@ -133,7 +133,7 @@ export const AuthProvider = ({ children }) => {
             const userData = {
                 id: authUser.id,
                 email: authUser.email,
-                name: profile?.name || authUser.user_metadata?.full_name || 'Kullanıcı',
+                name: profile ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() : (authUser.user_metadata?.full_name || 'Kullanıcı'),
                 status: isOwner ? 'active' : (profile?.status || 'active'),
                 is_approved: isApproved,
                 isAdmin: isApproved // Virtual property for easy checking in UI
