@@ -121,67 +121,67 @@ export const AuthProvider = ({ children }) => {
             setLoading(false);
         }
     };
-};
 
-const login = async (email, password) => {
-    if (supabase.isDummy) { alert('SİSTEM HATASI: API Anahtarları Eksik'); return; }
-    try {
-        const cleanEmail = String(email).trim();
-        const { data, error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password });
-        if (error) throw error;
-        return data;
-    } catch (error) {
-        alert('Giriş Başarısız: ' + error.message);
-        throw error;
-    }
-};
 
-const register = async (email, password, fullName) => {
-    if (supabase.isDummy) { alert('SİSTEM HATASI: API Anahtarları Eksik'); return; }
-    try {
-        let cleanEmail = email;
-        if (typeof email === 'object' && email?.email) cleanEmail = email.email;
-        cleanEmail = String(cleanEmail).trim();
-
-        const { data, error } = await supabase.auth.signUp({
-            email: cleanEmail,
-            password,
-            options: { data: { full_name: fullName } }
-        });
-        if (error) throw error;
-
-        // Auto-create employee entry
-        if (cleanEmail.endsWith('@vantonline.com') && data.user) {
-            await supabase.from('employees').insert([{
-                id: data.user.id, email: cleanEmail, name: fullName, role: 'worker', status: 'pending'
-            }]);
+    const login = async (email, password) => {
+        if (supabase.isDummy) { alert('SİSTEM HATASI: API Anahtarları Eksik'); return; }
+        try {
+            const cleanEmail = String(email).trim();
+            const { data, error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password });
+            if (error) throw error;
+            return data;
+        } catch (error) {
+            alert('Giriş Başarısız: ' + error.message);
+            throw error;
         }
-        return data;
-    } catch (error) {
-        alert('Kayıt Başarısız: ' + error.message);
-        throw error;
-    }
-};
+    };
 
-const logout = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-};
+    const register = async (email, password, fullName) => {
+        if (supabase.isDummy) { alert('SİSTEM HATASI: API Anahtarları Eksik'); return; }
+        try {
+            let cleanEmail = email;
+            if (typeof email === 'object' && email?.email) cleanEmail = email.email;
+            cleanEmail = String(cleanEmail).trim();
 
-const LoadingScreen = () => (
-    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#000', color: '#d4af37' }}>
-        <div className="spinner" style={{
-            width: 40, height: 40, border: '3px solid rgba(212,175,55,0.3)',
-            borderTopColor: '#d4af37', borderRadius: '50%', animation: 'spin 1s infinite'
-        }}></div>
-        <p style={{ marginTop: 20, letterSpacing: 2 }}>VANT LOADING...</p>
-        <style>{`@keyframes spin { 100% { transform: rotate(360deg); } }`}</style>
-    </div>
-);
+            const { data, error } = await supabase.auth.signUp({
+                email: cleanEmail,
+                password,
+                options: { data: { full_name: fullName } }
+            });
+            if (error) throw error;
 
-return (
-    <AuthContext.Provider value={{ user, login, register, logout, loading }}>
-        {loading ? <LoadingScreen /> : children}
-    </AuthContext.Provider>
-);
+            // Auto-create employee entry
+            if (cleanEmail.endsWith('@vantonline.com') && data.user) {
+                await supabase.from('employees').insert([{
+                    id: data.user.id, email: cleanEmail, name: fullName, role: 'worker', status: 'pending'
+                }]);
+            }
+            return data;
+        } catch (error) {
+            alert('Kayıt Başarısız: ' + error.message);
+            throw error;
+        }
+    };
+
+    const logout = async () => {
+        await supabase.auth.signOut();
+        setUser(null);
+    };
+
+    const LoadingScreen = () => (
+        <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#000', color: '#d4af37' }}>
+            <div className="spinner" style={{
+                width: 40, height: 40, border: '3px solid rgba(212,175,55,0.3)',
+                borderTopColor: '#d4af37', borderRadius: '50%', animation: 'spin 1s infinite'
+            }}></div>
+            <p style={{ marginTop: 20, letterSpacing: 2 }}>VANT LOADING...</p>
+            <style>{`@keyframes spin { 100% { transform: rotate(360deg); } }`}</style>
+        </div>
+    );
+
+    return (
+        <AuthContext.Provider value={{ user, login, register, logout, loading }}>
+            {loading ? <LoadingScreen /> : children}
+        </AuthContext.Provider>
+    );
 };
