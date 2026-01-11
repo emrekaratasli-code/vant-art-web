@@ -65,7 +65,7 @@ export default function AdminPanel() {
           setEmployees(empData || []);
         } catch (err) {
           console.error("❌ Failed to fetch employees:", err);
-          setFetchError("Personel listesi yüklenemedi: " + err.message);
+          setFetchError("Erişim Hatası: Personel listesi yüklenemedi. (" + err.message + ")");
         }
 
         // Fetch Customers
@@ -191,7 +191,11 @@ export default function AdminPanel() {
       fetchProducts();
     } catch (error) {
       console.error('❌ Save Product CRITICAL Error:', error);
-      alert('Hata: ' + error.message);
+      let errorMsg = error.message;
+      if (errorMsg.includes('recursion') || errorMsg.includes('infinite')) {
+        errorMsg = 'Veritabanı bağlantı hatası: Döngü tespit edildi (Infinite Recursion).';
+      }
+      alert('Hata: ' + errorMsg);
     } finally {
       setIsSubmitting(false);
     }
