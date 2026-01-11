@@ -40,6 +40,7 @@ export default function AdminPanel() {
   const [customers, setCustomers] = useState([]);
   const [categories, setCategories] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(null);
 
   // REUSABLE FETCH FUNCTIONS
   const fetchCategoriesData = async () => {
