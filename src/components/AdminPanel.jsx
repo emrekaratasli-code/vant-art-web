@@ -191,12 +191,17 @@ export default function AdminPanel() {
       fetchProducts();
     } catch (error) {
       console.error('❌ Save Product CRITICAL Error:', error);
+
       let errorMsg = error.message;
-      if (errorMsg.includes('recursion') || errorMsg.includes('infinite')) {
+      if (error.code === '406' || error.status === 406 || errorMsg.includes('406')) {
+        errorMsg = 'Hata Kodu: 406 - Yetki Hatası veya Geçersiz Format. (Storage/RLS kontrolü gerekir)';
+      } else if (errorMsg.includes('recursion') || errorMsg.includes('infinite')) {
         errorMsg = 'Veritabanı bağlantı hatası: Döngü tespit edildi (Infinite Recursion).';
       }
+
       alert('Hata: ' + errorMsg);
     } finally {
+      console.log('🏁 Save process finished, resetting button...');
       setIsSubmitting(false);
     }
   };

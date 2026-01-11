@@ -71,6 +71,8 @@ export const ProductProvider = ({ children }) => {
             return data;
         } catch (error) {
             console.error('Error adding product:', error);
+            // Explicitly show error as requested by user
+            alert(`Hata kodu: ${error.code || error.status || 'Bilinmiyor'} - ${error.message || 'Yetki Eksikliği'}`);
             throw error; // Re-throw so AdminPanel knows it failed
         }
     };
