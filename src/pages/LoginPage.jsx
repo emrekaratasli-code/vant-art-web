@@ -18,9 +18,13 @@ export default function LoginPage() {
         try {
             await login(email, password);
             console.log('✅ Giriş Başarılı - Yönlendiriliyor...');
-            // FAST REDIRECT: Don't wait for profile. Go to dashboard immediately.
-            // ProtectedRoute will handle security if profile fails to load.
-            navigate('/');
+
+            // AUTO-REDIRECT: If Owner, go straight to Admin Panel
+            if (email === 'emrekaratasli@vantonline.com') {
+                navigate('/admin');
+            } else {
+                navigate('/');
+            }
         } catch (err) {
             console.error('Login Fail:', err);
             // AuthContext handles alerts

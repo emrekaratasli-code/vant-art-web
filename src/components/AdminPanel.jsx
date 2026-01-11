@@ -307,7 +307,18 @@ export default function AdminPanel() {
 
       <style>{`
         /* LAYOUT & FONTS */
-        .admin-layout { display: flex; height: 100vh; background: #f4f5f7; font-family: 'Inter', sans-serif; overflow: hidden; }
+        .admin-layout { 
+            display: flex; 
+            height: 100vh; 
+            width: 100vw;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 50; /* Ensure it sits on top of any global headers */
+            background: #f4f5f7; 
+            font-family: 'Inter', sans-serif; 
+            overflow: hidden; 
+        }
         .admin-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
         .admin-loading { height: 100vh; display: flex; align-items: center; justify-content: center; background: #f4f5f7; flex-direction: column; gap: 1rem; }
         
