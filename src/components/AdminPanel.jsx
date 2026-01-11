@@ -207,7 +207,7 @@ export default function AdminPanel() {
                 <table className="data-table">
                   <thead><tr><th>Ürün</th><th>Kategori</th><th>Fiyat</th><th>Stok</th><th>İşlem</th></tr></thead>
                   <tbody>
-                    {products.map(p => (
+                    {products?.map(p => (
                       <tr key={p.id}>
                         <td><div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}><img src={p.image} style={{ width: 40, height: 40, objectFit: 'cover', borderRadius: 4 }} alt="" onError={e => e.target.src = 'https://placehold.co/40x40'} />{p.name}</div></td>
                         <td>{p.category}</td>
@@ -236,11 +236,11 @@ export default function AdminPanel() {
           {/* ORDERS VIEW - UPDATED */}
           {activeTab === 'orders' && (
             <div className="orders-view">
-              <div className="section-header"><h2>Siparişler ({orders.length})</h2></div>
+              <div className="section-header"><h2>Siparişler ({orders?.length || 0})</h2></div>
 
               {/* MOBILE ORDER CARDS */}
               <div className="mobile-card-grid">
-                {orders.map(o => (
+                {orders?.map(o => (
                   <div className="mobile-card" key={o.id}>
                     <div className="mobile-card-header">
                       <div className="card-title"><h4>#{o.id}</h4><span className="card-subtitle">{new Date(o.created_at).toLocaleDateString()}</span></div>
@@ -267,11 +267,11 @@ export default function AdminPanel() {
 
               {/* DESKTOP ORDER TABLE */}
               <div className="data-table-container desktop-table-container">
-                {orders.length === 0 ? <div className="empty-state">Sipariş yok.</div> : (
+                {(!orders || orders.length === 0) ? <div className="empty-state">Sipariş yok.</div> : (
                   <table className="data-table">
                     <thead><tr><th>ID</th><th>Müşteri</th><th>Tarih</th><th>Tutar</th><th>Kargo Takip</th><th>Durum</th></tr></thead>
                     <tbody>
-                      {orders.map(o => (
+                      {orders?.map(o => (
                         <tr key={o.id}>
                           <td>#{o.id}</td>
                           <td>{o.billingDetails?.name || o.user?.email} <br /><span style={{ fontSize: '0.8rem', color: '#999' }}>{o.user?.email}</span></td>
@@ -298,12 +298,12 @@ export default function AdminPanel() {
           {/* WORKERS VIEW */}
           {activeTab === 'workers' && (
             <div className="workers-view">
-              <div className="section-header"><h2>Çalışanlar ({employees.length})</h2></div>
+              <div className="section-header"><h2>Çalışanlar ({employees?.length || 0})</h2></div>
               <div className="data-table-container">
                 <table className="data-table">
                   <thead><tr><th>Ad Soyad</th><th>Durum</th><th>Email</th><th>İşlem</th></tr></thead>
                   <tbody>
-                    {employees.map(w => (
+                    {employees?.map(w => (
                       <tr key={w.id}>
                         <td>{w.first_name} {w.last_name}</td>
                         <td>{w.status === 'pending' ? <span className="badge-status critical">Onay Bekliyor</span> : <span className="badge-status shipped">Aktif</span>}</td>

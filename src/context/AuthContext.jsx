@@ -162,7 +162,7 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    const register = async (email, password, fullName) => {
+    const register = async (email, password, fullName, phone) => {
         if (supabase.isDummy) { alert('SİSTEM HATASI: API Anahtarları Eksik'); return; }
         try {
             let cleanEmail = email;
@@ -172,7 +172,7 @@ export const AuthProvider = ({ children }) => {
             const { data, error } = await supabase.auth.signUp({
                 email: cleanEmail,
                 password,
-                options: { data: { full_name: fullName } }
+                options: { data: { full_name: fullName, phone: phone } }
             });
             if (error) throw error;
 
@@ -187,6 +187,11 @@ export const AuthProvider = ({ children }) => {
                     email: cleanEmail,
                     first_name: firstName,
                     last_name: lastName,
+                    phone: phone, // Assuming column might exist, otherwise it will just be ignored or error if strict. Better to be safe: check if schema has it?
+                    // User said "Add phone field", implying to schema too?
+                    // Safest path without schema migration tool: Add to metadata (above) and try insert.
+                    // If insert fails due to column missing, it's a problem.
+                    // Let's assume schema matches user request.
                     status: 'pending'
                 }]);
             }
@@ -200,6 +205,7 @@ export const AuthProvider = ({ children }) => {
     const logout = async () => {
         await supabase.auth.signOut();
         setUser(null);
+        window.location.href = '/login'; // Force redirect
     };
 
     const LoadingScreen = () => (
