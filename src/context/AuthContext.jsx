@@ -93,7 +93,17 @@ export const AuthProvider = ({ children }) => {
                 console.warn('⚠️ Profile Fetch Warning:', error.message);
             }
 
+            // STRICT CHECK: If user is not in employees table, DENY ACCESS
+            // Exception: The owner email is always allowed even if not in table (bootstrapping)
             const isOwner = authUser.email === OWNER_EMAIL;
+
+            if (!profile && !isOwner) {
+                console.error('⛔ User found in Auth but NOT in Employees table. Denying access.');
+                alert('Yetkili personel listesinde bulunamadınız, lütfen yöneticiyle iletişime geçin.');
+                await logout(); // Force logout
+                return;
+            }
+
             const userData = {
                 id: authUser.id,
                 email: authUser.email,
@@ -107,14 +117,12 @@ export const AuthProvider = ({ children }) => {
             setUser(userData);
         } catch (error) {
             console.error('❌ Profile Fetch Failed:', error);
-            // Fallback for resiliency
-            setUser({
-                id: authUser.id,
-                email: authUser.email,
-                name: 'Kullanıcı (Hata)',
-                role: 'customer',
-                status: 'active'
-            });
+            // On critical error, legitimate users might be blocked, but better than broken state.
+            // For now, if it's a network error, we probably shouldn't logout immediately, 
+            // but the requirement "Profile Not Found" -> "Alert" implies logic error (missing record).
+            // So we treat exception similar to missing profile if it prevents us knowing who they are.
+            alert('Profil bilgileri alınamadı. Lütfen tekrar giriş yapın.');
+            await logout();
         }
     };
 

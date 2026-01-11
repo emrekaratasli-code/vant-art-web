@@ -16,18 +16,14 @@ export default function LoginPage() {
         e.preventDefault();
         setIsLoggingIn(true);
         try {
-            const user = await login(email, password);
-            console.log('✅ Giriş Başarılı');
-            if (user?.role === 'admin' || user?.role === 'owner' || user?.role === 'worker') {
-                navigate('/admin');
-            } else {
-                navigate('/');
-            }
+            await login(email, password);
+            console.log('✅ Giriş Başarılı - Yönlendiriliyor...');
+            // FAST REDIRECT: Don't wait for profile. Go to dashboard immediately.
+            // ProtectedRoute will handle security if profile fails to load.
+            navigate('/');
         } catch (err) {
             console.error('Login Fail:', err);
-            // Alert is already handled in AuthContext but doing it here as backup/custom UI
-            // AuthContext might throw without alerting if we remove alert there later.
-            // For now AuthContext has alert, so we can just log or show supplementary UI.
+            // AuthContext handles alerts
         } finally {
             setIsLoggingIn(false);
         }
