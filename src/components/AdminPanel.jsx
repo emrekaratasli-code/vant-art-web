@@ -41,6 +41,8 @@ export default function AdminPanel() {
   const [categories, setCategories] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  const [fetchError, setFetchError] = useState(null);
+
   // FETCH EMPLOYEES & CATEGORIES & CUSTOMERS
   useEffect(() => {
     // If no user, ensure we aren't stuck in loading
@@ -51,6 +53,7 @@ export default function AdminPanel() {
 
     const fetchAuxData = async () => {
       setIsLoading(true);
+      setFetchError(null);
       try {
         // Fetch Employees
         try {
@@ -62,6 +65,7 @@ export default function AdminPanel() {
           setEmployees(empData || []);
         } catch (err) {
           console.error("❌ Failed to fetch employees:", err);
+          setFetchError("Personel listesi yüklenemedi: " + err.message);
         }
 
         // Fetch Customers
@@ -83,6 +87,7 @@ export default function AdminPanel() {
         }
       } catch (globalErr) {
         console.error("Global Data Fetch Error:", globalErr);
+        setFetchError("Veri yüklenirken beklenmedik bir hata oluştu.");
       } finally {
         setIsLoading(false);
       }
@@ -499,8 +504,16 @@ export default function AdminPanel() {
                         {employees.length === 0 && (
                           <tr>
                             <td colSpan="3" style={{ textAlign: 'center', padding: '2rem', color: '#ff4d4d' }}>
-                              <div style={{ fontWeight: 'bold' }}>Veri bulunamadı.</div>
-                              <div style={{ fontSize: '0.8rem', marginTop: '5px' }}>Veritabanı bağlantısında veya yetkilendirmede sorun olabilir.</div>
+                              {fetchError ? (
+                                <div style={{ background: 'rgba(255, 0, 0, 0.1)', padding: '1rem', borderRadius: '4px' }}>
+                                  ⚠️ {fetchError}
+                                </div>
+                              ) : (
+                                <>
+                                  <div style={{ fontWeight: 'bold' }}>Veri bulunamadı.</div>
+                                  <div style={{ fontSize: '0.8rem', marginTop: '5px' }}>Veritabanı bağlantısında veya yetkilendirmede sorun olabilir.</div>
+                                </>
+                              )}
                             </td>
                           </tr>
                         )}
