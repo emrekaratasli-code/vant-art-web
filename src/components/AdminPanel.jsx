@@ -162,6 +162,15 @@ export default function AdminPanel() {
               <button onClick={() => { setActiveTab('workers'); setMobileMenuOpen(false); }}>Çalışanlar</button>
               <button onClick={() => { setActiveTab('settings'); setMobileMenuOpen(false); }}>Ayarlar</button>
             </nav>
+            <div className="drawer-footer" style={{ marginTop: 'auto', borderTop: '1px solid #222', paddingTop: '1rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div className="avatar" style={{ width: 40, height: 40, background: '#d4af37', color: '#000', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>
+                {user.name?.charAt(0)}
+              </div>
+              <div>
+                <div style={{ color: '#fff', fontWeight: 'bold', fontSize: '0.9rem' }}>{user.name}</div>
+                <div style={{ color: '#666', fontSize: '0.8rem' }}>{isWorker ? 'Employee' : 'Owner'}</div>
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -576,58 +585,106 @@ export default function AdminPanel() {
 
         /* --- RESPONSIVE / MOBILE --- */
         .mobile-admin-header { display: none; }
-        .sidebar-overlay { display: none; }
+        .mobile-drawer-overlay { display: none; }
         .mobile-card-grid { display: none; } /* Hidden on desktop */
 
         @media (max-width: 768px) {
           .admin-sidebar {
-            transform: translateX(-100%); /* Hidden by default */
-            width: 80%; /* Wider on mobile */
-            max-width: 300px;
-          }
-          .admin-sidebar.open {
-            transform: translateX(0);
+            display: none; /* Completely hide desktop sidebar on mobile */
           }
           
           .admin-content {
-            margin-left: 0; /* No offset */
-            padding-top: 4rem; /* Space for mobile header */
+            margin-left: 0; 
+            padding-top: 5rem; /* Space for mobile header */
+            padding-inline: 1rem;
+            width: 100%;
           }
-          .admin-topbar { display: none; } /* Use mobile header instead */
-          .desktop-table-container { display: none; } /* Hide complex tables */
-          .mobile-card-grid { display: flex; flex-direction: column; gap: 1rem; } /* Show cards */
+          
+          .admin-topbar { display: none; } 
+          .desktop-table-container { display: none; } 
+          .mobile-card-grid { display: flex; flex-direction: column; gap: 1rem; } 
 
-          .mobile-admin-header {
+          /* HEADER */
+          .mobile-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
             position: fixed;
             top: 0; left: 0; right: 0;
             height: 60px;
-            background: #0a0a0a;
+            background: #050505;
             border-bottom: 1px solid #222;
             padding: 0 1rem;
-            z-index: 900;
+            z-index: 1500;
           }
           .hamburger-btn {
-            background: none; border: none; color: #d4af37; font-size: 1.5rem; cursor: pointer;
+            background: none; border: none; color: #d4af37; font-size: 1.5rem; cursor: pointer; padding: 0.5rem;
           }
+          .mobile-brand { font-family: 'Playfair Display', serif; color: #fff; font-size: 1.2rem; }
+
+          /* DRAWER */
           .mobile-drawer-overlay {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 1200;
-            display: flex; justify-content: flex-start;
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.85); 
+            z-index: 2000;
+            display: flex;
+            animation: fadeIn 0.3s ease;
           }
+          
           .mobile-drawer {
-             width: 80%; max-width: 300px; background: #111; height: 100%; padding: 2rem;
+             width: 85%; max-width: 320px; 
+             background: #0a0a0a; 
+             height: 100vh; 
+             padding: 1.5rem;
+             display: flex; 
+             flex-direction: column;
+             border-right: 1px solid #333;
+             transform: translateX(0);
+             animation: slideIn 0.3s ease;
           }
+          
+          .drawer-header {
+             display: flex; justify-content: space-between; align-items: center;
+             margin-bottom: 2rem; border-bottom: 1px solid #222; padding-bottom: 1rem;
+          }
+          .drawer-header h3 { margin: 0; color: #d4af37; font-family: 'Playfair Display'; }
+          .drawer-header button { background: none; border: none; color: #fff; cursor: pointer; }
+
+          .drawer-nav { display: flex; flex-direction: column; gap: 0.5rem; }
           .drawer-nav button {
-             display: block; w-100; padding: 1rem; background: none; border: none; color: white; text-align: left; font-size: 1.2rem;
-             border-bottom: 1px solid #222; width: 100%;
+             width: 100%; padding: 1rem; 
+             background: transparent; color: #ccc; 
+             border: none; border-radius: 4px;
+             text-align: left; font-size: 1rem;
+             transition: 0.2s;
+          }
+          .drawer-nav button:hover, .drawer-nav button:active {
+             background: #1a1a1a; color: #d4af37;
           }
 
+          /* CARDS */
           .mobile-card {
-            background: #111; border: 1px solid #222; padding: 1rem; border-radius: 8px;
+            background: #0a0a0a; 
+            border: 1px solid #222; 
+            padding: 1rem; 
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
           }
-          .mobile-card-header { display: flex; align-items: center; gap: 10px; font-weight: bold; border-bottom: 1px solid #222; padding-bottom: 0.5rem; margin-bottom: 0.5rem; color: #d4af37; }
+          .mobile-card-header { 
+            display: flex; align-items: center; gap: 10px; 
+            font-weight: bold; font-family: 'Playfair Display';
+            border-bottom: 1px solid #222; 
+            padding-bottom: 0.5rem; margin-bottom: 0.75rem; 
+            color: #fff;
+          }
+          .mobile-card-header img.table-thumb {
+            width: 40px; height: 40px; border-radius: 4px; object-fit: cover;
+          }
+          .mobile-card-body p { margin-bottom: 0.25rem; color: #bbb; font-size: 0.9rem; }
+          .mobile-card-body .small-text { font-size: 0.8rem; color: #666; }
+          
+          @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+          @keyframes slideIn { from { transform: translateX(-100%); } to { transform: translateX(0); } }
         }
       `}</style>
     </div>
