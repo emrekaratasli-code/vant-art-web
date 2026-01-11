@@ -43,52 +43,63 @@ export default function AdminPanel() {
 
   // FETCH EMPLOYEES & CATEGORIES & CUSTOMERS
   useEffect(() => {
+    // 1. Auth Check - Don't fetch if no user
+    if (!user || !user.id) return;
+
+    const controller = new AbortController();
+    const signal = controller.signal;
+
     const fetchAuxData = async () => {
       setIsLoading(true);
 
       // Fetch Employees (Robust)
       try {
         console.log('🔍 Fetching Employees for:', user?.email);
-        // EXPLICITLY SELECT first_name, last_name, email, is_approved (Removed status)
         const { data: empData, error } = await supabase
           .from('employees')
-          .select('id, first_name, last_name, email, is_approved');
+          .select('id, first_name, last_name, email, is_approved')
+          .abortSignal(signal);
 
         if (error) {
-          console.error("❌ Employees fetch error:", error.message);
+          if (error.name !== 'AbortError') console.error("❌ Employees fetch error:", error.message);
         } else {
-          console.log('✅ Employees fetched:', empData?.length);
           setEmployees(empData || []);
         }
       } catch (err) {
-        console.error("❌ Failed to fetch employees (Catch):", err);
+        if (err.name !== 'AbortError') console.error("❌ Failed to fetch employees:", err);
       }
 
       // Fetch Customers (Profiles)
       try {
-        // Fetching profiles as requested
-        const { data: custData, error } = await supabase.from('profiles').select('*');
+        const { data: custData, error } = await supabase.from('profiles').select('*').abortSignal(signal);
         if (error) {
-          console.warn("Profiles fetch error:", error.message);
+          if (error.name !== 'AbortError') console.warn("Profiles fetch error:", error.message);
         } else {
           setCustomers(custData || []);
         }
       } catch (err) {
-        console.error("Failed to fetch customers:", err);
+        if (err.name !== 'AbortError') console.error("Failed to fetch customers:", err);
       }
 
       // Fetch Categories
       try {
-        const { data: catData } = await supabase.from('categories').select('*');
+        const { data: catData, error } = await supabase.from('categories').select('*').abortSignal(signal);
+        if (error) throw error;
         if (catData) setCategories(catData || []);
       } catch (err) {
-        console.error("Failed to fetch categories:", err);
+        if (err.name !== 'AbortError') console.error("Failed to fetch categories:", err);
       }
 
-      setIsLoading(false);
+      if (!signal.aborted) setIsLoading(false);
     };
+
     fetchAuxData();
-  }, [activeTab]);
+
+    return () => {
+      controller.abort(); // Cancel requests on unmount/re-run
+    };
+  }, [activeTab, user]); // Added user to dependencies
+
 
   // Placeholder state for new Category
   const [newCatName, setNewCatName] = useState('');

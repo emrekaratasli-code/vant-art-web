@@ -39,7 +39,7 @@ export const AuthProvider = ({ children }) => {
                     id: authUser.id,
                     email: authUser.email,
                     name: profile ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() : (authUser.user_metadata?.full_name || 'Kullanıcı'),
-                    status: isWhitelisted ? 'active' : (profile?.status || 'active'),
+                    status: isWhitelisted ? 'active' : (isApproved ? 'active' : 'pending'),
                     is_approved: isApproved,
                     isAdmin: isApproved
                 };
@@ -173,7 +173,7 @@ export const AuthProvider = ({ children }) => {
             // DEFINITELY do not select 'role'.
             const { data: profile, error } = await supabase
                 .from('employees')
-                .select('id, first_name, last_name, status, is_approved')
+                .select('id, first_name, last_name, is_approved')
                 .eq('id', authUser.id)
                 .single();
 
@@ -196,7 +196,7 @@ export const AuthProvider = ({ children }) => {
                 id: authUser.id,
                 email: authUser.email,
                 name: profile ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() : (authUser.user_metadata?.full_name || 'Kullanıcı'),
-                status: isWhitelisted ? 'active' : (profile?.status || 'active'),
+                status: isWhitelisted ? 'active' : (isApproved ? 'active' : 'pending'),
                 is_approved: isApproved,
                 isAdmin: isApproved // Virtual property for easy checking in UI
             };
@@ -249,8 +249,8 @@ export const AuthProvider = ({ children }) => {
                     email: cleanEmail,
                     first_name: firstName,
                     last_name: lastName,
-                    phone: phone,
-                    status: 'pending'
+                    phone: phone
+                    // status: 'pending' (Removed due to schema change)
                 }]);
             }
             return data;
