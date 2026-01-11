@@ -57,6 +57,7 @@ export default function AdminPanel() {
           // Optional: set a specialized error state if desired, for now we log it.
         } else {
           console.log('✅ Employees fetched:', empData?.length);
+          console.log('Employees Data:', empData); // Explicit log requested by user
           setEmployees(empData || []);
         }
       } catch (err) {
@@ -89,6 +90,9 @@ export default function AdminPanel() {
     fetchAuxData();
   }, [activeTab]);
 
+  // Placeholder state for new Category
+  const [newCatName, setNewCatName] = useState('');
+
   // --- ACCESS CHECK ---
   if (!user || !user.isAdmin) return <div className="admin-loading"><h3>Erişim Yetkisi Yok</h3></div>;
 
@@ -119,16 +123,76 @@ export default function AdminPanel() {
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
+      setFormData({ ...formData, imageFile: file });
+      // Preview
       const objectUrl = URL.createObjectURL(file);
-      setFormData({ ...formData, image: objectUrl });
+      setFormData(prev => ({ ...prev, image: objectUrl, imageFile: file }));
     }
   };
 
   const handleSubmitProduct = async (e) => {
     e.preventDefault();
-    await addProduct(formData);
-    setFormData({ name: '', price: '', category: '', image: '', description: '', material: '' });
-    alert('Ürün eklendi!');
+    try {
+      let imageUrl = formData.image;
+
+      // 1. Upload Image if file exists
+      if (formData.imageFile) {
+        const fileExt = formData.imageFile.name.split('.').pop();
+        const fileName = `${Date.now()}.${fileExt}`;
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('product-images')
+          .upload(fileName, formData.imageFile);
+
+        if (uploadError) throw uploadError;
+
+        // Get Public URL
+        const { data: { publicUrl } } = supabase.storage
+          .from('product-images')
+          .getPublicUrl(fileName);
+
+        imageUrl = publicUrl;
+      }
+
+      // 2. Insert into DB (via Context or Direct)
+      // Using Context's addProduct but ensuring it handles the image URL correctly
+      await addProduct({
+        ...formData,
+        image: imageUrl,
+        price: parseFloat(formData.price),
+        stock: 10 // Default stock
+      });
+
+      setFormData({ name: '', price: '', category: '', image: '', description: '', material: '' });
+      alert('✅ Ürün başarıyla eklendi!');
+    } catch (error) {
+      console.error('Save Product Error:', error);
+      alert('Hata: ' + error.message);
+    }
+  };
+
+  const handleAddCategory = async (e) => {
+    e.preventDefault();
+    if (!newCatName.trim()) return;
+    try {
+      const { data, error } = await supabase.from('categories').insert([{ name: newCatName }]).select();
+      if (error) throw error;
+      setCategories([...categories, ...data]);
+      setNewCatName('');
+      alert('Kategori eklendi');
+    } catch (err) {
+      alert('Kategori eklenemedi: ' + err.message);
+    }
+  };
+
+  const handleDeleteCategory = async (id) => {
+    if (!window.confirm('Kategoriyi silmek istediğinize emin misiniz?')) return;
+    try {
+      const { error } = await supabase.from('categories').delete().eq('id', id);
+      if (error) throw error;
+      setCategories(categories.filter(c => c.id !== id));
+    } catch (err) {
+      alert('Silinemedi: ' + err.message);
+    }
   };
 
   const handleStatusChange = (orderId, newStatus) => {
@@ -235,9 +299,6 @@ export default function AdminPanel() {
                   <select value={formData.category} onChange={e => setFormData({ ...formData, category: e.target.value })} required>
                     <option value="">Kategori Seçin</option>
                     {categories.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
-                    <option value="rings">Yüzükler</option>
-                    <option value="necklaces">Kolyeler</option>
-                    <option value="earrings">Küpeler</option>
                   </select>
                   <input type="text" placeholder="Materyal (Altın, Gümüş...)" value={formData.material} onChange={e => setFormData({ ...formData, material: e.target.value })} />
                   <input type="file" onChange={handleImageUpload} className="file-input" />
@@ -428,7 +489,56 @@ export default function AdminPanel() {
             </div>
           )}
 
-          {activeTab === 'settings' && <div className="placeholder-view">Ayarlar Yapım Aşamasında</div>}
+          {activeTab === 'categories' && (
+            <div className="categories-view">
+              <div className="section-header"><h2>Kategori Yönetimi</h2></div>
+
+              {/* Add Category Form */}
+              <div className="luxury-card mb-4">
+                <h3>Yeni Kategori</h3>
+                <form onSubmit={handleAddCategory} style={{ display: 'flex', gap: '1rem' }}>
+                  <input
+                    type="text"
+                    placeholder="Kategori Adı"
+                    value={newCatName}
+                    onChange={(e) => setNewCatName(e.target.value)}
+                    required
+                    style={{ flex: 1, padding: '0.8rem', background: '#1a1a1a', border: '1px solid #333', color: 'white' }}
+                  />
+                  <button type="submit" className="gold-btn">Ekle</button>
+                </form>
+              </div>
+
+              {/* List Categories */}
+              <div className="desktop-table-container">
+                <table className="admin-table">
+                  <thead><tr><th>ID</th><th>Kategori Adı</th><th>İşlem</th></tr></thead>
+                  <tbody>
+                    {categories.map(c => (
+                      <tr key={c.id}>
+                        <td>{c.id}</td>
+                        <td>{c.name}</td>
+                        <td>
+                          <button className="icon-action delete" onClick={() => handleDeleteCategory(c.id)}>🗑️ Sil</button>
+                        </td>
+                      </tr>
+                    ))}
+                    {categories.length === 0 && <tr><td colSpan="3" className="no-data">Kategori bulunamadı.</td></tr>}
+                  </tbody>
+                </table>
+              </div>
+              <div className="mobile-card-grid">
+                {categories.map(c => (
+                  <div className="mobile-card" key={c.id}>
+                    <div className="mobile-card-header">{c.name}</div>
+                    <div className="mobile-card-body">
+                      <button className="icon-action delete" onClick={() => handleDeleteCategory(c.id)}>Sil</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
         </div>
       </main>
