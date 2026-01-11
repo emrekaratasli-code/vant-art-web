@@ -15,13 +15,13 @@ export const AuthProvider = ({ children }) => {
         let mounted = true;
         console.log('🚀 Auth Provider Mounted. Starting Init...');
 
-        // 1. EMERGENCY BRAKE: Force stop loading after 5 seconds no matter what
+        // 1. EMERGENCY BRAKE: Force stop loading after 2 seconds no matter what
         const safetyTimeout = setTimeout(() => {
             if (mounted && loading) {
-                console.error('🛑 AUTH TIMEOUT (5s): Forcing loading to false. Potential connection hang.');
+                console.error('🛑 AUTH TIMEOUT (2s): Forcing loading to false. Potential connection hang.');
                 setLoading(false);
             }
-        }, 5000);
+        }, 2000);
 
         const initAuth = async () => {
             console.log('🔄 InitAuth started...');
@@ -38,13 +38,25 @@ export const AuthProvider = ({ children }) => {
 
                 if (error) {
                     console.error('❌ Session Error:', error.message);
-                    // Network error or configuration error
                     return;
                 }
 
                 if (session) {
                     console.log('✅ Session Found for:', session.user.email);
-                    await fetchProfile(session.user);
+                    // IMMEDIATE ACCESS: Set user with basic info and stop loading.
+                    // Profile will load in background.
+                    const basicUser = {
+                        id: session.user.id,
+                        email: session.user.email,
+                        name: session.user.user_metadata?.full_name || 'Kullanıcı',
+                        role: 'customer', // Default role until profile loads
+                        status: 'active'
+                    };
+                    setUser(basicUser);
+                    setLoading(false);
+
+                    // Background Profile Fetch
+                    fetchProfile(session.user).catch(e => console.error("Background Profile Load Failed", e));
                 } else {
                     console.log('ℹ️ No Session (Guest)');
                 }
@@ -55,7 +67,7 @@ export const AuthProvider = ({ children }) => {
                 if (mounted) {
                     console.log('🏁 InitAuth FINALLY block reached. Setting loading=false');
                     setLoading(false);
-                    clearTimeout(safetyTimeout); // Clear the safety timer if we finished normally
+                    clearTimeout(safetyTimeout);
                 }
             }
         };
@@ -66,7 +78,20 @@ export const AuthProvider = ({ children }) => {
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
             console.log(`🔔 Auth State Change: ${event}`);
             if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-                if (session) await fetchProfile(session.user);
+                if (session) {
+                    const basicUser = {
+                        id: session.user.id,
+                        email: session.user.email,
+                        name: session.user.user_metadata?.full_name || 'Kullanıcı',
+                        role: 'customer',
+                        status: 'active'
+                    };
+                    // Update user immediately for responsiveness
+                    setUser(prev => ({ ...basicUser, ...prev }));
+                    setLoading(false);
+
+                    await fetchProfile(session.user);
+                }
             } else if (event === 'SIGNED_OUT') {
                 setUser(null);
                 setLoading(false);
@@ -111,15 +136,14 @@ export const AuthProvider = ({ children }) => {
             };
 
             console.log('✅ Profile Loaded (or Defaulted):', userData.email);
-            setUser(userData);
+            // MERGE with existing user state so we don't lose the early access session
+            setUser(prev => ({ ...prev, ...userData }));
         } catch (error) {
             console.error('❌ Profile Fetch Failed:', error);
-            alert('Kritik Hata: ' + error.message);
-            // Even if everything fails, try to let them use the app as guest?
-            // For now, let's just stop loading so they aren't stuck.
-        } finally {
-            setLoading(false);
+            // Alert user but don't crash app flow
+            alert('Arka Plan Hatası: Profil güncellenemedi. ' + error.message);
         }
+        // No finally block needed for loading, it's already false.
     };
 
 
