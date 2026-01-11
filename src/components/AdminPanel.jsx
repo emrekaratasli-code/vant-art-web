@@ -65,7 +65,7 @@ export default function AdminPanel() {
           setEmployees(empData || []);
         } catch (err) {
           console.error("❌ Failed to fetch employees:", err);
-          setFetchError("Erişim Hatası: Personel listesi yüklenemedi. (" + err.message + ")");
+          setFetchError(err.message); // Show direct technical error
         }
 
         // Fetch Customers
