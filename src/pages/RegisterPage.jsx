@@ -10,13 +10,12 @@ export default function RegisterPage() {
     const { register } = useAuth();
     const navigate = useNavigate();
 
-    const [isRegistering, setIsRegistering] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (isRegistering) return; // Prevent double click
+        if (isSubmitting) return; // Prevent double click
 
-        setIsRegistering(true);
         setIsSubmitting(true);
         try {
             await register(email, password, name, phone);
