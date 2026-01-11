@@ -14,8 +14,9 @@ export default function ProductGrid() {
   const categoryFilter = queryParams.get('category');
 
   // Filter products
-  const filteredProducts = categoryFilter
-    ? products.filter(p => p.category === categoryFilter)
+  // Filter products (Case Insensitive)
+  const filteredProducts = (categoryFilter && categoryFilter.toLowerCase() !== 'all')
+    ? products.filter(p => p.category?.toLowerCase() === categoryFilter.toLowerCase())
     : products;
 
   // Debugging Frontend Sync
