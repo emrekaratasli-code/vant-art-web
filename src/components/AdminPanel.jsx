@@ -194,185 +194,204 @@ export default function AdminPanel() {
           {activeTab === 'products' && (
             <div className="products-view">
               <div className="section-header"><h2>Ürün Kataloğu</h2><button className="primary-btn" onClick={() => document.getElementById('add-product-form').scrollIntoView({ behavior: 'smooth' })}>+ Yeni Ürün</button></div>
-              <div className="mobile-card-grid">
-                {(products || []).map(p => (
-                  <div className="mobile-card" key={p.id}>
-                    <div className="mobile-card-header"><img src={p.image} className="card-thumb" alt={p.name} onError={e => e.target.src = 'https://placehold.co/40x40'} /><div className="card-title"><h4>{p.name}</h4><span className="card-subtitle">{p.category}</span></div></div>
-                    <div className="mobile-card-body"><div className="card-row"><span>Fiyat:</span> <strong>₺{p.price}</strong></div><div className="card-row"><span>Stok:</span> <span style={{ color: p.stock < 5 ? 'red' : 'green' }}>{p.stock}</span></div></div>
-                    <div className="mobile-card-actions"><button className="icon-action delete" onClick={() => handleDeleteProduct(p.id)}>🗑️ Sil</button></div>
-                  </div>
-                ))}
-              </div>
-              <div className="data-table-container desktop-table-container">
-                <table className="data-table">
-                  <thead><tr><th>Ürün</th><th>Kategori</th><th>Fiyat</th><th>Stok</th><th>İşlem</th></tr></thead>
-                  <tbody>
-                    {products?.map(p => (
-                      <tr key={p.id}>
-                        <td><div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}><img src={p.image} style={{ width: 40, height: 40, objectFit: 'cover', borderRadius: 4 }} alt="" onError={e => e.target.src = 'https://placehold.co/40x40'} />{p.name}</div></td>
-                        <td>{p.category}</td>
-                        <td>₺{p.price}</td>
-                        <td style={{ color: p.stock < 5 ? 'red' : 'inherit' }}>{p.stock}</td>
-                        <td><button className="icon-action delete" onClick={() => handleDeleteProduct(p.id)}>🗑️</button></td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              <div id="add-product-form" className="add-product-form-panel">
-                <h3>Yeni Ürün Ekle</h3>
-                <form onSubmit={handleSubmitProduct} className="grid-form">
-                  <div className="form-group"><label>Ad</label><input name="name" onChange={e => setFormData({ ...formData, name: e.target.value })} required /></div>
-                  <div className="form-group"><label>Fiyat</label><input name="price" type="number" onChange={e => setFormData({ ...formData, price: e.target.value })} required /></div>
-                  <div className="form-group"><label>Kategori</label><select name="category" onChange={e => setFormData({ ...formData, category: e.target.value })}><option value="">Seçiniz</option>{categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select></div>
-                  <div className="form-group"><label>Stok</label><input name="stock" type="number" onChange={e => setFormData({ ...formData, stock: e.target.value })} /></div>
-                  <div className="form-group"><label>Görsel</label><input type="file" onChange={handleImageUpload} /></div>
-                  <button type="submit" className="submit-btn full-width">Kaydet</button>
-                </form>
-              </div>
-            </div>
-          )}
+              <main className="admin-content">
+                {activeTab === 'dashboard' && renderDashboard()}
+                {activeTab === 'products' && renderProducts()}
+                {activeTab === 'orders' && renderOrders()}
+                {activeTab === 'employees' && renderEmployees()}
+                {activeTab === 'settings' && <div className="placeholder-view">Ayarlar Yapım Aşamasında</div>}
+              </main>
 
-          {/* ORDERS VIEW - UPDATED */}
-          {activeTab === 'orders' && (
-            <div className="orders-view">
-              <div className="section-header"><h2>Siparişler ({orders?.length || 0})</h2></div>
-
-              {/* MOBILE ORDER CARDS */}
-              <div className="mobile-card-grid">
-                {orders?.map(o => (
-                  <div className="mobile-card" key={o.id}>
-                    <div className="mobile-card-header">
-                      <div className="card-title"><h4>#{o.id}</h4><span className="card-subtitle">{new Date(o.created_at).toLocaleDateString()}</span></div>
-                    </div>
-                    <div className="mobile-card-body">
-                      <div className="card-row"><span>Müşteri:</span> <strong>{o.billingDetails?.name || o.user?.email || 'Misafir'}</strong></div>
-                      <div className="card-row"><span>Tutar:</span> <strong>₺{o.amount}</strong></div>
-                      <div className="card-row">
-                        <span>Durum:</span>
-                        <select value={o.status} onChange={(e) => handleStatusChange(o.id, e.target.value)} style={{ padding: '2px 5px' }}>
-                          <option value="Preparing">Hazırlanıyor</option>
-                          <option value="Shipped">Kargolandı</option>
-                          <option value="Delivered">Teslim Edildi</option>
-                          <option value="Cancelled">İptal</option>
-                        </select>
-                      </div>
-                      {o.tracking_number && (
-                        <div className="card-row" style={{ marginTop: 5, background: '#f9f9f9', padding: 5 }}><span style={{ fontSize: '0.8rem' }}>Kargo Takip: {o.tracking_number}</span></div>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* DESKTOP ORDER TABLE */}
-              <div className="data-table-container desktop-table-container">
-                {(!orders || orders.length === 0) ? <div className="empty-state">Sipariş yok.</div> : (
-                  <table className="data-table">
-                    <thead><tr><th>ID</th><th>Müşteri</th><th>Tarih</th><th>Tutar</th><th>Kargo Takip</th><th>Durum</th></tr></thead>
-                    <tbody>
-                      {orders?.map(o => (
-                        <tr key={o.id}>
-                          <td>#{o.id}</td>
-                          <td>{o.billingDetails?.name || o.user?.email} <br /><span style={{ fontSize: '0.8rem', color: '#999' }}>{o.user?.email}</span></td>
-                          <td>{new Date(o.created_at).toLocaleDateString()}</td>
-                          <td>₺{o.amount}</td>
-                          <td style={{ fontSize: '0.9rem', fontFamily: 'monospace' }}>{o.tracking_number || '-'}</td>
-                          <td>
-                            <select value={o.status} onChange={(e) => handleStatusChange(o.id, e.target.value)} style={{ padding: 5, borderRadius: 4, border: '1px solid #ddd' }}>
-                              <option value="Preparing">Hazırlanıyor</option>
-                              <option value="Shipped">Kargolandı</option>
-                              <option value="Delivered">Teslim Edildi</option>
-                              <option value="Cancelled">İptal</option>
-                            </select>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* WORKERS VIEW */}
-          {activeTab === 'workers' && (
-            <div className="workers-view">
-              <div className="section-header"><h2>Çalışanlar ({employees?.length || 0})</h2></div>
-              <div className="data-table-container">
-                <table className="data-table">
-                  <thead><tr><th>Ad Soyad</th><th>Durum</th><th>Email</th><th>İşlem</th></tr></thead>
-                  <tbody>
-                    {employees?.map(w => (
-                      <tr key={w.id}>
-                        <td>{w.first_name} {w.last_name}</td>
-                        <td>{w.status === 'pending' ? <span className="badge-status critical">Onay Bekliyor</span> : <span className="badge-status shipped">Aktif</span>}</td>
-                        <td>{w.email} <br /><span style={{ fontSize: '0.8rem', color: '#999' }}>{w.position}</span></td>
-                        <td>{w.status === 'pending' && user.email === 'emrekaratasli@vantonline.com' && (<button className="primary-btn" style={{ fontSize: '0.8rem', padding: '4px 8px' }} onClick={() => handleApproveWorker(w.id)}>Onayla ✅</button>)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-
-        </div>
-      </main>
-
-      <style>{`
-        /* LAYOUT & FONTS */
-        .admin-layout { 
-            display: flex; 
-            height: 100vh; 
-            width: 100vw;
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: 50; /* Ensure it sits on top of any global headers */
-            background: #f4f5f7; 
-            font-family: 'Inter', sans-serif; 
-            overflow: hidden; 
+              <style>{`
+        .admin-layout {
+          display: flex;
+          min-height: 100vh;
+          background-color: #050505;
+          color: #f0f0f0;
+          position: relative;
         }
-        .admin-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
-        .admin-loading { height: 100vh; display: flex; align-items: center; justify-content: center; background: #f4f5f7; flex-direction: column; gap: 1rem; }
+
+        /* --- SIDEBAR --- */
+        .admin-sidebar {
+          width: 260px;
+          background: #0a0a0a;
+          border-right: 1px solid #222;
+          display: flex;
+          flex-direction: column;
+          position: fixed; /* Fixed for simpler desktop layout too, or sticky */
+          height: 100vh;
+          z-index: 1000;
+          transition: transform 0.3s ease-in-out;
+        }
+
+        .sidebar-header {
+          padding: 2rem;
+          border-bottom: 1px solid #222;
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          position: relative;
+        }
+        .sidebar-header h2 { color: #d4af37; margin: 0; font-family: 'Playfair Display', serif; }
+        .admin-badge { font-size: 0.7rem; background: #222; padding: 2px 6px; border-radius: 4px; margin-top: 5px; color: #888; }
         
-        /* MOBILE NAV */
-        .mobile-header { display: none; align-items: center; padding: 1rem; background: #1a1a1a; color: #fff; gap: 1rem; }
-        .hamburger-btn { background: none; border: none; color: #fff; cursor: pointer; }
-        .mobile-drawer-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; }
-        .mobile-drawer { width: 80%; max-width: 300px; height: 100%; background: #fff; padding: 1.5rem; }
-        .drawer-nav button { display: block; width: 100%; text-align: left; padding: 1rem; border: none; background: none; border-bottom: 1px solid #eee; font-size: 1.1rem; }
+        .close-btn-mobile {
+          display: none; /* Desktop hidden */
+          position: absolute;
+          top: 1rem;
+          right: 1rem;
+          background: none;
+          border: none;
+          color: #fff;
+          font-size: 1.5rem;
+          cursor: pointer;
+        }
+
+        .admin-nav {
+          flex: 1;
+          padding: 2rem 1rem;
+          display: flex;
+          flex-direction: column;
+          gap: 0.5rem;
+        }
+
+        .admin-nav button {
+          background: transparent;
+          border: none;
+          color: #888;
+          text-align: left;
+          padding: 1rem;
+          cursor: pointer;
+          font-size: 1rem;
+          transition: all 0.2s;
+          border-radius: 4px;
+        }
+        .admin-nav button:hover {
+          color: #fff;
+          background: rgba(255,255,255,0.05);
+        }
+        .admin-nav button.active {
+          color: #d4af37;
+          background: rgba(212,175,55,0.1);
+          border-left: 3px solid #d4af37;
+        }
+
+        .sidebar-footer {
+          padding: 2rem;
+          border-top: 1px solid #222;
+        }
+        .logout-btn {
+          width: 100%;
+          padding: 0.8rem;
+          background: transparent;
+          border: 1px solid #333;
+          color: #ff4d4d;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+        .logout-btn:hover { border-color: #ff4d4d; background: rgba(255, 77, 77, 0.1); }
+
+        /* --- MAIN CONTENT --- */
+        .admin-content {
+          flex: 1;
+          margin-left: 260px; /* Offset for sidebar */
+          padding: 2rem;
+          overflow-y: auto;
+        }
+
+        .luxury-card {
+          background: #0f0f0f;
+          border: 1px solid #222;
+          padding: 1.5rem;
+          border-radius: 8px;
+        }
+        .no-data {
+          color: #666;
+          font-style: italic;
+          padding: 1rem;
+          text-align: center;
+        }
+
+        /* --- STATS GRID --- */
+        .stats-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+          gap: 1.5rem;
+          margin-bottom: 2rem;
+        }
+        .stat-card h3 { font-size: 0.9rem; color: #888; margin-bottom: 0.5rem; }
+        .stat-value { font-size: 1.8rem; font-weight: bold; color: #f0f0f0; }
+
+        /* --- CHARTS --- */
+        .charts-section { margin-bottom: 2rem; }
+        .chart-container h3 { color: #d4af37; margin-bottom: 1rem; }
+
+        /* --- TABLES --- */
+        .table-responsive { overflow-x: auto; }
+        .admin-table { width: 100%; border-collapse: collapse; min-width: 600px; }
+        .admin-table th { text-align: left; padding: 1rem; color: #666; border-bottom: 1px solid #222; font-weight: normal; font-size: 0.8rem; }
+        .admin-table td { padding: 1rem; border-bottom: 1px solid #1a1a1a; color: #ddd; vertical-align: middle; }
+        .product-cell { display: flex; alignItems: center; gap: 1rem; }
+        .table-thumb { width: 40px; height: 40px; border-radius: 4px; object-fit: cover; background: #222; }
         
-        .mobile-card-grid { display: none; gap: 15px; grid-template-columns: 1fr; margin-bottom: 20px; }
-        .mobile-card { background: #fff; border-radius: 8px; padding: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .mobile-card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; border-bottom: 1px solid #f0f0f0; padding-bottom: 10px; }
-        .card-thumb { width: 50px; height: 50px; border-radius: 6px; object-fit: cover; }
-        .card-title h4 { margin: 0; font-size: 1rem; }
-        .card-subtitle { font-size: 0.8rem; color: #888; }
-        .card-row { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 0.9rem; }
-        .mobile-card-actions { margin-top: 10px; display: flex; justify-content: flex-end; }
-        .icon-action.delete { background: #fee2e2; border: none; border-radius: 4px; padding: 6px 12px; cursor: pointer; color: #d90000; display: flex; align-items: center; gap: 5px; }
+        .gold-btn {
+          background: #d4af37; color: #000; border: none; padding: 0.5rem 1rem; cursor: pointer; font-weight: bold;
+        }
+
+        .action-btn { background: none; border: none; cursor: pointer; font-size: 0.8rem; margin-right: 0.5rem; }
+        .delete { color: #ff4d4d; }
+        .approve { color: #4caf50; }
+        .view { color: #d4af37; }
+
+        /* --- RESPONSIVE / MOBILE --- */
+        .mobile-admin-header { display: none; }
+        .sidebar-overlay { display: none; }
 
         @media (max-width: 768px) {
-            .desktop-sidebar { display: none; }
-            .mobile-header { display: flex; }
-            .admin-topbar .search-bar { display: none; } 
-            .desktop-table-container { display: none; }
-            .mobile-card-grid { display: grid; }
-        }
+          .admin-sidebar {
+            transform: translateX(-100%); /* Hidden by default */
+            width: 80%; /* Wider on mobile */
+            max-width: 300px;
+          }
+          .admin-sidebar.open {
+            transform: translateX(0);
+          }
+          
+          .admin-content {
+            margin-left: 0; /* No offset */
+            padding-top: 4rem; /* Space for mobile header */
+          }
 
-        /* CONTRAST & SPACING */
-        .top-actions { display: flex; gap: 24px; align-items: center; }
-        .stat-card.white .stat-number.dark-text { color: #111; font-weight: 700; }
-        .primary-btn { background: #d4af37; color: #fff; padding: 8px 16px; border-radius: 4px; border: none; cursor: pointer; }
-        .add-product-form-panel { padding: 20px; background: #fff; margin-top: 20px; border-radius: 8px; }
-        .grid-form { display: grid; gap: 15px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
-        input, select { padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
-        .badge-status { padding: 4px 8px; border-radius: 12px; font-size: 0.8rem; font-weight: bold; }
-        .badge-status.critical { background: #fee2e2; color: #ef4444; }
-        .badge-status.shipped { background: #dcfce7; color: #16a34a; }
+          .mobile-admin-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: 60px;
+            background: #0a0a0a;
+            border-bottom: 1px solid #222;
+            padding: 0 1rem;
+            z-index: 900;
+          }
+          .hamburger-btn {
+            background: none; border: none; color: #d4af37; font-size: 1.5rem; cursor: pointer;
+          }
+          .mobile-title {
+            color: #d4af37; font-weight: bold; letter-spacing: 0.1em;
+          }
+
+          .close-btn-mobile { display: block; }
+          
+          .sidebar-overlay {
+            display: block;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+          }
+        }
       `}</style>
-    </div>
-  );
+            </div>
+          );
 }
