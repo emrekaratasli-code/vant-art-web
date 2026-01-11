@@ -19,6 +19,9 @@ export const ProductProvider = ({ children }) => {
                 .order('id', { ascending: false });
 
             if (error) throw error;
+
+            console.log('✅ ProductContext: Items Fetched:', data?.length);
+            // console.log('Items:', data); // Uncomment for deep debug
             setProducts(data || []);
         } catch (error) {
             console.error('Error fetching products:', error);
