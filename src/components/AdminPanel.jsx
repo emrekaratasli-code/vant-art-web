@@ -49,15 +49,15 @@ export default function AdminPanel() {
       // Fetch Employees (Robust)
       try {
         console.log('🔍 Fetching Employees for:', user?.email);
-        // EXPLICITLY SELECT first_name, last_name
-        const { data: empData, error } = await supabase.from('employees').select('id, first_name, last_name, email, status, is_approved');
+        // EXPLICITLY SELECT first_name, last_name, email, is_approved (Removed status)
+        const { data: empData, error } = await supabase
+          .from('employees')
+          .select('id, first_name, last_name, email, is_approved');
 
         if (error) {
           console.error("❌ Employees fetch error:", error.message);
-          // Optional: set a specialized error state if desired, for now we log it.
         } else {
           console.log('✅ Employees fetched:', empData?.length);
-          console.log('Employees Data:', empData); // Explicit log requested by user
           setEmployees(empData || []);
         }
       } catch (err) {
@@ -114,9 +114,9 @@ export default function AdminPanel() {
     // Only owner email can approve
     if (user.email !== 'emrekaratasli@vantonline.com') return;
     try {
-      const { error } = await supabase.from('employees').update({ status: 'active', is_approved: true }).eq('id', workerId);
+      const { error } = await supabase.from('employees').update({ is_approved: true }).eq('id', workerId);
       if (error) throw error;
-      setEmployees(prev => prev.map(w => w.id === workerId ? { ...w, status: 'active' } : w));
+      setEmployees(prev => prev.map(w => w.id === workerId ? { ...w, is_approved: true } : w));
     } catch (e) { alert('Onay hatası: ' + e.message); }
   };
 
@@ -133,6 +133,12 @@ export default function AdminPanel() {
   const handleSubmitProduct = async (e) => {
     e.preventDefault();
     try {
+      // 0. AUTH CHECK
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError || !session) {
+        throw new Error("Oturum süresi dolmuş. Lütfen tekrar giriş yapın.");
+      }
+
       let imageUrl = formData.image;
 
       // 1. Upload Image if file exists
@@ -440,14 +446,13 @@ export default function AdminPanel() {
                 <>
                   <div className="desktop-table-container">
                     <table className="admin-table">
-                      <thead><tr><th>Ad Soyad</th><th>Email</th><th>Durum</th><th>Onay</th></tr></thead>
+                      <thead><tr><th>Ad Soyad</th><th>Email</th><th>Onay</th></tr></thead>
                       <tbody>
                         {employees.map(w => (
                           <tr key={w.id}>
                             {/* SCHEMA FIX: Use first_name last_name */}
                             <td>{w.first_name} {w.last_name}</td>
                             <td>{w.email}</td>
-                            <td><span className={`status-badge ${w.status}`}>{w.status}</span></td>
                             <td>
                               {!w.is_approved && (
                                 <button className="gold-btn small" onClick={() => handleApproveWorker(w.id)}>Onayla</button>
@@ -458,7 +463,7 @@ export default function AdminPanel() {
                         ))}
                         {employees.length === 0 && (
                           <tr>
-                            <td colSpan="4" style={{ textAlign: 'center', padding: '2rem', color: '#ff4d4d' }}>
+                            <td colSpan="3" style={{ textAlign: 'center', padding: '2rem', color: '#ff4d4d' }}>
                               <div style={{ fontWeight: 'bold' }}>Veri bulunamadı veya Erişim Engellendi.</div>
                               <div style={{ fontSize: '0.8rem', marginTop: '5px' }}>Lütfen konsolu (F12) kontrol edin veya RLS kurallarını gözden geçirin.</div>
                             </td>
@@ -473,7 +478,6 @@ export default function AdminPanel() {
                         <div className="mobile-card-header">{w.first_name} {w.last_name}</div>
                         <div className="mobile-card-body">
                           <p>{w.email}</p>
-                          <p>Durum: {w.status}</p>
                           {!w.is_approved && <button className="gold-btn small" onClick={() => handleApproveWorker(w.id)}>Onayla</button>}
                           {w.is_approved && <span className="text-green">✔ Onaylı</span>}
                         </div>
