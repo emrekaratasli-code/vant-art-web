@@ -19,12 +19,8 @@ export default function LoginPage() {
             await login(email, password);
             console.log('✅ Giriş Başarılı - Yönlendiriliyor...');
 
-            // AUTO-REDIRECT: If Owner, go straight to Admin Panel
-            if (email === 'emrekaratasli@vantonline.com') {
-                navigate('/admin');
-            } else {
-                navigate('/');
-            }
+            // AUTO-REDIRECT: Always go to Home. Admin panel is improved to be accessible via button.
+            navigate('/');
         } catch (err) {
             console.error('Login Fail:', err);
             // AuthContext handles alerts

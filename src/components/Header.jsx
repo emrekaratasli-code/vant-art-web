@@ -57,6 +57,13 @@ export default function Header() {
             >EN</button>
           </div>
 
+          {/* ADMIN LINK */}
+          {isAuthenticated && useAuth().user?.isAdmin && (
+            <Link to="/admin" className="icon-btn-header admin-link" title="Yönetim Paneli" style={{ color: '#d4af37', fontWeight: 'bold', fontSize: '0.8rem', border: '1px solid #d4af37', padding: '4px 8px', borderRadius: '4px' }}>
+              PANEL
+            </Link>
+          )}
+
           <Link to={isAuthenticated ? "/profile" : "/login"} className="icon-btn-header" aria-label="Profile">
             <UserIcon />
           </Link>
