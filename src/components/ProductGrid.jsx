@@ -6,7 +6,7 @@ import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 
 export default function ProductGrid() {
-  const { products } = useProducts();
+  const { products, loading } = useProducts(); // Added loading
   const { t } = useLanguage();
   const location = useLocation();
 
@@ -14,48 +14,56 @@ export default function ProductGrid() {
   const queryParams = new URLSearchParams(location.search);
   const categoryFilter = queryParams.get('category');
 
-  // Category Mapping (English/Slugs -> Turkish DB Names)
-  const categoryMap = {
-    'rings': 'Yüzükler',
-    'necklaces': 'Kolyeler',
-    'earrings': 'Küpeler',
-    'bracelets': 'Bileklikler',
-    'sets': 'Setler',
-    'all': 'all'
+  // Slugify Helper: Handles Turkish chars and normalization
+  const slugify = (text) => {
+    if (!text) return '';
+    return text
+      .toString()
+      .toLowerCase()
+      .replace(/ğ/g, 'g')
+      .replace(/ü/g, 'u')
+      .replace(/ş/g, 's')
+      .replace(/ı/g, 'i')
+      .replace(/ö/g, 'o')
+      .replace(/ç/g, 'c')
+      .replace(/\s+/g, '-')     // Replace spaces with -
+      .replace(/[^\w-]+/g, '')  // Remove all non-word chars
+      .replace(/--+/g, '-');    // Replace multiple - with single -
   };
 
-  // Helper to normalize strings
-  const normalize = (str) => str ? str.toLowerCase().trim() : '';
-
-  // Filter Logic with Mapping
+  // Filter Logic
   const filteredProducts = products.filter(p => {
-    const rawFilter = normalize(categoryFilter);
-
     // 1. Show all if no filter or 'all'
-    if (!rawFilter || rawFilter === 'all') return true;
+    if (!categoryFilter || categoryFilter.toLowerCase() === 'all') return true;
 
-    // 2. Determine target category name (from map or raw)
-    // If the URL is ?category=rings, we look for 'Yüzükler'. 
-    // If map fails, we look for 'rings' directly.
-    const targetCategory = categoryMap[rawFilter] || rawFilter;
+    const pSlug = slugify(p.category);
+    const urlSlug = slugify(categoryFilter);
 
-    const pCat = normalize(p.category);
-    const tCat = normalize(targetCategory);
-
-    return pCat === tCat;
+    // 2. Direct partial match (contains) for leniency
+    // e.g. 'yuzuk' matches 'yuzukler'
+    return pSlug.includes(urlSlug) || urlSlug.includes(pSlug);
   });
 
   // Debugging Frontend Sync
   useEffect(() => {
-    console.log('🛒 ProductGrid Filter Logic:');
-    console.log('   - URL Filter:', categoryFilter);
-    console.log('   - Mapped Target:', categoryMap[normalize(categoryFilter)] || categoryFilter);
-    console.log('   - Total P:', products.length, 'Filtered:', filteredProducts.length);
-
-    if (products.length > 0 && filteredProducts.length === 0) {
-      console.warn('⚠️ VISUAL MISMATCH! Showing warning on screen.');
+    if (!loading) {
+      console.log('🛒 ProductGrid Filter Logic (Final):');
+      console.log('   - Raw Category Filter:', categoryFilter);
+      console.log('   - Normalized URL:', slugify(categoryFilter));
+      console.log('   - Total P:', products.length, 'Filtered:', filteredProducts.length);
     }
-  }, [products, categoryFilter, filteredProducts.length]);
+  }, [products, categoryFilter, filteredProducts.length, loading]);
+
+  // Loading State
+  if (loading) {
+    return (
+      <section className="product-section" id="shop">
+        <div className="container" style={{ textAlign: 'center', padding: '4rem' }}>
+          <h2 className="section-title">Ürünler Yükleniyor...</h2>
+        </div>
+      </section>
+    );
+  }
 
   console.log('🎨 Rendering Products:', filteredProducts);
 
@@ -63,17 +71,15 @@ export default function ProductGrid() {
     <section className="product-section" id="shop">
       <div className="container">
         <h2 className="section-title">
-          {filteredProducts.length > 0 ? (categoryFilter ? categoryFilter.toUpperCase() : t('sectionTitle')) : 'Ürünler Yükleniyor...'}
+          {categoryFilter ? categoryFilter.toUpperCase() : t('sectionTitle')}
         </h2>
 
-        {/* VISUAL DEBUG WARNING */}
+        {/* VISUAL DEBUG WARNING: Only if NOT loading and result is 0 but products exist */}
         {products.length > 0 && filteredProducts.length === 0 && (
-          <div style={{ padding: '1rem', background: '#ffeebb', color: '#b22222', marginBottom: '1rem', borderRadius: '4px', textAlign: 'center', border: '1px solid #eebb00' }}>
-            <strong>🛑 Hata Ayıklama Modu:</strong> Ürünler veritabanından geldi ({products.length} adet) ancak kategori filtresine takıldı.
-            <br />
-            Aranan Kategori: <strong>{categoryFilter}</strong> (Map: {categoryMap[normalize(categoryFilter)] || 'Yok'})
-            <br />
-            Mevcut Kategoriler: {Array.from(new Set(products.map(p => p.category))).join(', ')}
+          <div style={{ padding: '1rem', background: '#ffeebb', color: '#b22222', marginBottom: '1rem', borderRadius: '4px', textAlign: 'center' }}>
+            <strong>⚠️ No Match Found</strong><br />
+            URL expects: "{slugify(categoryFilter)}"<br />
+            Available: {Array.from(new Set(products.map(p => slugify(p.category)))).join(', ')}
           </div>
         )}
 
@@ -83,12 +89,9 @@ export default function ProductGrid() {
               <ProductCard key={product.id} product={product} />
             ))
           ) : (
-            // Only show 'No products' if we really have no products at all (and not just a mismatch)
-            products.length === 0 ? (
-              <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '2rem', color: '#666' }}>
-                Henüz ürün eklenmemiş.
-              </div>
-            ) : null
+            <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '2rem', color: '#666' }}>
+              {products.length === 0 ? 'Henüz ürün eklenmemiş.' : 'Bu kategoride ürün bulunamadı.'}
+            </div>
           )}
         </div>
       </div>
