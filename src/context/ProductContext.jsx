@@ -71,7 +71,7 @@ export const ProductProvider = ({ children }) => {
             return data;
         } catch (error) {
             console.error('Error adding product:', error);
-            alert('Ürün eklenirken hata: ' + error.message);
+            throw error; // Re-throw so AdminPanel knows it failed
         }
     };
 
