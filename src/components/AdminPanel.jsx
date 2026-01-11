@@ -181,6 +181,7 @@ export default function AdminPanel() {
 
       setFormData({ name: '', price: '', category: '', image: '', description: '', material: '', stock: '' });
       alert('✅ Ürün başarıyla eklendi!');
+      fetchProducts(); // Refresh list
     } catch (error) {
       console.error('Save Product Error:', error);
       alert('Hata: ' + error.message);
