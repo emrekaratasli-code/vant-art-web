@@ -48,15 +48,19 @@ export default function AdminPanel() {
 
       // Fetch Employees (Robust)
       try {
+        console.log('🔍 Fetching Employees for:', user?.email);
         // EXPLICITLY SELECT first_name, last_name
         const { data: empData, error } = await supabase.from('employees').select('id, first_name, last_name, email, status, is_approved');
+
         if (error) {
-          console.warn("Employees fetch error (ignoring):", error.message);
+          console.error("❌ Employees fetch error:", error.message);
+          // Optional: set a specialized error state if desired, for now we log it.
         } else {
+          console.log('✅ Employees fetched:', empData?.length);
           setEmployees(empData || []);
         }
       } catch (err) {
-        console.error("Failed to fetch employees:", err);
+        console.error("❌ Failed to fetch employees (Catch):", err);
       }
 
       // Fetch Customers (Profiles)
@@ -393,7 +397,8 @@ export default function AdminPanel() {
                         {employees.length === 0 && (
                           <tr>
                             <td colSpan="4" style={{ textAlign: 'center', padding: '2rem', color: '#ff4d4d' }}>
-                              Personel bulunamadı. (Veritabanı RLS Politikalarını kontrol edin)
+                              <div style={{ fontWeight: 'bold' }}>Veri bulunamadı veya Erişim Engellendi.</div>
+                              <div style={{ fontSize: '0.8rem', marginTop: '5px' }}>Lütfen konsolu (F12) kontrol edin veya RLS kurallarını gözden geçirin.</div>
                             </td>
                           </tr>
                         )}
