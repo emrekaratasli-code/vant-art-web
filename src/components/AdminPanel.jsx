@@ -8,6 +8,8 @@ import {
   LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   BarChart, Bar, PieChart, Pie, Cell, Legend
 } from 'recharts';
+import { useAuth } from '../context/AuthContext';
+import { useSettings } from '../context/SettingsContext';
 
 // --- Icons ---
 const IconDashboard = () => <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>;
@@ -19,9 +21,6 @@ const IconBell = () => <svg width="20" height="20" fill="none" stroke="currentCo
 const IconMenu = () => <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M3 12h18M3 6h18M3 18h18"></path></svg>;
 const IconClose = () => <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"></path></svg>;
 
-import { useAuth } from '../context/AuthContext';
-import { useSettings } from '../context/SettingsContext';
-
 export default function AdminPanel() {
   const { user } = useAuth();
   const { products, addProduct, deleteProduct: deleteFromContext, fetchProducts } = useProducts();
@@ -30,7 +29,7 @@ export default function AdminPanel() {
   const { settings, updateSetting } = useSettings();
   const { t } = useLanguage();
 
-  const [activeTab, setActiveTab] = useState('orders');
+  const [activeTab, setActiveTab] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
@@ -50,8 +49,11 @@ export default function AdminPanel() {
       try {
         // EXPLICITLY SELECT first_name, last_name. DO NOT USE 'name'.
         const { data: empData, error } = await supabase.from('employees').select('id, first_name, last_name, email, status, is_approved');
-        if (error) throw error;
-        if (empData) setEmployees(empData);
+        if (error) {
+          console.warn("Employees fetch error (ignoring):", error.message);
+        } else {
+          setEmployees(empData || []);
+        }
       } catch (err) {
         console.error("Failed to fetch employees:", err);
       }
@@ -59,7 +61,7 @@ export default function AdminPanel() {
       // Fetch Categories
       try {
         const { data: catData } = await supabase.from('categories').select('*');
-        if (catData) setCategories(catData);
+        if (catData) setCategories(catData || []);
       } catch (err) {
         console.error("Failed to fetch categories:", err);
       }
@@ -167,7 +169,7 @@ export default function AdminPanel() {
       </aside>
 
       {/* MAIN CONTENT */}
-      <main className="admin-main">
+      <main className="admin-content">
         <header className="admin-topbar">
           <div className="search-bar"><span className="search-icon">🔍</span><input type="text" placeholder="Panelde ara..." /></div>
           <div className="top-actions">
@@ -194,15 +196,156 @@ export default function AdminPanel() {
           {activeTab === 'products' && (
             <div className="products-view">
               <div className="section-header"><h2>Ürün Kataloğu</h2><button className="primary-btn" onClick={() => document.getElementById('add-product-form').scrollIntoView({ behavior: 'smooth' })}>+ Yeni Ürün</button></div>
-              <main className="admin-content">
-                {activeTab === 'dashboard' && renderDashboard()}
-                {activeTab === 'products' && renderProducts()}
-                {activeTab === 'orders' && renderOrders()}
-                {activeTab === 'employees' && renderEmployees()}
-                {activeTab === 'settings' && <div className="placeholder-view">Ayarlar Yapım Aşamasında</div>}
-              </main>
 
-              <style>{`
+              {/* Product ADD FORM */}
+              <div className="luxury-card mb-4" id="add-product-form">
+                <h3>Yeni Ürün Ekle</h3>
+                <form onSubmit={handleSubmitProduct} className="admin-form-grid">
+                  <input type="text" placeholder="Ürün Adı" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} required />
+                  <input type="number" placeholder="Fiyat (₺)" value={formData.price} onChange={e => setFormData({ ...formData, price: e.target.value })} required />
+                  <select value={formData.category} onChange={e => setFormData({ ...formData, category: e.target.value })} required>
+                    <option value="">Kategori Seçin</option>
+                    {categories.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+                    <option value="rings">Yüzükler</option>
+                    <option value="necklaces">Kolyeler</option>
+                    <option value="earrings">Küpeler</option>
+                  </select>
+                  <input type="text" placeholder="Materyal (Altın, Gümüş...)" value={formData.material} onChange={e => setFormData({ ...formData, material: e.target.value })} />
+                  <input type="file" onChange={handleImageUpload} className="file-input" />
+                  <textarea placeholder="Ürün Açıklaması" value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} rows="3"></textarea>
+                  <button type="submit" className="submit-btn full-width">Ürünü Kaydet</button>
+                </form>
+              </div>
+
+              <div className="desktop-table-container">
+                <table className="admin-table">
+                  <thead><tr><th>Ürün</th><th>Kategori</th><th>Fiyat</th><th>Stok</th><th>İşlem</th></tr></thead>
+                  <tbody>
+                    {products?.map(p => (
+                      <tr key={p.id}>
+                        <td><div className="product-cell"><img src={p.image} className="table-thumb" alt="" onError={e => e.target.src = 'https://placehold.co/40x40'} />{p.name}</div></td>
+                        <td>{p.category}</td>
+                        <td>₺{p.price}</td>
+                        <td style={{ color: p.stock < 5 ? 'red' : 'inherit' }}>{p.stock}</td>
+                        <td><button className="icon-action delete" onClick={() => handleDeleteProduct(p.id)}>🗑️</button></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="mobile-card-grid">
+                {products?.map(p => (
+                  <div className="mobile-card" key={p.id}>
+                    <div className="mobile-card-header">
+                      <img src={p.image} className="table-thumb" alt="" />
+                      <span>{p.name}</span>
+                    </div>
+                    <div className="mobile-card-body">
+                      <p>Fiyat: ₺{p.price}</p>
+                      <p>Stok: {p.stock}</p>
+                      <button className="icon-action delete" onClick={() => handleDeleteProduct(p.id)}>Sil</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ORDERS VIEW */}
+          {activeTab === 'orders' && (
+            <div className="orders-view">
+              <div className="section-header"><h2>Sipariş Yönetimi</h2></div>
+              <div className="desktop-table-container">
+                <table className="admin-table">
+                  <thead><tr><th>Sipariş ID</th><th>Müşteri</th><th>Tutar</th><th>Durum</th><th>İşlem</th></tr></thead>
+                  <tbody>
+                    {orders?.map(o => (
+                      <tr key={o.id}>
+                        <td>#{o.id.slice(0, 8)}</td>
+                        <td>{o.billingDetails?.name || o.user?.email || 'Misafir'}</td>
+                        <td>₺{o.amount}</td>
+                        <td><span className={`status-badge ${o.status.toLowerCase()}`}>{o.status}</span></td>
+                        <td>
+                          <select value={o.status} onChange={(e) => handleStatusChange(o.id, e.target.value)} className="status-select">
+                            <option value="Processing">İşleniyor</option>
+                            <option value="Shipped">Kargolandı</option>
+                            <option value="Delivered">Teslim Edildi</option>
+                            <option value="Cancelled">İptal</option>
+                          </select>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="mobile-card-grid">
+                {orders?.map(o => (
+                  <div className="mobile-card" key={o.id}>
+                    <div className="mobile-card-header">#{o.id.slice(0, 8)}</div>
+                    <div className="mobile-card-body">
+                      <p>Müşteri: {o.billingDetails?.name || o.user?.email || 'Misafir'}</p>
+                      <p>Tutar: ₺{o.amount}</p>
+                      <select value={o.status} onChange={(e) => handleStatusChange(o.id, e.target.value)} className="status-select">
+                        <option value="Processing">İşleniyor</option>
+                        <option value="Shipped">Kargolandı</option>
+                        <option value="Delivered">Teslim Edildi</option>
+                        <option value="Cancelled">İptal</option>
+                      </select>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* EMPLOYEES VIEW */}
+          {activeTab === 'workers' && (
+            <div className="workers-view">
+              <div className="section-header"><h2>Personel Listesi</h2></div>
+              <div className="desktop-table-container">
+                <table className="admin-table">
+                  <thead><tr><th>Ad Soyad</th><th>Email</th><th>Durum</th><th>Onay</th></tr></thead>
+                  <tbody>
+                    {employees.map(w => (
+                      <tr key={w.id}>
+                        {/* SCHEMA FIX: Use first_name last_name */}
+                        <td>{w.first_name} {w.last_name}</td>
+                        <td>{w.email}</td>
+                        <td><span className={`status-badge ${w.status}`}>{w.status}</span></td>
+                        <td>
+                          {!w.is_approved && (
+                            <button className="gold-btn small" onClick={() => handleApproveWorker(w.id)}>Onayla</button>
+                          )}
+                          {w.is_approved && <span className="text-green">✔ Onaylı</span>}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="mobile-card-grid">
+                {employees.map(w => (
+                  <div className="mobile-card" key={w.id}>
+                    <div className="mobile-card-header">{w.first_name} {w.last_name}</div>
+                    <div className="mobile-card-body">
+                      <p>{w.email}</p>
+                      <p>Durum: {w.status}</p>
+                      {!w.is_approved && <button className="gold-btn small" onClick={() => handleApproveWorker(w.id)}>Onayla</button>}
+                      {w.is_approved && <span className="text-green">✔ Onaylı</span>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'settings' && <div className="placeholder-view">Ayarlar Yapım Aşamasında</div>}
+
+        </div>
+      </main>
+
+      <style>{`
         .admin-layout {
           display: flex;
           min-height: 100vh;
@@ -218,7 +361,7 @@ export default function AdminPanel() {
           border-right: 1px solid #222;
           display: flex;
           flex-direction: column;
-          position: fixed; /* Fixed for simpler desktop layout too, or sticky */
+          position: fixed;
           height: 100vh;
           z-index: 1000;
           transition: transform 0.3s ease-in-out;
@@ -233,20 +376,7 @@ export default function AdminPanel() {
           position: relative;
         }
         .sidebar-header h2 { color: #d4af37; margin: 0; font-family: 'Playfair Display', serif; }
-        .admin-badge { font-size: 0.7rem; background: #222; padding: 2px 6px; border-radius: 4px; margin-top: 5px; color: #888; }
         
-        .close-btn-mobile {
-          display: none; /* Desktop hidden */
-          position: absolute;
-          top: 1rem;
-          right: 1rem;
-          background: none;
-          border: none;
-          color: #fff;
-          font-size: 1.5rem;
-          cursor: pointer;
-        }
-
         .admin-nav {
           flex: 1;
           padding: 2rem 1rem;
@@ -255,7 +385,7 @@ export default function AdminPanel() {
           gap: 0.5rem;
         }
 
-        .admin-nav button {
+        .nav-btn {
           background: transparent;
           border: none;
           color: #888;
@@ -265,12 +395,16 @@ export default function AdminPanel() {
           font-size: 1rem;
           transition: all 0.2s;
           border-radius: 4px;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          width: 100%;
         }
-        .admin-nav button:hover {
+        .nav-btn:hover {
           color: #fff;
           background: rgba(255,255,255,0.05);
         }
-        .admin-nav button.active {
+        .nav-btn.active {
           color: #d4af37;
           background: rgba(212,175,55,0.1);
           border-left: 3px solid #d4af37;
@@ -280,16 +414,6 @@ export default function AdminPanel() {
           padding: 2rem;
           border-top: 1px solid #222;
         }
-        .logout-btn {
-          width: 100%;
-          padding: 0.8rem;
-          background: transparent;
-          border: 1px solid #333;
-          color: #ff4d4d;
-          cursor: pointer;
-          transition: all 0.2s;
-        }
-        .logout-btn:hover { border-color: #ff4d4d; background: rgba(255, 77, 77, 0.1); }
 
         /* --- MAIN CONTENT --- */
         .admin-content {
@@ -297,6 +421,37 @@ export default function AdminPanel() {
           margin-left: 260px; /* Offset for sidebar */
           padding: 2rem;
           overflow-y: auto;
+          width: 100%;
+        }
+
+        .admin-topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        .search-bar {
+            display: flex;
+            align-items: center;
+            background: #111;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            border: 1px solid #222;
+        }
+        .search-bar input {
+            background: none;
+            border: none;
+            color: #fff;
+            margin-left: 0.5rem;
+            outline: none;
+        }
+        .view-site-btn {
+            background: #222;
+            color: #d4af37;
+            border: 1px solid #d4af37;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            margin-left: 1rem;
         }
 
         .luxury-card {
@@ -304,12 +459,27 @@ export default function AdminPanel() {
           border: 1px solid #222;
           padding: 1.5rem;
           border-radius: 8px;
+          margin-bottom: 1.5rem;
         }
-        .no-data {
-          color: #666;
-          font-style: italic;
-          padding: 1rem;
-          text-align: center;
+        .admin-form-grid {
+            display: grid;
+            gap: 1rem;
+        }
+        .admin-form-grid input, .admin-form-grid select, .admin-form-grid textarea {
+            padding: 0.8rem;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: white;
+            outline: none;
+            width: 100%;
+        }
+        .submit-btn {
+            background: #d4af37;
+            color: black;
+            font-weight: bold;
+            padding: 1rem;
+            border: none;
+            cursor: pointer;
         }
 
         /* --- STATS GRID --- */
@@ -319,15 +489,19 @@ export default function AdminPanel() {
           gap: 1.5rem;
           margin-bottom: 2rem;
         }
-        .stat-card h3 { font-size: 0.9rem; color: #888; margin-bottom: 0.5rem; }
-        .stat-value { font-size: 1.8rem; font-weight: bold; color: #f0f0f0; }
+        .stat-card {
+            background: #111;
+            padding: 1.5rem;
+            border-radius: 8px;
+            display: flex;
+            gap: 1rem;
+            border: 1px solid #222;
+        }
+        .stat-card.gold { border-color: #d4af37; }
+        .stat-number { font-size: 1.5rem; font-weight: bold; color: #fff; margin-top: 5px; }
 
-        /* --- CHARTS --- */
-        .charts-section { margin-bottom: 2rem; }
-        .chart-container h3 { color: #d4af37; margin-bottom: 1rem; }
-
-        /* --- TABLES --- */
-        .table-responsive { overflow-x: auto; }
+        /* --- TABLES & CARDS --- */
+        .desktop-table-container { overflow-x: auto; }
         .admin-table { width: 100%; border-collapse: collapse; min-width: 600px; }
         .admin-table th { text-align: left; padding: 1rem; color: #666; border-bottom: 1px solid #222; font-weight: normal; font-size: 0.8rem; }
         .admin-table td { padding: 1rem; border-bottom: 1px solid #1a1a1a; color: #ddd; vertical-align: middle; }
@@ -337,15 +511,13 @@ export default function AdminPanel() {
         .gold-btn {
           background: #d4af37; color: #000; border: none; padding: 0.5rem 1rem; cursor: pointer; font-weight: bold;
         }
-
-        .action-btn { background: none; border: none; cursor: pointer; font-size: 0.8rem; margin-right: 0.5rem; }
+        .icon-action { background: none; border: none; cursor: pointer; font-size: 1rem; margin-right: 0.5rem; }
         .delete { color: #ff4d4d; }
-        .approve { color: #4caf50; }
-        .view { color: #d4af37; }
 
         /* --- RESPONSIVE / MOBILE --- */
         .mobile-admin-header { display: none; }
         .sidebar-overlay { display: none; }
+        .mobile-card-grid { display: none; } /* Hidden on desktop */
 
         @media (max-width: 768px) {
           .admin-sidebar {
@@ -361,6 +533,9 @@ export default function AdminPanel() {
             margin-left: 0; /* No offset */
             padding-top: 4rem; /* Space for mobile header */
           }
+          .admin-topbar { display: none; } /* Use mobile header instead */
+          .desktop-table-container { display: none; } /* Hide complex tables */
+          .mobile-card-grid { display: flex; flex-direction: column; gap: 1rem; } /* Show cards */
 
           .mobile-admin-header {
             display: flex;
@@ -377,21 +552,24 @@ export default function AdminPanel() {
           .hamburger-btn {
             background: none; border: none; color: #d4af37; font-size: 1.5rem; cursor: pointer;
           }
-          .mobile-title {
-            color: #d4af37; font-weight: bold; letter-spacing: 0.1em;
+          .mobile-drawer-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 1200;
+            display: flex; justify-content: flex-start;
+          }
+          .mobile-drawer {
+             width: 80%; max-width: 300px; background: #111; height: 100%; padding: 2rem;
+          }
+          .drawer-nav button {
+             display: block; w-100; padding: 1rem; background: none; border: none; color: white; text-align: left; font-size: 1.2rem;
+             border-bottom: 1px solid #222; width: 100%;
           }
 
-          .close-btn-mobile { display: block; }
-          
-          .sidebar-overlay {
-            display: block;
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.5);
-            z-index: 999;
+          .mobile-card {
+            background: #111; border: 1px solid #222; padding: 1rem; border-radius: 8px;
           }
+          .mobile-card-header { display: flex; align-items: center; gap: 10px; font-weight: bold; border-bottom: 1px solid #222; padding-bottom: 0.5rem; margin-bottom: 0.5rem; color: #d4af37; }
         }
       `}</style>
-            </div>
-          );
+    </div>
+  );
 }
