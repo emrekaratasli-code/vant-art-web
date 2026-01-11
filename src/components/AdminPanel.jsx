@@ -199,7 +199,7 @@ export default function AdminPanel() {
         errorMsg = 'Veritabanı bağlantı hatası: Döngü tespit edildi (Infinite Recursion).';
       }
 
-      alert('Hata: ' + errorMsg);
+      alert(`Hata Oluştu!\nKod: ${error.code || 'Bilinmiyor'}\nMesaj: ${errorMsg}\nDetay: ${error.details || ''}`);
     } finally {
       console.log('🏁 Save process finished, resetting button...');
       setIsSubmitting(false);
