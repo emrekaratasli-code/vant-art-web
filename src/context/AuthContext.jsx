@@ -91,17 +91,14 @@ export const AuthProvider = ({ children }) => {
 
             if (error && error.code !== 'PGRST116') {
                 console.warn('⚠️ Profile Fetch Warning:', error.message);
+                alert(`Profil Verisi Alınamadı: ${error.message}\n(Tablo: employees)`);
             }
 
-            // STRICT CHECK: If user is not in employees table, DENY ACCESS
-            // Exception: The owner email is always allowed even if not in table (bootstrapping)
+            // RELAXED CHECK: If user is not in employees table, treat as CUSTOMER.
             const isOwner = authUser.email === OWNER_EMAIL;
 
-            if (!profile && !isOwner) {
-                console.error('⛔ User found in Auth but NOT in Employees table. Denying access.');
-                alert('Yetkili personel listesinde bulunamadınız, lütfen yöneticiyle iletişime geçin.');
-                await logout(); // Force logout
-                return;
+            if (!profile) {
+                console.log('ℹ️ User has no profile in employees table. Defaulting to Customer.');
             }
 
             const userData = {
@@ -109,82 +106,82 @@ export const AuthProvider = ({ children }) => {
                 email: authUser.email,
                 name: profile?.name || authUser.user_metadata?.full_name || 'Kullanıcı',
                 role: isOwner ? 'owner' : (profile?.role || 'customer'),
-                status: isOwner ? 'active' : (profile?.status || 'pending'),
-                is_approved: isOwner ? true : (profile?.status === 'active')
+                status: isOwner ? 'active' : (profile?.status || 'active'),
+                is_approved: true
             };
 
-            console.log('✅ Profile Loaded:', userData.email);
+            console.log('✅ Profile Loaded (or Defaulted):', userData.email);
             setUser(userData);
         } catch (error) {
             console.error('❌ Profile Fetch Failed:', error);
-            // On critical error, legitimate users might be blocked, but better than broken state.
-            // For now, if it's a network error, we probably shouldn't logout immediately, 
-            // but the requirement "Profile Not Found" -> "Alert" implies logic error (missing record).
-            // So we treat exception similar to missing profile if it prevents us knowing who they are.
-            alert('Profil bilgileri alınamadı. Lütfen tekrar giriş yapın.');
-            await logout();
+            alert('Kritik Hata: ' + error.message);
+            // Even if everything fails, try to let them use the app as guest?
+            // For now, let's just stop loading so they aren't stuck.
+        } finally {
+            setLoading(false);
         }
     };
+};
 
-    const login = async (email, password) => {
-        if (supabase.isDummy) { alert('SİSTEM HATASI: API Anahtarları Eksik'); return; }
-        try {
-            const cleanEmail = String(email).trim();
-            const { data, error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password });
-            if (error) throw error;
-            return data;
-        } catch (error) {
-            alert('Giriş Başarısız: ' + error.message);
-            throw error;
+const login = async (email, password) => {
+    if (supabase.isDummy) { alert('SİSTEM HATASI: API Anahtarları Eksik'); return; }
+    try {
+        const cleanEmail = String(email).trim();
+        const { data, error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password });
+        if (error) throw error;
+        return data;
+    } catch (error) {
+        alert('Giriş Başarısız: ' + error.message);
+        throw error;
+    }
+};
+
+const register = async (email, password, fullName) => {
+    if (supabase.isDummy) { alert('SİSTEM HATASI: API Anahtarları Eksik'); return; }
+    try {
+        let cleanEmail = email;
+        if (typeof email === 'object' && email?.email) cleanEmail = email.email;
+        cleanEmail = String(cleanEmail).trim();
+
+        const { data, error } = await supabase.auth.signUp({
+            email: cleanEmail,
+            password,
+            options: { data: { full_name: fullName } }
+        });
+        if (error) throw error;
+
+        // Auto-create employee entry
+        if (cleanEmail.endsWith('@vantonline.com') && data.user) {
+            await supabase.from('employees').insert([{
+                id: data.user.id, email: cleanEmail, name: fullName, role: 'worker', status: 'pending'
+            }]);
         }
-    };
+        return data;
+    } catch (error) {
+        alert('Kayıt Başarısız: ' + error.message);
+        throw error;
+    }
+};
 
-    const register = async (email, password, fullName) => {
-        if (supabase.isDummy) { alert('SİSTEM HATASI: API Anahtarları Eksik'); return; }
-        try {
-            let cleanEmail = email;
-            if (typeof email === 'object' && email?.email) cleanEmail = email.email;
-            cleanEmail = String(cleanEmail).trim();
+const logout = async () => {
+    await supabase.auth.signOut();
+    setUser(null);
+};
 
-            const { data, error } = await supabase.auth.signUp({
-                email: cleanEmail,
-                password,
-                options: { data: { full_name: fullName } }
-            });
-            if (error) throw error;
+const LoadingScreen = () => (
+    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#000', color: '#d4af37' }}>
+        <div className="spinner" style={{
+            width: 40, height: 40, border: '3px solid rgba(212,175,55,0.3)',
+            borderTopColor: '#d4af37', borderRadius: '50%', animation: 'spin 1s infinite'
+        }}></div>
+        <p style={{ marginTop: 20, letterSpacing: 2 }}>VANT LOADING...</p>
+        <style>{`@keyframes spin { 100% { transform: rotate(360deg); } }`}</style>
+    </div>
+);
 
-            // Auto-create employee entry
-            if (cleanEmail.endsWith('@vantonline.com') && data.user) {
-                await supabase.from('employees').insert([{
-                    id: data.user.id, email: cleanEmail, name: fullName, role: 'worker', status: 'pending'
-                }]);
-            }
-            return data;
-        } catch (error) {
-            alert('Kayıt Başarısız: ' + error.message);
-            throw error;
-        }
-    };
-
-    const logout = async () => {
-        await supabase.auth.signOut();
-        setUser(null);
-    };
-
-    const LoadingScreen = () => (
-        <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#000', color: '#d4af37' }}>
-            <div className="spinner" style={{
-                width: 40, height: 40, border: '3px solid rgba(212,175,55,0.3)',
-                borderTopColor: '#d4af37', borderRadius: '50%', animation: 'spin 1s infinite'
-            }}></div>
-            <p style={{ marginTop: 20, letterSpacing: 2 }}>VANT LOADING...</p>
-            <style>{`@keyframes spin { 100% { transform: rotate(360deg); } }`}</style>
-        </div>
-    );
-
-    return (
-        <AuthContext.Provider value={{ user, login, register, logout, loading }}>
-            {loading ? <LoadingScreen /> : children}
-        </AuthContext.Provider>
-    );
+return (
+    <AuthContext.Provider value={{ user, login, register, logout, loading }}>
+        {loading ? <LoadingScreen /> : children}
+    </AuthContext.Provider>
+);
 };
