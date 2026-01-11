@@ -37,17 +37,18 @@ export default function AdminPanel() {
 
   // FETCHED DATA STATES
   const [employees, setEmployees] = useState([]);
+  const [customers, setCustomers] = useState([]);
   const [categories, setCategories] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // FETCH EMPLOYEES & CATEGORIES
+  // FETCH EMPLOYEES & CATEGORIES & CUSTOMERS
   useEffect(() => {
     const fetchAuxData = async () => {
       setIsLoading(true);
 
       // Fetch Employees (Robust)
       try {
-        // EXPLICITLY SELECT first_name, last_name. DO NOT USE 'name'.
+        // EXPLICITLY SELECT first_name, last_name
         const { data: empData, error } = await supabase.from('employees').select('id, first_name, last_name, email, status, is_approved');
         if (error) {
           console.warn("Employees fetch error (ignoring):", error.message);
@@ -56,6 +57,19 @@ export default function AdminPanel() {
         }
       } catch (err) {
         console.error("Failed to fetch employees:", err);
+      }
+
+      // Fetch Customers (Profiles)
+      try {
+        // Fetching profiles as requested
+        const { data: custData, error } = await supabase.from('profiles').select('*');
+        if (error) {
+          console.warn("Profiles fetch error:", error.message);
+        } else {
+          setCustomers(custData || []);
+        }
+      } catch (err) {
+        console.error("Failed to fetch customers:", err);
       }
 
       // Fetch Categories
@@ -143,6 +157,7 @@ export default function AdminPanel() {
               <button onClick={() => { setActiveTab('dashboard'); setMobileMenuOpen(false); }}>Genel Bakış</button>
               <button onClick={() => { setActiveTab('products'); setMobileMenuOpen(false); }}>Ürünler</button>
               <button onClick={() => { setActiveTab('orders'); setMobileMenuOpen(false); }}>Siparişler</button>
+              <button onClick={() => { setActiveTab('customers'); setMobileMenuOpen(false); }}>Müşteriler</button>
               <button onClick={() => { setActiveTab('categories'); setMobileMenuOpen(false); }}>Kategoriler</button>
               <button onClick={() => { setActiveTab('workers'); setMobileMenuOpen(false); }}>Çalışanlar</button>
               <button onClick={() => { setActiveTab('settings'); setMobileMenuOpen(false); }}>Ayarlar</button>
@@ -158,6 +173,7 @@ export default function AdminPanel() {
           {!isWorker && (<button className={`nav-btn ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveTab('dashboard')}><IconDashboard /> <span>Genel Bakış</span></button>)}
           <button className={`nav-btn ${activeTab === 'products' ? 'active' : ''}`} onClick={() => setActiveTab('products')}><IconProducts /> <span>Ürün Yönetimi</span></button>
           <button className={`nav-btn ${activeTab === 'orders' ? 'active' : ''}`} onClick={() => setActiveTab('orders')}><IconOrders /> <span>Siparişler</span></button>
+          <button className={`nav-btn ${activeTab === 'customers' ? 'active' : ''}`} onClick={() => setActiveTab('customers')}><IconUsers /> <span>Müşteriler</span></button>
           <button className={`nav-btn ${activeTab === 'categories' ? 'active' : ''}`} onClick={() => setActiveTab('categories')}><IconDashboard /> <span>Kategoriler</span></button>
           <button className={`nav-btn ${activeTab === 'workers' ? 'active' : ''}`} onClick={() => setActiveTab('workers')}><IconUsers /> <span>Çalışan Yönetimi</span></button>
           <div className="nav-divider"></div>
@@ -295,6 +311,43 @@ export default function AdminPanel() {
                     </div>
                   </div>
                 ))}
+              </div>
+            </div>
+          )}
+
+          {/* CUSTOMERS VIEW */}
+          {activeTab === 'customers' && (
+            <div className="customers-view">
+              <div className="section-header"><h2>Müşteri Listesi (Profiles)</h2></div>
+              <div className="desktop-table-container">
+                <table className="admin-table">
+                  <thead><tr><th>ID</th><th>Ad Soyad</th><th>Email</th><th>Telefon</th><th>Oluşturulma</th></tr></thead>
+                  <tbody>
+                    {customers.map(c => (
+                      <tr key={c.id}>
+                        <td>{c.id?.slice(0, 8)}...</td>
+                        <td>{c.full_name || `${c.first_name || ''} ${c.last_name || ''}`}</td>
+                        <td>{c.email || '-'}</td>
+                        <td>{c.phone || '-'}</td>
+                        <td>{c.created_at ? new Date(c.created_at).toLocaleDateString() : '-'}</td>
+                      </tr>
+                    ))}
+                    {customers.length === 0 && <tr><td colSpan="5" className="no-data">Kayıtlı müşteri bulunamadı.</td></tr>}
+                  </tbody>
+                </table>
+              </div>
+              <div className="mobile-card-grid">
+                {customers.map(c => (
+                  <div className="mobile-card" key={c.id}>
+                    <div className="mobile-card-header">{c.full_name || `${c.first_name || ''} ${c.last_name || ''}` || 'İsimsiz'}</div>
+                    <div className="mobile-card-body">
+                      <p>{c.email}</p>
+                      <p>{c.phone}</p>
+                      <p className="small-text">{c.created_at ? new Date(c.created_at).toLocaleDateString() : ''}</p>
+                    </div>
+                  </div>
+                ))}
+                {customers.length === 0 && <div className="no-data">Kayıtlı müşteri bulunamadı.</div>}
               </div>
             </div>
           )}
