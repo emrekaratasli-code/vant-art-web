@@ -21,7 +21,12 @@ C:\Users\Emre Karata┼şl\.gemini\antigravity\scratch\jewelry-shop\server.js
   22:7  error  'adaptRequest' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
 
 C:\Users\Emre Karata┼şl\.gemini\antigravity\scratch\jewelry-shop\src\components\AdminPanel.jsx
-  449:17  error  Parsing error: Expected corresponding JSX closing tag for <tbody>
+   29:11  error  't' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                                                                                           no-unused-vars
+   32:23  error  'setSidebarOpen' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                                                                              no-unused-vars
+  113:17  error  React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?   react-hooks/rules-of-hooks
+  149:43  error  React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+  200:19  error  'prev' is defined but never used                                                                                                                                                            no-unused-vars
+  229:16  error  'parseErr' is defined but never used                                                                                                                                                        no-unused-vars
 
 C:\Users\Emre Karata┼şl\.gemini\antigravity\scratch\jewelry-shop\src\components\CookieBanner.jsx
   6:13  error  't' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
@@ -29,9 +34,6 @@ C:\Users\Emre Karata┼şl\.gemini\antigravity\scratch\jewelry-shop\src\componen
 C:\Users\Emre Karata┼şl\.gemini\antigravity\scratch\jewelry-shop\src\components\Header.jsx
   27:37  error  't' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                           no-unused-vars
   76:33  error  React Hook "useAuth" is called conditionally. React Hooks must be called in the exact same order in every component render  react-hooks/rules-of-hooks
-
-C:\Users\Emre Karata┼şl\.gemini\antigravity\scratch\jewelry-shop\src\components\OurStory.jsx
-  4:13  error  't' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
 
 C:\Users\Emre Karata┼şl\.gemini\antigravity\scratch\jewelry-shop\src\components\ProductDetail.jsx
   49:9  error  Error: Calling setState synchronously within an effect can trigger cascading renders
@@ -51,7 +53,8 @@ Calling setState synchronously within an effect body causes cascading renders th
   52 |     if (!product) {  react-hooks/set-state-in-effect
 
 C:\Users\Emre Karata┼şl\.gemini\antigravity\scratch\jewelry-shop\src\components\ProductGrid.jsx
-  61:3  error  React Hook "useEffect" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+  49:28  error  React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?    react-hooks/rules-of-hooks
+  64:3   error  React Hook "useEffect" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
 
 C:\Users\Emre Karata┼şl\.gemini\antigravity\scratch\jewelry-shop\src\context\AddressContext.jsx
    5:14  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  react-refresh/only-export-components
@@ -146,8 +149,5 @@ C:\Users\Emre Karata┼şl\.gemini\antigravity\scratch\jewelry-shop\src\data\tra
 C:\Users\Emre Karata┼şl\.gemini\antigravity\scratch\jewelry-shop\src\pages\ForgotPasswordPage.jsx
   16:18  error  'error' is defined but never used  no-unused-vars
 
-C:\Users\Emre Karata┼şl\.gemini\antigravity\scratch\jewelry-shop\src\pages\LoginPage.jsx
-  11:13  error  't' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
-
-Ô£û 60 problems (59 errors, 1 warning)
+Ô£û 64 problems (63 errors, 1 warning)
 

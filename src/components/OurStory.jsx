@@ -1,7 +1,6 @@
-import { useLanguage } from '../context/LanguageContext';
+// import { useLanguage } from '../context/LanguageContext'; // Removed unused import
 
 export default function OurStory() {
-    const { t } = useLanguage();
 
     return (
         <div className="story-page container">

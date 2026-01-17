@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useOrders } from '../context/OrderContext';
@@ -119,7 +119,7 @@ export default function CheckoutPage() {
         );
     }
 
-    const inputClasses = "w-full p-3 bg-[#0a0a0a] border border-[#333] text-white focus:outline-none focus:border-[#d4af37] transition-colors placeholder-gray-600 font-light tracking-wide";
+
 
     return (
         <div className="container mx-auto px-4 md:px-12 py-32 font-secondary min-h-screen">

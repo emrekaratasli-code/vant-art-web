@@ -1,16 +1,33 @@
 import ProductCard from './ProductCard';
 import { useProduct } from '../context/ProductContext';
 import { useLanguage } from '../context/LanguageContext';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { PRE_LAUNCH_MODE } from '../lib/constants';
 import ComingSoon from './ComingSoon';
 
+// Slugify Helper: Handles Turkish chars and normalization
+const slugify = (text) => {
+  if (!text) return '';
+  return text
+    .toString()
+    .toLowerCase()
+    .replace(/ğ/g, 'g')
+    .replace(/ü/g, 'u')
+    .replace(/ş/g, 's')
+    .replace(/ı/g, 'i')
+    .replace(/ö/g, 'o')
+    .replace(/ç/g, 'c')
+    .replace(/\s+/g, '-')
+    .replace(/[^\w-]+/g, '')
+    .replace(/--+/g, '-');
+};
+
 export default function ProductGrid() {
-  const { products, loading, error } = useProduct();
+  const { products, loading } = useProduct();
   const [searchParams] = useSearchParams();
   const categoryFilter = searchParams.get('category');
-  const { t, language } = useLanguage(); // Added language here
+  const { t } = useLanguage(); // Removed language
 
   // If Pre-launch mode is active, FORCE Coming Soon view.
   // If not pre-launch, check if we have products.
@@ -26,35 +43,22 @@ export default function ProductGrid() {
     return <ComingSoon />;
   }
 
-  // Slugify Helper: Handles Turkish chars and normalization
-  const slugify = (text) => {
-    if (!text) return '';
-    return text
-      .toString()
-      .toLowerCase()
-      .replace(/ğ/g, 'g')
-      .replace(/ü/g, 'u')
-      .replace(/ş/g, 's')
-      .replace(/ı/g, 'i')
-      .replace(/ö/g, 'o')
-      .replace(/ç/g, 'c')
-      .replace(/\s+/g, '-')     // Replace spaces with -
-      .replace(/[^\w-]+/g, '')  // Remove all non-word chars
-      .replace(/--+/g, '-');    // Replace multiple - with single -
-  };
 
   // Filter Logic
-  const filteredProducts = products.filter(p => {
-    // 1. Show all if no filter or 'all'
-    if (!categoryFilter || categoryFilter.toLowerCase() === 'all') return true;
+  // Filter Logic
+  const filteredProducts = useMemo(() => {
+    return products.filter(p => {
+      // 1. Show all if no filter or 'all'
+      if (!categoryFilter || categoryFilter.toLowerCase() === 'all') return true;
 
-    const pSlug = slugify(p.category);
-    const urlSlug = slugify(categoryFilter);
+      const pSlug = slugify(p.category);
+      const urlSlug = slugify(categoryFilter);
 
-    // 2. Direct partial match (contains) for leniency
-    // e.g. 'yuzuk' matches 'yuzukler'
-    return pSlug.includes(urlSlug) || urlSlug.includes(pSlug);
-  });
+      // 2. Direct partial match (contains) for leniency
+      // e.g. 'yuzuk' matches 'yuzukler'
+      return pSlug.includes(urlSlug) || urlSlug.includes(pSlug);
+    });
+  }, [products, categoryFilter]);
 
   // Debugging Frontend Sync
   useEffect(() => {

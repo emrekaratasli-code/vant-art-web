@@ -1,7 +1,7 @@
-import { BrowserRouter as Router, Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { CartProvider } from './context/CartContext';
 import { ProductProvider } from './context/ProductContext';
-import { LanguageProvider, useLanguage } from './context/LanguageContext';
+import { LanguageProvider } from './context/LanguageContext';
 import { ToastProvider } from './context/ToastContext';
 import { OrderProvider } from './context/OrderContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -33,7 +33,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import Footer from './components/Footer';
 import AtelierPage from './pages/AtelierPage';
 
-import { PRE_LAUNCH_MODE } from './lib/constants';
+import { PRE_LAUNCH_MODE } from './lib/constants'; // Import PRE_LAUNCH_MODE
 
 function Layout({ children }) {
   const location = useLocation();

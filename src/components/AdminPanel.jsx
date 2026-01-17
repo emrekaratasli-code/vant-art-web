@@ -1,15 +1,14 @@
 import { useState, useMemo, useEffect } from 'react';
-import { useProducts } from '../context/ProductContext';
+import { useProduct } from '../context/ProductContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useOrders } from '../context/OrderContext';
 import { useAnalytics } from '../context/AnalyticsContext';
 import { supabase } from '../lib/supabaseClient';
 import {
-  LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  BarChart, Bar, PieChart, Pie, Cell, Legend
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
 import { useAuth } from '../context/AuthContext';
-import { useSettings } from '../context/SettingsContext';
+
 
 // --- Icons ---
 const IconDashboard = () => <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>;
@@ -23,10 +22,10 @@ const IconClose = () => <svg width="24" height="24" fill="none" stroke="currentC
 
 export default function AdminPanel() {
   const { user } = useAuth();
-  const { products, addProduct, deleteProduct: deleteFromContext, fetchProducts } = useProducts();
+  const { products, addProduct, deleteProduct: deleteFromContext, fetchProducts } = useProduct();
   const { orders, updateOrderStatus } = useOrders();
   const { getStats } = useAnalytics();
-  const { settings, updateSetting } = useSettings();
+
   const { t } = useLanguage();
 
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -167,7 +166,7 @@ export default function AdminPanel() {
         console.log('📸 Uploading Image:', formData.imageFile.name);
         const fileExt = formData.imageFile.name.split('.').pop();
         const fileName = `${Date.now()}.${fileExt}`;
-        const { data: uploadData, error: uploadError } = await supabase.storage
+        const { error: uploadError } = await supabase.storage
           .from('product-images')
           .upload(fileName, formData.imageFile);
 
@@ -428,24 +427,23 @@ export default function AdminPanel() {
                 <table className="admin-table">
                   <thead><tr><th>Sipariş ID</th><th>Müşteri</th><th>Tutar</th><th>Durum</th><th>İşlem</th></tr></thead>
                   <tbody>
-                    <tbody>
-                      {Array.isArray(orders) && orders.map(o => (
-                        <tr key={o.id}>
-                          <td>#{o.id ? o.id.slice(0, 8) : 'N/A'}</td>
-                          <td>{o.billingDetails?.name || o.user?.email || 'Misafir'}</td>
-                          <td>₺{parseFloat(o.amount || 0).toLocaleString('tr-TR')}</td>
-                          <td><span className={`status-badge ${o.status ? o.status.toLowerCase() : 'processing'}`}>{o.status || 'Processing'}</span></td>
-                          <td>
-                            <select value={o.status || 'Processing'} onChange={(e) => handleStatusChange(o.id, e.target.value)} className="status-select">
-                              <option value="Processing">İşleniyor</option>
-                              <option value="Shipped">Kargolandı</option>
-                              <option value="Delivered">Teslim Edildi</option>
-                              <option value="Cancelled">İptal</option>
-                            </select>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
+                    {Array.isArray(orders) && orders.map(o => (
+                      <tr key={o.id}>
+                        <td>#{o.id ? o.id.slice(0, 8) : 'N/A'}</td>
+                        <td>{o.billingDetails?.name || o.user?.email || 'Misafir'}</td>
+                        <td>₺{parseFloat(o.amount || 0).toLocaleString('tr-TR')}</td>
+                        <td><span className={`status-badge ${o.status ? o.status.toLowerCase() : 'processing'}`}>{o.status || 'Processing'}</span></td>
+                        <td>
+                          <select value={o.status || 'Processing'} onChange={(e) => handleStatusChange(o.id, e.target.value)} className="status-select">
+                            <option value="Processing">İşleniyor</option>
+                            <option value="Shipped">Kargolandı</option>
+                            <option value="Delivered">Teslim Edildi</option>
+                            <option value="Cancelled">İptal</option>
+                          </select>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
                 </table>
               </div>
               <div className="mobile-card-grid">

@@ -1,8 +1,8 @@
-import { useProducts } from '../context/ProductContext';
+import { useProduct } from '../context/ProductContext';
 import ProductCard from './ProductCard';
 
 export default function ProductRecommendations({ category, currentProductId }) {
-    const { products } = useProducts();
+    const { products } = useProduct();
 
     // Filter products: Same category, not the current one, limit to 4
     const recommendations = products

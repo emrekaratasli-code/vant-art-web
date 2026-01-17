@@ -1,9 +1,10 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { products as staticProducts } from '../data/products'; // Import static data
 
 const ProductContext = createContext();
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useProduct = () => useContext(ProductContext); // Corrected export name to singular as used in Grid
 
 export const ProductProvider = ({ children }) => {
@@ -11,7 +12,7 @@ export const ProductProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     // FETCH PRODUCTS
-    const fetchProducts = async () => {
+    const fetchProducts = useCallback(async () => {
         try {
             setLoading(true);
             const { data, error } = await supabase
@@ -39,7 +40,7 @@ export const ProductProvider = ({ children }) => {
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
 
     useEffect(() => {
         fetchProducts();
@@ -62,7 +63,7 @@ export const ProductProvider = ({ children }) => {
         return () => {
             supabase.removeChannel(subscription);
         };
-    }, []);
+    }, [fetchProducts]);
 
     // ADD PRODUCT
     const addProduct = async (product) => {
