@@ -2,7 +2,9 @@ import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext'; // Added useAuth
+import { useState } from 'react';
 import logo from '../assets/VANT.png';
+import DropListModal from './DropListModal';
 
 
 const ShoppingBagIcon = () => (
@@ -24,56 +26,73 @@ export default function Header() {
   const { toggleCart, cartCount } = useCart();
   const { language, toggleLanguage, t } = useLanguage();
   const { isAuthenticated } = useAuth(); // Get auth state
+  const [isDropModalOpen, setIsDropModalOpen] = useState(false);
 
   return (
-    <header className="header luxury-bg">
-      <div className="container header-container">
-        <nav className="nav-left">
-          <ul className="nav-list">
-            <li><Link to="/">{t('collection')}</Link></li>
-            <li><Link to="/?category=rings">{language === 'TR' ? 'YÜZÜKLER' : 'RINGS'}</Link></li>
-            <li><Link to="/?category=necklaces">{language === 'TR' ? 'KOLYELER' : 'NECKLACES'}</Link></li>
-            <li><Link to="/?category=earrings">{language === 'TR' ? 'KÜPELER' : 'EARRINGS'}</Link></li>
-            <li><Link to="/?category=bracelets">{language === 'TR' ? 'BİLEKLİKLER' : 'BRACELETS'}</Link></li>
-          </ul>
-        </nav>
+    <>
+      <header className="header luxury-bg">
+        <div className="container header-container">
+          {/* LEFT: Navigation */}
+          <nav className="nav-left">
+            <ul className="nav-list">
+              <li><Link to="/">{language === 'TR' ? 'KOLEKSİYONLAR' : 'COLLECTIONS'}</Link></li>
+              <li><Link to="/atelier">{language === 'TR' ? 'ATÖLYE' : 'ATELIER'}</Link></li>
+              <li><Link to="/about">{language === 'TR' ? 'HAKKINDA' : 'ABOUT'}</Link></li>
+              <li><Link to="/contact">{language === 'TR' ? 'İLETİŞİM' : 'CONTACT'}</Link></li>
+            </ul>
+          </nav>
 
-        <div className="logo-center">
-          <Link to="/" className="logo-link">
-            <img src={logo} alt="VANT ART" className="logo-img" />
-          </Link>
-        </div>
-
-        <div className="nav-right">
-          <div className="lang-switch">
-            <button
-              className={language === 'TR' ? 'active' : ''}
-              onClick={() => toggleLanguage('TR')}
-            >TR</button>
-            <span className="separator">|</span>
-            <button
-              className={language === 'EN' ? 'active' : ''}
-              onClick={() => toggleLanguage('EN')}
-            >EN</button>
+          {/* CENTER: Logo */}
+          <div className="logo-center">
+            <Link to="/" className="logo-link">
+              <img src={logo} alt="VANT ART" className="logo-img" />
+            </Link>
           </div>
 
-          {/* ADMIN LINK */}
-          {isAuthenticated && useAuth().user?.isAdmin && (
-            <Link to="/admin" className="icon-btn-header admin-link" title="Yönetim Paneli" style={{ color: '#d4af37', fontWeight: 'bold', fontSize: '0.8rem', border: '1px solid #d4af37', padding: '4px 8px', borderRadius: '4px' }}>
-              PANEL
+          {/* RIGHT: Actions */}
+          <div className="nav-right">
+
+            {/* Drop List CTA */}
+            <button
+              className="drop-list-cta"
+              onClick={() => setIsDropModalOpen(true)}
+            >
+              DROP LIST
+            </button>
+
+            <div className="lang-switch">
+              <button
+                className={language === 'TR' ? 'active' : ''}
+                onClick={() => toggleLanguage('TR')}
+              >TR</button>
+              <span className="separator">|</span>
+              <button
+                className={language === 'EN' ? 'active' : ''}
+                onClick={() => toggleLanguage('EN')}
+              >EN</button>
+            </div>
+
+            {/* ADMIN LINK */}
+            {isAuthenticated && useAuth().user?.isAdmin && (
+              <Link to="/admin" className="icon-btn-header admin-link" title="Panel">
+                PANEL
+              </Link>
+            )}
+
+            <Link to={isAuthenticated ? "/profile" : "/login"} className="icon-btn-header" aria-label="Profile">
+              <UserIcon />
             </Link>
-          )}
 
-          <Link to={isAuthenticated ? "/profile" : "/login"} className="icon-btn-header" aria-label="Profile">
-            <UserIcon />
-          </Link>
-
-          <button className="cart-btn icon-btn-header" onClick={toggleCart} aria-label="Open Cart">
-            <ShoppingBagIcon />
-            {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
-          </button>
+            <button className="cart-btn icon-btn-header" onClick={toggleCart} aria-label="Open Cart">
+              <ShoppingBagIcon />
+              {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
+            </button>
+          </div>
         </div>
-      </div>
+      </header>
+
+      <DropListModal isOpen={isDropModalOpen} onClose={() => setIsDropModalOpen(false)} />
+
       <style>{`
         .header {
           padding: 0.5rem 0;
@@ -82,6 +101,8 @@ export default function Header() {
           top: 0;
           z-index: 100;
           border-bottom: 1px solid var(--color-border);
+          background: rgba(10, 10, 10, 0.95);
+          backdrop-filter: blur(10px);
         }
         .header-container {
           display: grid;
@@ -99,12 +120,16 @@ export default function Header() {
           flex-wrap: wrap; /* Safety wrap if too many items */
         }
         .nav-left a {
-          font-size: 0.9rem;
+          font-size: 0.85rem;
           white-space: nowrap;
           color: var(--color-text);
           font-weight: 500;
-          letter-spacing: 0.05em;
+          letter-spacing: 0.1em;
           text-transform: uppercase;
+          transition: color 0.3s;
+        }
+        .nav-left a:hover {
+          color: var(--color-accent);
         }
         
         /* Logo */
@@ -114,7 +139,7 @@ export default function Header() {
           align-items: center;
         }
         .logo-img {
-          height: 80px; /* Reduced specific size for clean look */
+          height: 60px; /* Reduced specific size for clean look */
           width: auto;
           object-fit: contain;
           transition: transform 0.3s ease;
@@ -127,10 +152,29 @@ export default function Header() {
         /* Right Side Actions */
         .nav-right {
           display: flex;
-          gap: var(--spacing-md);
+          gap: 1.5rem;
           justify-content: flex-end;
           align-items: center;
         }
+        
+        /* Drop List CTA */
+        .drop-list-cta {
+          background: transparent;
+          border: 1px solid var(--color-accent);
+          color: var(--color-accent);
+          padding: 0.5rem 1rem;
+          font-family: var(--font-body);
+          font-size: 0.75rem;
+          letter-spacing: 0.1em;
+          cursor: pointer;
+          transition: all 0.3s;
+        }
+        .drop-list-cta:hover {
+          background: var(--color-accent);
+          color: var(--color-bg);
+          box-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+        }
+
         .lang-switch {
           display: flex;
           gap: 0.5rem;
@@ -154,7 +198,7 @@ export default function Header() {
         .icon-btn-header {
           background: none;
           border: none;
-          color: var(--color-accent);
+          color: var(--color-text);
           cursor: pointer;
           transition: all 0.3s;
           display: flex;
@@ -163,7 +207,7 @@ export default function Header() {
           text-decoration: none;
         }
         .icon-btn-header:hover {
-          color: var(--color-text); /* Darker on hover for visibility */
+          color: var(--color-accent); /* Darker on hover for visibility */
           transform: scale(1.1);
         }
         .cart-badge {
@@ -182,6 +226,13 @@ export default function Header() {
             font-weight: bold;
             border: 2px solid #000;
         }
+        .admin-link {
+            color: #d4af37 !important;
+            font-size: 0.7rem; 
+            border: 1px solid #d4af37; 
+            padding: 4px 6px; 
+            border-radius: 4px;
+        }
 
         /* Mobile Adjustments */
         @media (max-width: 1024px) {
@@ -194,7 +245,14 @@ export default function Header() {
            }
            
            .logo-img { 
-             height: 60px; /* Much smaller for mobile header ratio */
+             height: 40px; /* Much smaller for mobile header ratio */
+           }
+
+           .drop-list-cta {
+             display: none; /* Hide on mobile header if space is tight, show elsewhere or keep if possible. User said "Mobile First", so let's keep it but safeguard */
+           }
+           .nav-right {
+             gap: 0.8rem;
            }
            
            .cart-btn {
@@ -202,6 +260,6 @@ export default function Header() {
            }
         }
       `}</style>
-    </header>
+    </>
   );
 }

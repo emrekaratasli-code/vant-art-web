@@ -37,9 +37,18 @@ export default function ProductCard({ product }) {
           <img
             src={product.image}
             alt={product.name}
+            className="img-primary"
             loading="lazy"
             decoding="async"
           />
+          {product.images && product.images[1] && (
+            <img
+              src={product.images[1]}
+              alt={`${product.name} alternate`}
+              className="img-hover"
+              loading="lazy"
+            />
+          )}
         </div>
         <div className="product-info">
           <h3 className="product-name">{product.name}</h3>
@@ -88,10 +97,25 @@ export default function ProductCard({ product }) {
           width: 100%;
           height: 100%;
           object-fit: cover;
-          transition: transform 0.5s ease;
+          transition: opacity 0.5s ease, transform 0.5s ease;
+          position: absolute;
+          top: 0;
+          left: 0;
         }
-        .product-card:hover .product-image-wrapper img {
-          transform: scale(1.05);
+        .img-primary {
+            opacity: 1;
+            z-index: 1;
+        }
+        .img-hover {
+            opacity: 0;
+            z-index: 2;
+        }
+        .product-card:hover .img-hover {
+            opacity: 1;
+            transform: scale(1.05);
+        }
+        .product-card:hover .img-primary {
+            opacity: 0;
         }
         
         .product-info {

@@ -1,9 +1,10 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
+import { products as staticProducts } from '../data/products'; // Import static data
 
 const ProductContext = createContext();
 
-export const useProducts = () => useContext(ProductContext);
+export const useProduct = () => useContext(ProductContext); // Corrected export name to singular as used in Grid
 
 export const ProductProvider = ({ children }) => {
     const [products, setProducts] = useState([]);
@@ -18,13 +19,23 @@ export const ProductProvider = ({ children }) => {
                 .select('*')
                 .order('id', { ascending: false });
 
-            if (error) throw error;
+            if (error) {
+                console.warn('Supabase fetch error, using static data:', error);
+                setProducts(staticProducts);
+                return;
+            }
 
             console.log('✅ ProductContext: Items Fetched:', data?.length);
-            // console.log('Items:', data); // Uncomment for deep debug
-            setProducts(data || []);
+
+            if (!data || data.length === 0) {
+                console.log('⚠️ Database empty. Using static premium data.');
+                setProducts(staticProducts);
+            } else {
+                setProducts(data);
+            }
         } catch (error) {
             console.error('Error fetching products:', error);
+            setProducts(staticProducts); // Fallback on crash
         } finally {
             setLoading(false);
         }

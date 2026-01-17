@@ -1,18 +1,30 @@
 import ProductCard from './ProductCard';
-import { useProducts } from '../context/ProductContext';
+import { useProduct } from '../context/ProductContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useEffect } from 'react';
-
-import { useLocation } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
+import { PRE_LAUNCH_MODE } from '../lib/constants';
+import ComingSoon from './ComingSoon';
 
 export default function ProductGrid() {
-  const { products, loading } = useProducts(); // Added loading
-  const { t } = useLanguage();
-  const location = useLocation();
+  const { products, loading, error } = useProduct();
+  const [searchParams] = useSearchParams();
+  const categoryFilter = searchParams.get('category');
+  const { t, language } = useLanguage(); // Added language here
 
-  // Parse category from query string
-  const queryParams = new URLSearchParams(location.search);
-  const categoryFilter = queryParams.get('category');
+  // If Pre-launch mode is active, FORCE Coming Soon view.
+  // If not pre-launch, check if we have products.
+  if (PRE_LAUNCH_MODE) {
+    return <ComingSoon />;
+  }
+
+  // If loading, show nothing or spinner (handled by parent/context usually, or add here)
+  if (loading) return null;
+
+  // Use static fallback if empty (handled in Context), but if context failed entirely:
+  if (!products || products.length === 0) {
+    return <ComingSoon />;
+  }
 
   // Slugify Helper: Handles Turkish chars and normalization
   const slugify = (text) => {
@@ -54,7 +66,6 @@ export default function ProductGrid() {
     }
   }, [products, categoryFilter, filteredProducts.length, loading]);
 
-  // Loading State
   if (loading) {
     return (
       <section className="product-section" id="shop">
