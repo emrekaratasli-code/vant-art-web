@@ -45,8 +45,9 @@ export default function ProductGrid() {
 
 
   // Filter Logic
-  // Filter Logic
   const filteredProducts = useMemo(() => {
+    if (!products || products.length === 0) return [];
+
     return products.filter(p => {
       // 1. Show all if no filter or 'all'
       if (!categoryFilter || categoryFilter.toLowerCase() === 'all') return true;

@@ -1,0 +1,1 @@
+﻿67b067f HOTFIX: Add null guards to prevent React #310 crash on collections pages

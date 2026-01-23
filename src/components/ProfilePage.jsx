@@ -27,7 +27,7 @@ export default function ProfilePage() {
         navigate('/');
     };
 
-    const myOrders = orders.filter(o => {
+    const myOrders = (orders || []).filter(o => {
         // Match by ID if available, otherwise fallback to email for guests/legacy
         if (user?.id && o.user_id === user.id) return true;
         if (user?.email && (o.billingDetails?.email === user.email || o.guest_email === user.email)) return true;

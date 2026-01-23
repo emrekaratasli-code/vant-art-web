@@ -4,6 +4,9 @@ import ProductCard from './ProductCard';
 export default function ProductRecommendations({ category, currentProductId }) {
     const { products } = useProduct();
 
+    // Safety guard: ensure products exists
+    if (!products || products.length === 0) return null;
+
     // Filter products: Same category, not the current one, limit to 4
     const recommendations = products
         .filter(p => p.category === category && p.id !== currentProductId)
