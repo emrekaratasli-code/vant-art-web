@@ -2,25 +2,42 @@
 
 :root {
   --font-heading: 'Playfair Display', serif;
+  --font-script: 'Playfair Script', serif;
   --font-body: 'Inter', sans-serif;
 
   /* VANT ART Luxury Palette: Black & Gold */
   --color-bg: #121212;
+  --color-bg-warm: #0d0d0d;
+  /* Warm black for depth */
   --color-surface: #1e1e1e;
+  --color-charcoal: #1a1a1a;
+  /* Layering depth */
+
   --color-text: #f0f0f0;
   --color-text-muted: #a0a0a0;
+  --color-text-whisper: #666666;
+  /* Captions, footnotes */
+
   --color-accent: #D4AF37;
   /* Gold */
   --color-accent-hover: #F2C94C;
+  --color-accent-muted: #8B7355;
+  /* Less important elements */
   --color-border: #333333;
+
+  /* Earth tones for apparel sections */
+  --color-earth-dark: #3e2723;
+  --color-earth-mid: #5d4037;
 
   --spacing-xs: 0.5rem;
   --spacing-sm: 1rem;
   --spacing-md: 2rem;
   --spacing-lg: 4rem;
+  --spacing-xl: 6rem;
 
   --shadow-sm: 0 4px 6px rgba(0, 0, 0, 0.3);
   --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.7);
 
   --radius-sm: 4px;
   /* Premium sharp/soft mix */
@@ -62,6 +79,33 @@ body {
 
 .font-ui {
   font-family: var(--font-body);
+}
+
+/* Editorial Typography Classes */
+.text-statement {
+  font-family: var(--font-heading);
+  font-size: clamp(2rem, 5vw, 4rem);
+  line-height: 1.1;
+  letter-spacing: 0.02em;
+  color: var(--color-accent);
+  font-weight: 400;
+}
+
+.text-whisper {
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  color: var(--color-text-whisper);
+  letter-spacing: 0.05em;
+  line-height: 1.8;
+}
+
+.manifesto-text {
+  font-family: var(--font-script);
+  font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+  font-style: italic;
+  line-height: 1.8;
+  color: var(--color-text-muted);
+  max-width: 600px;
 }
 
 h1,
@@ -115,6 +159,43 @@ button {
 .grid {
   display: grid;
   gap: var(--spacing-md);
+}
+
+/* Editorial Grid System */
+.editorial-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 2rem;
+}
+
+.editorial-grid .featured {
+  grid-column: span 6;
+}
+
+.editorial-grid .product-card {
+  grid-column: span 4;
+}
+
+.editorial-grid .story-block {
+  grid-column: span 4;
+  padding: var(--spacing-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+/* Gradient Overlays */
+.gradient-overlay {
+  background: linear-gradient(135deg,
+      rgba(13, 13, 13, 0.95) 0%,
+      rgba(26, 26, 26, 0.85) 100%);
+}
+
+.gradient-radial {
+  background: radial-gradient(circle at center,
+      rgba(18, 18, 18, 0.3) 0%,
+      rgba(18, 18, 18, 0.9) 100%);
 }
 
 /* Scrollbar for dark theme */

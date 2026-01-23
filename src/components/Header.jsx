@@ -35,9 +35,9 @@ export default function Header() {
           {/* LEFT: Navigation */}
           <nav className="nav-left">
             <ul className="nav-list">
-              <li><Link to="/">{language === 'TR' ? 'KOLEKSİYONLAR' : 'COLLECTIONS'}</Link></li>
+              <li><Link to="/collections">{language === 'TR' ? 'KOLEKSİYONLAR' : 'COLLECTIONS'}</Link></li>
               <li><Link to="/atelier">{language === 'TR' ? 'ATÖLYE' : 'ATELIER'}</Link></li>
-              <li><Link to="/about">{language === 'TR' ? 'HAKKINDA' : 'ABOUT'}</Link></li>
+              <li><Link to="/our-story">{language === 'TR' ? 'HAKKINDA' : 'ABOUT'}</Link></li>
               <li><Link to="/contact">{language === 'TR' ? 'İLETİŞİM' : 'CONTACT'}</Link></li>
             </ul>
           </nav>

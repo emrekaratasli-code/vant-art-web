@@ -32,6 +32,8 @@ import CookieBanner from './components/CookieBanner';
 import ErrorBoundary from './components/ErrorBoundary';
 import Footer from './components/Footer';
 import AtelierPage from './pages/AtelierPage';
+import CollectionsPage from './pages/CollectionsPage';
+import CollectionDetailPage from './pages/CollectionDetailPage';
 
 import { PRE_LAUNCH_MODE } from './lib/constants'; // Import PRE_LAUNCH_MODE
 
@@ -107,6 +109,8 @@ function AppContent() {
 
           {/* Public Routes */}
           <Route path="/atelier" element={<AtelierPage />} />
+          <Route path="/collections" element={<CollectionsPage />} />
+          <Route path="/collection/:collectionName" element={<CollectionDetailPage />} />
           <Route path="/profile" element={
             <ProtectedRoute>
               <ProfilePage />

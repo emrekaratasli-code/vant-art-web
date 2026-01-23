@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useProduct } from '../context/ProductContext';
-import { useLanguage } from '../context/LanguageContext';
+
 import { useOrders } from '../context/OrderContext';
 import { useAnalytics } from '../context/AnalyticsContext';
 import { supabase } from '../lib/supabaseClient';
@@ -26,7 +26,7 @@ export default function AdminPanel() {
   const { orders, updateOrderStatus } = useOrders();
   const { getStats } = useAnalytics();
 
-  const { t } = useLanguage();
+
 
   const [activeTab, setActiveTab] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -115,7 +115,7 @@ export default function AdminPanel() {
   const totalSales = (orders || []).reduce((acc, o) => acc + (parseFloat(o.amount) || 0), 0);
   const totalVisitors = stats.visitors || 0;
 
-  const handleDeleteProduct = async (id) => {
+  const onDeleteProduct = async (id) => {
     if (!window.confirm('Bu ürünü silmek istediğinize emin misiniz?')) return;
     try {
       await deleteFromContext(id);
@@ -148,7 +148,7 @@ export default function AdminPanel() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmitProduct = async (e) => {
+  const onSubmitProduct = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
@@ -197,7 +197,7 @@ export default function AdminPanel() {
       console.log('✅ Product Saved Successfully');
 
       // Reset Form Safely
-      setFormData(prev => ({
+      setFormData(() => ({
         name: '', price: '', category: '', image: '', description: '', material: '', stock: ''
       }));
 
@@ -226,7 +226,7 @@ export default function AdminPanel() {
         if (String(errorCode) === '406') {
           errorMsg = 'Hata 406: Veri formatı kabul edilmedi. (Şema veya RLS hatası olabilir)';
         }
-      } catch (parseErr) {
+      } catch {
         errorMsg = "Hata detayı okunamadı.";
       }
 
@@ -367,7 +367,7 @@ export default function AdminPanel() {
               {/* Product ADD FORM */}
               <div className="luxury-card mb-4" id="add-product-form">
                 <h3>Yeni Ürün Ekle</h3>
-                <form onSubmit={handleSubmitProduct} className="admin-form-grid">
+                <form onSubmit={onSubmitProduct} className="admin-form-grid">
                   <input type="text" placeholder="Ürün Adı" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} required />
                   <input type="number" placeholder="Fiyat (₺)" value={formData.price} onChange={e => setFormData({ ...formData, price: e.target.value })} required />
                   <select value={formData.category} onChange={e => setFormData({ ...formData, category: e.target.value })} required>
@@ -394,7 +394,7 @@ export default function AdminPanel() {
                         <td>{p.category}</td>
                         <td>₺{p.price}</td>
                         <td style={{ color: p.stock < 5 ? 'red' : 'inherit' }}>{p.stock}</td>
-                        <td><button className="icon-action delete" onClick={() => handleDeleteProduct(p.id)}>🗑️</button></td>
+                        <td><button className="icon-action delete" onClick={() => onDeleteProduct(p.id)}>🗑️</button></td>
                       </tr>
                     ))}
                   </tbody>
@@ -411,7 +411,7 @@ export default function AdminPanel() {
                     <div className="mobile-card-body">
                       <p>Fiyat: ₺{p.price}</p>
                       <p>Stok: {p.stock}</p>
-                      <button className="icon-action delete" onClick={() => handleDeleteProduct(p.id)}>Sil</button>
+                      <button className="icon-action delete" onClick={() => onDeleteProduct(p.id)}>Sil</button>
                     </div>
                   </div>
                 ))}

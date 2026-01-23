@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useLanguage } from '../context/LanguageContext';
 import { products } from '../data/products';
@@ -84,6 +84,16 @@ export default function ProductDetail() {
 
                 <h1 className="product-title">{product.name}</h1>
 
+                {/* Collection Context */}
+                {product.collection && (
+                    <div className="collection-context">
+                        <span className="context-label">From the Collection:</span>
+                        <Link to={`/collection/${encodeURIComponent(product.collection)}`} className="collection-link">
+                            {product.collection} →
+                        </Link>
+                    </div>
+                )}
+
                 {/* Social Proof Badge */}
                 {settings?.showSocialProof && (
                     <div className="social-proof-badge">
@@ -100,7 +110,7 @@ export default function ProductDetail() {
                         onClick={() => addToCart(product)}
                         style={{ flex: 1, marginBottom: 0 }}
                     >
-                        {t('addToCart')}
+                        Join the Collection
                     </button>
 
                     <button
@@ -144,7 +154,7 @@ export default function ProductDetail() {
 
                 <div className="accordion-container">
                     <AccordionItem
-                        title={t('description')}
+                        title="The Piece"
                         isOpen={openSection === 'description'}
                         onClick={() => toggleSection('description')}
                     >
@@ -152,26 +162,23 @@ export default function ProductDetail() {
                     </AccordionItem>
 
                     <AccordionItem
-                        title={t('features')}
+                        title="Composition"
                         isOpen={openSection === 'features'}
                         onClick={() => toggleSection('features')}
                     >
                         <ul className="detail-list">
-                            <li><strong>{t('materialLabel')}:</strong> {product.material}</li>
-                            <li><strong>SKU:</strong> VNT-{product.id}00</li>
-                            <li><strong>{t('guaranteed')}</strong></li>
+                            <li><strong>Materials:</strong> {product.material}</li>
+                            {product.sizing && <li><strong>Sizing:</strong> {product.sizing}</li>}
+                            <li><strong>Piece ID:</strong> VNT-{product.id}00</li>
                         </ul>
                     </AccordionItem>
 
                     <AccordionItem
-                        title={t('care')}
+                        title="Caring for Your Piece"
                         isOpen={openSection === 'care'}
                         onClick={() => toggleSection('care')}
                     >
-                        <p>
-                            To maintain the luster of your VANT ART piece, clean gently with a soft cloth.
-                            Avoid direct contact with perfumes and harsh chemicals.
-                        </p>
+                        <p>{product.care || 'To maintain the integrity of your piece, clean gently with a soft cloth. Avoid direct contact with perfumes and harsh chemicals.'}</p>
                     </AccordionItem>
                 </div>
             </div>
@@ -188,7 +195,7 @@ export default function ProductDetail() {
                     className="add-btn"
                     onClick={() => addToCart(product)}
                 >
-                    {t('addToCart')}
+                    Join the Collection
                 </button>
             </div>
 
@@ -324,6 +331,52 @@ export default function ProductDetail() {
                 }
                 .trust-icon {
                     font-size: 1.2rem;
+                }
+
+                /* Collection Context */
+                .collection-context {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    margin-bottom: 1rem;
+                    padding: 0.75rem;
+                    background: rgba(212, 175, 55, 0.05);
+                    border-radius: var(--radius-sm);
+                }
+
+                .context-label {
+                    font-size: 0.85rem;
+                    color: var(--color-text-muted);
+                }
+
+                .collection-link {
+                    font-size: 0.9rem;
+                    color: var(--color-accent);
+                    font-family: var(--font-heading);
+                    letter-spacing: 0.05em;
+                    transition: color 0.3s;
+                }
+
+                .collection-link:hover {
+                    color: var(--color-accent-hover);
+                }
+
+                /* Philosophy Block */
+                .philosophy-block {
+                    background: linear-gradient(135deg, 
+                        rgba(212, 175, 55, 0.05) 0%, 
+                        rgba(212, 175, 55, 0.02) 100%);
+                    padding: 1.5rem;
+                    margin: 2rem 0;
+                    border-left: 2px solid var(--color-accent);
+                }
+
+                .philosophy-text {
+                    font-family: var(--font-script);
+                    font-size: 1.1rem;
+                    font-style: italic;
+                    color: var(--color-text);
+                    line-height: 1.7;
                 }
 
                 /* Accordion */
