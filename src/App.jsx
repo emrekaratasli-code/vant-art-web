@@ -36,6 +36,7 @@ import CollectionsPage from './pages/CollectionsPage';
 import CollectionDetailPage from './pages/CollectionDetailPage';
 import SafeMode from './pages/SafeMode';
 import DebugPage from './pages/DebugPage';
+import IGLanding from './pages/IGLanding';
 
 
 
