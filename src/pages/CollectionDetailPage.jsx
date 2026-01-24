@@ -2,31 +2,66 @@ import { useParams, Link } from 'react-router-dom';
 import { useProduct } from '../context/ProductContext';
 import { useLanguage } from '../context/LanguageContext';
 import ProductCard from '../components/ProductCard';
+import { IS_IG_WEBVIEW, ROUTE_FLAGS } from '../lib/webview';
+import SafeFallback from '../components/SafeFallback';
 
 export default function CollectionDetailPage() {
   const { collectionName } = useParams();
   const { products, loading } = useProduct();
   const { language } = useLanguage();
 
+  // BINARY ISOLATION: Disable route if flag is false
+  if (IS_IG_WEBVIEW && !ROUTE_FLAGS.collectionDetail) {
+    return <SafeFallback title="Collection Detail" route={`/collection/${collectionName}`} />;
+  }
+
   if (loading) return null;
 
-  // Safety guard: ensure products exists
-  if (!products) {
+  // MANDATORY GUARD: Ensure products is valid array
+  if (!products || !Array.isArray(products)) {
+    // SAFE: Always return valid JSX, never undefined
     return (
-      <div style={{ padding: '4rem', textAlign: 'center' }}>
-        <h2>Loading...</h2>
+      <div style={{ padding: '4rem', textAlign: 'center', minHeight: '50vh' }}>
+        <h2>Loading collections...</h2>
+        <Link to="/collections" style={{ color: '#d4af37', textDecoration: 'underline' }}>Back to Collections</Link>
       </div>
     );
   }
 
   const decodedCollectionName = decodeURIComponent(collectionName);
-  const collectionProducts = products.filter(p => p.collection === decodedCollectionName);
+  // SAFE: Normalize array before filter (no crash if undefined)
+  const safeProducts = Array.isArray(products) ? products : [];
+  const collectionProducts = safeProducts.filter(p => p?.collection === decodedCollectionName);
 
-  if (collectionProducts.length === 0) {
+  // CRITICAL: Safe fallback for not found (NEVER return empty/undefined JSX)
+  if (!collectionProducts || collectionProducts.length === 0) {
     return (
-      <div style={{ padding: '4rem', textAlign: 'center' }}>
-        <h2>Collection not found</h2>
-        <Link to="/collections">← Back to Collections</Link>
+      <div style={{
+        padding: '4rem',
+        textAlign: 'center',
+        minHeight: '60vh',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: '#000',
+        color: '#fff'
+      }}>
+        <h1 style={{ fontSize: '2rem', marginBottom: '1rem', color: '#d4af37' }}>Collection Not Found</h1>
+        <p style={{ marginBottom: '2rem', color: '#aaa' }}>The collection "{decodedCollectionName}" does not exist.</p>
+        <Link
+          to="/collections"
+          style={{
+            padding: '0.75rem 2rem',
+            background: '#d4af37',
+            color: '#000',
+            textDecoration: 'none',
+            borderRadius: '4px',
+            fontWeight: 'bold'
+          }}
+        >
+          ← Back to Collections
+        </Link>
       </div>
     );
   }

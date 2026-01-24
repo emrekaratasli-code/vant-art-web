@@ -7,6 +7,8 @@ import { useEffect } from 'react';
 
 import { useWishlist } from '../context/WishlistContext';
 import ProductRecommendations from './ProductRecommendations'; // Import Added // Import Added
+import { IS_IG_WEBVIEW, ROUTE_FLAGS } from '../lib/webview';
+import SafeFallback from './SafeFallback';
 
 const AccordionItem = ({ title, isOpen, onClick, children }) => {
     return (
@@ -38,7 +40,45 @@ export default function ProductDetail() {
     // Accordion State
     const [openSection, setOpenSection] = useState('description');
 
+    // BINARY ISOLATION: Disable route if flag is false
+    if (IS_IG_WEBVIEW && !ROUTE_FLAGS.productDetail) {
+        return <SafeFallback title="Product Detail" route={`/product/${id}`} />;
+    }
+
     const product = products.find(p => p.id === parseInt(id));
+
+    // MANDATORY GUARD: Product must exist (NEVER render undefined)
+    if (!product) {
+        return (
+            <div style={{
+                padding: '4rem',
+                textAlign: 'center',
+                minHeight: '60vh',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: '#000',
+                color: '#fff'
+            }}>
+                <h1 style={{ fontSize: '2rem', marginBottom: '1rem', color: '#d4af37' }}>Product Not Found</h1>
+                <p style={{ marginBottom: '2rem', color: '#aaa' }}>The product you're looking for doesn't exist.</p>
+                <Link
+                    to="/"
+                    style={{
+                        padding: '0.75rem 2rem',
+                        background: '#d4af37',
+                        color: '#000',
+                        textDecoration: 'none',
+                        borderRadius: '4px',
+                        fontWeight: 'bold'
+                    }}
+                >
+                    ← Back to Homepage
+                </Link>
+            </div>
+        );
+    }
 
     useEffect(() => {
         window.scrollTo(0, 0);

@@ -165,6 +165,7 @@ function AppContent() {
 
 export default function App() {
   return (
+    // CRITICAL: ErrorBoundary OUTSIDE all providers (Instagram WebView safety)
     <ErrorBoundary>
       <LanguageProvider>
         <Preloader />

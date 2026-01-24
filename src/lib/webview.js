@@ -34,6 +34,14 @@ export const FLAGS = {
     smoothScroll: !IS_IG_WEBVIEW,
 };
 
+// BINARY ISOLATION: Route-level flags to identify crash source
+// Set to false to disable route in IG WebView (forces safe fallback)
+export const ROUTE_FLAGS = {
+    collections: true,        // /collections
+    collectionDetail: true,   // /collection/:name
+    productDetail: true,      // /product/:id
+};
+
 // User agent for debugging
 export const USER_AGENT = typeof navigator !== 'undefined' ? navigator.userAgent : 'SSR';
 

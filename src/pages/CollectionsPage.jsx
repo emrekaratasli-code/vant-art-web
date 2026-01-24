@@ -1,15 +1,22 @@
 import { useProduct } from '../context/ProductContext';
 import { useLanguage } from '../context/LanguageContext';
 import { Link } from 'react-router-dom';
+import { IS_IG_WEBVIEW, ROUTE_FLAGS } from '../lib/webview';
+import SafeFallback from '../components/SafeFallback';
 
 export default function CollectionsPage() {
   const { products, loading } = useProduct();
   const { language } = useLanguage();
 
+  // BINARY ISOLATION: Disable route if flag is false in IG WebView
+  if (IS_IG_WEBVIEW && !ROUTE_FLAGS.collections) {
+    return <SafeFallback title="Collections" route="/collections" />;
+  }
+
   if (loading) return null;
 
-  // Safety guard: ensure products exists
-  if (!products || products.length === 0) {
+  // MANDATORY GUARD: Ensure products is valid array
+  if (!products || !Array.isArray(products) || products.length === 0) {
     return (
       <div className="collections-page">
         <div className="container" style={{ padding: '4rem', textAlign: 'center' }}>
@@ -19,8 +26,9 @@ export default function CollectionsPage() {
     );
   }
 
-  // Extract unique collections
-  const collections = [...new Set(products.map(p => p.collection).filter(Boolean))];
+  // Extract unique collections (SAFE: normalize array first)
+  const safeProducts = Array.isArray(products) ? products : [];
+  const collections = [...new Set(safeProducts.map(p => p?.collection).filter(Boolean))];
 
   // Group products by collection
   const collectionMap = {};
