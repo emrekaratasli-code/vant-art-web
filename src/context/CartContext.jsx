@@ -4,7 +4,28 @@ import { useLanguage } from './LanguageContext';
 
 const CartContext = createContext();
 
-export const useCart = () => useContext(CartContext);
+// WebView-safe hook: Returns fallback if context not available
+export const useCart = () => {
+    const context = useContext(CartContext);
+
+    // If context is undefined (WebView timing issues), return safe fallback
+    if (!context) {
+        console.warn('⚠️ CartContext not available, using fallback');
+        return {
+            cartItems: [],
+            isCartOpen: false,
+            addToCart: () => { },
+            removeFromCart: () => { },
+            updateQuantity: () => { },
+            toggleCart: () => { },
+            clearCart: () => { },
+            cartTotal: 0,
+            cartCount: 0
+        };
+    }
+
+    return context;
+};
 
 export const CartProvider = ({ children }) => {
     const [cartItems, setCartItems] = useState(() => {

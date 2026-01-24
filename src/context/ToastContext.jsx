@@ -2,7 +2,17 @@ import { createContext, useContext, useState, useEffect } from 'react';
 
 const ToastContext = createContext();
 
-export const useToast = () => useContext(ToastContext);
+// WebView-safe hook: Returns fallback if context not available
+export const useToast = () => {
+    const context = useContext(ToastContext);
+
+    if (!context) {
+        console.warn('⚠️ ToastContext not available, using fallback');
+        return { showToast: () => { } };
+    }
+
+    return context;
+};
 
 export const ToastProvider = ({ children }) => {
     const [toast, setToast] = useState(null);

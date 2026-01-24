@@ -3,7 +3,26 @@ import { supabase } from '../lib/supabaseClient';
 
 const AuthContext = createContext();
 
-export const useAuth = () => useContext(AuthContext);
+// WebView-safe hook: Returns fallback if context not available
+export const useAuth = () => {
+    const context = useContext(AuthContext);
+
+    if (!context) {
+        console.warn('⚠️ AuthContext not available, using fallback');
+        return {
+            user: null,
+            loading: false,
+            isAuthenticated: false,
+            login: async () => { },
+            register: async () => { },
+            logout: async () => { },
+            resetPassword: async () => { },
+            updatePassword: async () => { }
+        };
+    }
+
+    return context;
+};
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);

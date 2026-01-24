@@ -1,9 +1,7 @@
 import { useState, useEffect } from 'react';
-import { useLanguage } from '../context/LanguageContext';
 
 export default function CookieBanner() {
     const [visible, setVisible] = useState(false);
-    const { t } = useLanguage();
 
     useEffect(() => {
         const consented = localStorage.getItem('vant_cookie_consent');

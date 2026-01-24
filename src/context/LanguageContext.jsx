@@ -2,7 +2,23 @@ import { createContext, useState, useContext } from 'react';
 
 const LanguageContext = createContext();
 
-export const useLanguage = () => useContext(LanguageContext);
+// WebView-safe hook: Returns fallback if context not available
+export const useLanguage = () => {
+    const context = useContext(LanguageContext);
+
+    // If context is undefined (WebView timing issues), return safe fallback
+    if (!context) {
+        console.warn('⚠️ LanguageContext not available, using fallback');
+        return {
+            language: 'EN',
+            toggleLanguage: () => { },
+            t: (key) => key,
+            formatPrice: (amount) => `$${amount}`
+        };
+    }
+
+    return context;
+};
 
 import { translations, RATES } from '../data/translations';
 

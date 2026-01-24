@@ -4,8 +4,25 @@ import { products as staticProducts } from '../data/products'; // Import static 
 
 const ProductContext = createContext();
 
+// WebView-safe hook: Returns fallback if context not available
 // eslint-disable-next-line react-refresh/only-export-components
-export const useProduct = () => useContext(ProductContext); // Corrected export name to singular as used in Grid
+export const useProduct = () => {
+    const context = useContext(ProductContext);
+
+    // If context is undefined (WebView timing issues), return safe fallback
+    if (!context) {
+        console.warn('⚠️ ProductContext not available, using fallback');
+        return {
+            products: [],
+            loading: false,
+            addProduct: async () => { },
+            deleteProduct: async () => { },
+            fetchProducts: async () => { }
+        };
+    }
+
+    return context;
+};
 
 export const ProductProvider = ({ children }) => {
     const [products, setProducts] = useState([]);
