@@ -47,8 +47,8 @@ export default function ProductDetail() {
 
     const product = products.find(p => p.id === parseInt(id));
 
-    // MANDATORY GUARD: Product must exist (NEVER render undefined)
-    if (!product) {
+    // MANDATORY GUARD: Product must exist AND be valid object
+    if (!product || typeof product !== 'object' || Array.isArray(product)) {
         return (
             <div style={{
                 padding: '4rem',
@@ -80,13 +80,31 @@ export default function ProductDetail() {
         );
     }
 
+    // iOS WebKit FIX: mounted flag prevents unmount race condition
     useEffect(() => {
-        window.scrollTo(0, 0);
+        let mounted = true;
+
+        if (mounted) {
+            window.scrollTo(0, 0);
+        }
+
+        return () => {
+            mounted = false;
+        };
     }, [id]);
 
+    // iOS WebKit FIX: mounted flag prevents unmount race condition
     useEffect(() => {
-        // Random viewers between 5 and 25
-        setViewers(Math.floor(Math.random() * 20) + 5);
+        let mounted = true;
+
+        if (mounted) {
+            // Random viewers between 5 and 25
+            setViewers(Math.floor(Math.random() * 20) + 5);
+        }
+
+        return () => {
+            mounted = false;
+        };
     }, []);
 
     if (!product) {

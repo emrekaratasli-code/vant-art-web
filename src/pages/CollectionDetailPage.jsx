@@ -33,8 +33,8 @@ export default function CollectionDetailPage() {
   const safeProducts = Array.isArray(products) ? products : [];
   const collectionProducts = safeProducts.filter(p => p?.collection === decodedCollectionName);
 
-  // CRITICAL: Safe fallback for not found (NEVER return empty/undefined JSX)
-  if (!collectionProducts || collectionProducts.length === 0) {
+  // CRITICAL: Safe fallback for not found + TYPE CHECK
+  if (!collectionProducts || !Array.isArray(collectionProducts) || collectionProducts.length === 0) {
     return (
       <div style={{
         padding: '4rem',

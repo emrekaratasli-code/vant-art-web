@@ -1,37 +1,49 @@
 // Instagram WebView Detection & Feature Flags
 // LOCKED: React 18.2.0 + ES2017 + No StrictMode
 
-// Detect Instagram in-app browser
-export const IS_IG_WEBVIEW =
-    typeof navigator !== 'undefined' &&
-    /Instagram/i.test(navigator.userAgent);
+// COMPREHENSIVE IN-APP BROWSER DETECTION
+// Instagram, Facebook, iOS Chrome in-app - ALL have same iOS WebKit issues
+export const isInAppBrowser = () => {
+    if (typeof navigator === 'undefined') return false;
 
-// Detect other WebView environments
-export const IS_FACEBOOK_WEBVIEW =
-    typeof navigator !== 'undefined' &&
-    /FBAN|FBAV/i.test(navigator.userAgent);
+    const ua = navigator.userAgent || '';
+    return (
+        ua.includes('Instagram') ||
+        ua.includes('FBAN') ||
+        ua.includes('FBAV') ||
+        ua.includes('FB_IAB') ||
+        ua.includes('CriOS') ||        // iOS Chrome in-app
+        ua.includes('Mobile Safari')   // in-app fallback
+    );
+};
 
-export const IS_ANY_WEBVIEW = IS_IG_WEBVIEW || IS_FACEBOOK_WEBVIEW;
+// CRITICAL: All in-app browsers treated as restricted environment
+export const IS_RESTRICTED_ENV = isInAppBrowser();
 
-// Feature flags: Disable risky features in WebView
+// Legacy exports for backwards compatibility
+export const IS_IG_WEBVIEW = IS_RESTRICTED_ENV;
+export const IS_FACEBOOK_WEBVIEW = IS_RESTRICTED_ENV;
+export const IS_ANY_WEBVIEW = IS_RESTRICTED_ENV;
+
+// Feature flags: Disable risky features in ALL in-app browsers
 export const FLAGS = {
-    // Animations: Disable in IG WebView (CSS/JS animations can crash)
-    animations: !IS_IG_WEBVIEW,
+    // Animations: Disable in all in-app browsers (iOS WebKit issue)
+    animations: !IS_RESTRICTED_ENV,
 
     // Heavy effects: backdrop-filter, large shadows, gradients
-    heavyEffects: !IS_IG_WEBVIEW,
+    heavyEffects: !IS_RESTRICTED_ENV,
 
-    // Portals: createPortal can cause rendering issues
-    portals: !IS_IG_WEBVIEW,
+    // Portals: createPortal BANNED in in-app browsers
+    portals: !IS_RESTRICTED_ENV,
 
     // Video: Autoplay and heavy video backgrounds
-    videoAutoplay: !IS_IG_WEBVIEW,
+    videoAutoplay: !IS_RESTRICTED_ENV,
 
     // Intersection Observer: Can be inconsistent
-    intersectionObserver: !IS_IG_WEBVIEW,
+    intersectionObserver: !IS_RESTRICTED_ENV,
 
     // Smooth scroll: Can conflict with WebView scroll handling
-    smoothScroll: !IS_IG_WEBVIEW,
+    smoothScroll: !IS_RESTRICTED_ENV,
 };
 
 // BINARY ISOLATION: Route-level flags to identify crash source
