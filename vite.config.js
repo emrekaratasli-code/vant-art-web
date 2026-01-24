@@ -13,7 +13,8 @@ export default defineConfig({
     },
   },
   build: {
-    sourcemap: true, // TEMPORARY: 24h for IG WebView debugging
+    target: 'es2017', // CRITICAL: IG WebView compatibility (no modern JS)
+    sourcemap: true,  // 24h debugging
   },
   test: {
     environment: 'jsdom',
