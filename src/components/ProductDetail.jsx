@@ -7,7 +7,7 @@ import { useEffect } from 'react';
 
 import { useWishlist } from '../context/WishlistContext';
 import ProductRecommendations from './ProductRecommendations'; // Import Added // Import Added
-import { IS_IG_WEBVIEW, ROUTE_FLAGS } from '../lib/webview';
+import { IS_IG_WEBVIEW, ROUTE_FLAGS, hasCrashedBefore } from '../lib/webview';
 import SafeFallback from './SafeFallback';
 
 const AccordionItem = ({ title, isOpen, onClick, children }) => {
@@ -37,8 +37,13 @@ export default function ProductDetail() {
     const { settings } = useSettings(); // Hook Added
     const [viewers, setViewers] = useState(0);
 
-    // Accordion State
     const [openSection, setOpenSection] = useState('description');
+
+    // PHASE 2: ROUTE LEVEL FAIL-SAFE
+    const routeName = 'product-detail';
+    if (IS_IG_WEBVIEW && hasCrashedBefore(routeName)) {
+        return <SafeFallback title="Product Detail (Fail-Safe)" route={`/product/${id}`} />;
+    }
 
     // BINARY ISOLATION: Disable route if flag is false
     if (IS_IG_WEBVIEW && !ROUTE_FLAGS.productDetail) {
@@ -118,8 +123,32 @@ export default function ProductDetail() {
         setOpenSection(openSection === section ? null : section);
     };
 
-    return (
-        <div className="product-detail-page">
+    // EMERGENCY STABILIZATION: Simple image for IG WebView
+    const renderProductImages = () => {
+        if (IS_IG_WEBVIEW) {
+            // HARD FIX: Single static image, NO effects, NO listeners, NO ref
+            return (
+                <div className="product-image-simple" style={{
+                    width: '100%',
+                    aspectRatio: '1/1',
+                    overflow: 'hidden',
+                    background: '#000'
+                }}>
+                    <img
+                        src={product.image}
+                        alt={product.name}
+                        style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover'
+                        }}
+                    />
+                </div>
+            );
+        }
+
+        // STANDARD BROWSERS: Full carousel
+        return (
             <div className="carousel-container">
                 <div className="carousel-track">
                     {images.map((img, index) => (
@@ -134,6 +163,12 @@ export default function ProductDetail() {
                     ))}
                 </div>
             </div>
+        );
+    };
+
+    return (
+        <div className="product-detail-page">
+            {renderProductImages()}
 
             <div className="container product-content">
                 <button onClick={() => navigate(-1)} className="back-btn">

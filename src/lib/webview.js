@@ -1,64 +1,68 @@
 // Instagram WebView Detection & Feature Flags
 // LOCKED: React 18.2.0 + ES2017 + No StrictMode
+// EMERGENCY STABILIZATION: Aggressive feature lockdown for IG WebView
 
 // COMPREHENSIVE IN-APP BROWSER DETECTION
-// Instagram, Facebook, iOS Chrome in-app - ALL have same iOS WebKit issues
-export const isInAppBrowser = () => {
-    if (typeof navigator === 'undefined') return false;
+export const IS_IG_WEBVIEW =
+    typeof navigator !== 'undefined' &&
+    /Instagram|FBAN|FBAV|FB_IAB/i.test(navigator.userAgent);
 
-    const ua = navigator.userAgent || '';
-    return (
-        ua.includes('Instagram') ||
-        ua.includes('FBAN') ||
-        ua.includes('FBAV') ||
-        ua.includes('FB_IAB') ||
-        ua.includes('CriOS') ||        // iOS Chrome in-app
-        ua.includes('Mobile Safari')   // in-app fallback
-    );
+// GLOBAL KILL SWITCH - ALL risky features disabled in IG WebView
+export const WEBVIEW_FLAGS = {
+    animations: !IS_IG_WEBVIEW,           // NO animations
+    portals: !IS_IG_WEBVIEW,              // NO createPortal (Toast, Modal, etc.)
+    intersectionObserver: !IS_IG_WEBVIEW, // NO IntersectionObserver
+    smoothScroll: !IS_IG_WEBVIEW,         // NO smooth scroll
+    imageZoom: !IS_IG_WEBVIEW,            // NO image zoom/lightbox
+    heavyEffects: !IS_IG_WEBVIEW,         // NO backdrop-filter, shadows
+    videoAutoplay: !IS_IG_WEBVIEW,        // NO video autoplay
 };
-
-// CRITICAL: All in-app browsers treated as restricted environment
-export const IS_RESTRICTED_ENV = isInAppBrowser();
 
 // Legacy exports for backwards compatibility
-export const IS_IG_WEBVIEW = IS_RESTRICTED_ENV;
-export const IS_FACEBOOK_WEBVIEW = IS_RESTRICTED_ENV;
-export const IS_ANY_WEBVIEW = IS_RESTRICTED_ENV;
+export const IS_RESTRICTED_ENV = IS_IG_WEBVIEW;
+export const IS_FACEBOOK_WEBVIEW = IS_IG_WEBVIEW;
+export const IS_ANY_WEBVIEW = IS_IG_WEBVIEW;
+export const FLAGS = WEBVIEW_FLAGS; // Alias
 
-// Feature flags: Disable risky features in ALL in-app browsers
-export const FLAGS = {
-    // Animations: Disable in all in-app browsers (iOS WebKit issue)
-    animations: !IS_RESTRICTED_ENV,
-
-    // Heavy effects: backdrop-filter, large shadows, gradients
-    heavyEffects: !IS_RESTRICTED_ENV,
-
-    // Portals: createPortal BANNED in in-app browsers
-    portals: !IS_RESTRICTED_ENV,
-
-    // Video: Autoplay and heavy video backgrounds
-    videoAutoplay: !IS_RESTRICTED_ENV,
-
-    // Intersection Observer: Can be inconsistent
-    intersectionObserver: !IS_RESTRICTED_ENV,
-
-    // Smooth scroll: Can conflict with WebView scroll handling
-    smoothScroll: !IS_RESTRICTED_ENV,
+// BINARY ISOLATION: Route-level flags
+export const ROUTE_FLAGS = {
+    collections: true,
+    collectionDetail: true,
+    productDetail: true,
 };
 
-// BINARY ISOLATION: Route-level flags to identify crash source
-// Set to false to disable route in IG WebView (forces safe fallback)
-export const ROUTE_FLAGS = {
-    collections: true,        // /collections
-    collectionDetail: true,   // /collection/:name
-    productDetail: true,      // /product/:id
+// Crash tracking for fail-safe
+export const hasCrashedBefore = (route) => {
+    if (typeof localStorage === 'undefined') return false;
+    try {
+        const crashed = localStorage.getItem(`vant_crash_${route}`);
+        return crashed === 'true';
+    } catch {
+        return false;
+    }
+};
+
+export const markRouteCrashed = (route) => {
+    if (typeof localStorage === 'undefined') return;
+    try {
+        localStorage.setItem(`vant_crash_${route}`, 'true');
+    } catch {
+        // Silently fail
+    }
+};
+
+export const clearCrashFlag = (route) => {
+    if (typeof localStorage === 'undefined') return;
+    try {
+        localStorage.removeItem(`vant_crash_${route}`);
+    } catch {
+        // Silently fail
+    }
 };
 
 // User agent for debugging
 export const USER_AGENT = typeof navigator !== 'undefined' ? navigator.userAgent : 'SSR';
 
-// App version (will be injected via env)
+// App version
 export const APP_VERSION = import.meta.env.VITE_APP_VERSION || 'unknown';
-
-// Commit hash (will be injected via env)
 export const COMMIT_HASH = import.meta.env.VITE_COMMIT_HASH || 'dev';

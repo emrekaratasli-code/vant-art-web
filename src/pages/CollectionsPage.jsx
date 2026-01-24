@@ -1,12 +1,18 @@
 import { useProduct } from '../context/ProductContext';
 import { useLanguage } from '../context/LanguageContext';
 import { Link } from 'react-router-dom';
-import { IS_IG_WEBVIEW, ROUTE_FLAGS } from '../lib/webview';
+import { IS_IG_WEBVIEW, ROUTE_FLAGS, hasCrashedBefore } from '../lib/webview';
 import SafeFallback from '../components/SafeFallback';
 
 export default function CollectionsPage() {
   const { products, loading } = useProduct();
   const { language } = useLanguage();
+
+  // PHASE 2: ROUTE LEVEL FAIL-SAFE
+  const routeName = 'collections';
+  if (IS_IG_WEBVIEW && hasCrashedBefore(routeName)) {
+    return <SafeFallback title="Collections (Fail-Safe)" route="/collections" />;
+  }
 
   // BINARY ISOLATION: Disable route if flag is false in IG WebView
   if (IS_IG_WEBVIEW && !ROUTE_FLAGS.collections) {

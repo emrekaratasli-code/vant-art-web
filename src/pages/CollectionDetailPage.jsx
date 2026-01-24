@@ -2,13 +2,19 @@ import { useParams, Link } from 'react-router-dom';
 import { useProduct } from '../context/ProductContext';
 import { useLanguage } from '../context/LanguageContext';
 import ProductCard from '../components/ProductCard';
-import { IS_IG_WEBVIEW, ROUTE_FLAGS } from '../lib/webview';
+import { IS_IG_WEBVIEW, ROUTE_FLAGS, hasCrashedBefore } from '../lib/webview';
 import SafeFallback from '../components/SafeFallback';
 
 export default function CollectionDetailPage() {
   const { collectionName } = useParams();
   const { products, loading } = useProduct();
   const { language } = useLanguage();
+
+  // PHASE 2: ROUTE LEVEL FAIL-SAFE
+  const routeName = `collection-${collectionName}`;
+  if (IS_IG_WEBVIEW && hasCrashedBefore(routeName)) {
+    return <SafeFallback title="Collection Detail (Fail-Safe)" route={`/collection/${collectionName}`} />;
+  }
 
   // BINARY ISOLATION: Disable route if flag is false
   if (IS_IG_WEBVIEW && !ROUTE_FLAGS.collectionDetail) {
