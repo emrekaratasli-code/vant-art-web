@@ -34,6 +34,8 @@ import Footer from './components/Footer';
 import AtelierPage from './pages/AtelierPage';
 import CollectionsPage from './pages/CollectionsPage';
 import CollectionDetailPage from './pages/CollectionDetailPage';
+import SafeMode from './pages/SafeMode';
+
 
 import { PRE_LAUNCH_MODE } from './lib/constants'; // Import PRE_LAUNCH_MODE
 
@@ -119,6 +121,10 @@ function AppContent() {
 
           <Route path="/contact" element={<Contact />} />
           <Route path="/our-story" element={<OurStory />} />
+
+          {/* Safe Mode - Zero complexity for IG WebView debugging */}
+          <Route path="/safe" element={<SafeMode />} />
+
 
           <Route path="/admin" element={
             <ProtectedRoute adminOnly={true}>
