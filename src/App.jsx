@@ -35,6 +35,8 @@ import AtelierPage from './pages/AtelierPage';
 import CollectionsPage from './pages/CollectionsPage';
 import CollectionDetailPage from './pages/CollectionDetailPage';
 import SafeMode from './pages/SafeMode';
+import DebugPage from './pages/DebugPage';
+
 
 
 import { PRE_LAUNCH_MODE } from './lib/constants'; // Import PRE_LAUNCH_MODE
@@ -124,6 +126,10 @@ function AppContent() {
 
           {/* Safe Mode - Zero complexity for IG WebView debugging */}
           <Route path="/safe" element={<SafeMode />} />
+
+          {/* Debug Console - Production error tracking */}
+          <Route path="/debug" element={<DebugPage />} />
+
 
 
           <Route path="/admin" element={
