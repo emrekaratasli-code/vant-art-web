@@ -12,14 +12,14 @@ export default function Hero() {
     TR: {
       headline: "WEARABLE ART",
       subhead: "Çağdaş kültür. Atölye işçiliği. Sınırlı üretim.",
-      manifesto: "VANT bir takı markası değildir. Sanat, kimlik ve zanaat kesişiminde var olan parçalar yaratıyoruz.",
+      manifesto: "VANT sadece bir marka değildir. Sanat, kimlik ve yüksek kalite terziliğin kesişiminde var olan parçalar yaratıyoruz.",
       ctaPrimary: "Evrene Gir",
       ctaSecondary: "Son Koleksiyon"
     },
     EN: {
       headline: "WEARABLE ART",
       subhead: "Contemporary culture. Studio craft. Limited release.",
-      manifesto: "VANT is not a jewelry brand. We create pieces that exist at the intersection of art, identity, and craftsmanship.",
+      manifesto: "VANT is more than just a brand. We create pieces that exist at the intersection of art, identity, and premium tailoring.",
       ctaPrimary: "Enter the Universe",
       ctaSecondary: "Latest Collection"
     }
@@ -53,19 +53,11 @@ export default function Hero() {
           </Link>
         </div>
 
-        {/* Dual Image Showcase: Jewelry + Apparel */}
+        {/* Showcase Area */}
         <div className="hero-showcase">
           <div className="showcase-item">
             <img
-              src="https://images.unsplash.com/photo-1599643477877-5313557d87bc?q=80&w=600&auto=format&fit=crop"
-              alt="Jewelry Detail"
-              loading="lazy"
-            />
-            <span className="showcase-label">Jewelry</span>
-          </div>
-          <div className="showcase-item">
-            <img
-              src="https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?q=80&w=600&auto=format&fit=crop"
+              src="https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?q=80&w=1200&auto=format&fit=crop"
               alt="Wearable Art"
               loading="lazy"
             />
@@ -94,7 +86,7 @@ export default function Hero() {
         }
         
         .hero-overlay {
- position: absolute;
+          position: absolute;
           inset: 0;
           background: radial-gradient(circle at 50% 40%, 
             rgba(0,0,0,0.2) 0%, 
@@ -203,11 +195,10 @@ export default function Hero() {
            background: rgba(255,255,255,0.1);
         }
         
-        /* Dual Showcase */
+        /* Showcase Area */
         .hero-showcase {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 2rem;
+          display: flex;
+          justify-content: center;
           max-width: 700px;
           width: 100%;
           opacity: 0;
@@ -219,6 +210,7 @@ export default function Hero() {
           overflow: hidden;
           border-radius: var(--radius-sm);
           aspect-ratio: 4/5;
+          width: 350px;
         }
         
         .showcase-item img {
@@ -263,8 +255,6 @@ export default function Hero() {
             width: 100%;
           }
           .hero-showcase {
-            grid-template-columns: 1fr;
-            gap: 1rem;
             max-width: 350px;
           }
         }

@@ -49,7 +49,7 @@ export default function IGLanding() {
                     letterSpacing: '3px',
                     textTransform: 'uppercase'
                 }}>
-                    Luxury Handcrafted Jewelry
+                    Premium Streetwear & Art
                 </p>
             </div>
 
@@ -191,7 +191,7 @@ export default function IGLanding() {
                 marginTop: 'auto',
                 paddingTop: '2rem'
             }}>
-                <p>© 2026 VANT — Luxury Jewelry</p>
+                <p>© 2026 VANT — Wearable Art</p>
                 <p style={{ marginTop: '0.5rem' }}>
                     <Link to="/safe" style={{ color: '#888', textDecoration: 'underline' }}>
                         Test Mode
