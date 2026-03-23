@@ -64,6 +64,35 @@ export default function Footer() {
                     <Link to="/sozlesmeler/kvkk" className="legal-link">{t('legalKvkk')}</Link>
                 </div>
 
+                {/* Payment Logos - iyzico Merchant Criteria */}
+                <div className="payment-logos">
+                    {/* Visa Logo */}
+                    <div className="payment-logo" title="Visa">
+                        <svg width="48" height="16" viewBox="0 0 750 471" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M278.198 334.228l33.36-195.76h53.358l-33.384 195.76h-53.334zm246.11-191.54c-10.57-3.97-27.18-8.21-47.91-8.21-52.83 0-90.03 26.78-90.26 65.14-.25 28.34 26.52 44.14 46.77 53.58 20.78 9.65 27.77 15.82 27.68 24.45-.14 13.21-16.58 19.24-31.93 19.24-21.35 0-32.69-2.98-50.21-10.34l-6.88-3.13-7.49 44.13c12.46 5.49 35.52 10.25 59.45 10.49 56.22 0 92.71-26.47 93.07-67.39.18-22.43-14.03-39.5-44.83-53.56-18.66-9.12-30.09-15.19-29.97-24.43 0-8.19 9.67-16.95 30.56-16.95 17.44-.28 30.09 3.55 39.94 7.54l4.78 2.27 7.23-42.8zm137.31-4.22h-41.32c-12.81 0-22.39 3.52-28.03 16.37l-79.49 181.19h56.17s9.18-24.32 11.26-29.67h68.63c1.6 6.94 6.5 29.67 6.5 29.67h49.66l-43.38-197.56zm-65.95 127.37c4.44-11.41 21.41-55.31 21.41-55.31-.32.53 4.41-11.47 7.12-18.91l3.63 17.08s10.28 47.31 12.44 57.22h-44.6v-.08zM246.058 138.468l-52.24 133.5-5.57-27.27c-9.71-31.42-39.94-65.46-73.78-82.47l47.94 172.07 56.59-.07 84.17-195.76h-57.11" fill="#1A1F71"/>
+                            <path d="M152.408 138.468h-86.2l-.68 4.07c67.09 16.35 111.49 55.82 129.87 103.26l-18.73-90.59c-3.23-12.45-12.6-16.27-24.26-16.74" fill="#F9A533"/>
+                        </svg>
+                    </div>
+
+                    {/* MasterCard Logo */}
+                    <div className="payment-logo" title="Mastercard">
+                        <svg width="40" height="26" viewBox="0 0 152 100" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="50" cy="50" r="50" fill="#EB001B"/>
+                            <circle cx="102" cy="50" r="50" fill="#F79E1B"/>
+                            <path d="M76 15.57A49.834 49.834 0 0050 50a49.834 49.834 0 0026 34.43A49.834 49.834 0 00102 50a49.834 49.834 0 00-26-34.43z" fill="#FF5F00"/>
+                        </svg>
+                    </div>
+
+                    {/* iyzico ile Öde Logo */}
+                    <div className="payment-logo iyzico-badge" title="iyzico ile Öde">
+                        <svg width="70" height="24" viewBox="0 0 280 96" xmlns="http://www.w3.org/2000/svg">
+                            <rect width="280" height="96" rx="8" fill="#1E64FF"/>
+                            <text x="140" y="42" textAnchor="middle" fill="#fff" fontFamily="Arial, sans-serif" fontSize="32" fontWeight="bold">iyzico</text>
+                            <text x="140" y="72" textAnchor="middle" fill="#fff" fontFamily="Arial, sans-serif" fontSize="18">ile Öde</text>
+                        </svg>
+                    </div>
+                </div>
+
                 <div className="copyright">
                     &copy; {new Date().getFullYear()} VANT ART. {t('footerCopyright')}
                 </div>
@@ -154,7 +183,25 @@ export default function Footer() {
           .legal-link:hover {
             color: var(--color-accent);
           }
-          
+
+          .payment-logos {
+             display: flex;
+             justify-content: center;
+             align-items: center;
+             gap: 1.5rem;
+             margin-bottom: 1.5rem;
+             padding: 1rem 0;
+          }
+          .payment-logo {
+             display: flex;
+             align-items: center;
+             opacity: 0.8;
+             transition: opacity 0.3s;
+          }
+          .payment-logo:hover {
+             opacity: 1;
+          }
+
           .copyright {
               opacity: 0.5;
               font-size: 0.75rem;

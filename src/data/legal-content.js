@@ -25,7 +25,7 @@ Adres ve iletişim bilgileri sipariş formunda belirtildiği gibidir.
 ### 4. GENEL HÜKÜMLER
 4.1. ALICI, internet sitesinde sözleşme konusu ürünün temel nitelikleri, satış fiyatı ve ödeme şekli ile teslimata ilişkin ön bilgileri okuyup bilgi sahibi olduğunu ve elektronik ortamda gerekli teyidi verdiğini beyan eder.
 4.2. Sözleşme konusu ürün, yasal 30 günlük süreyi aşmamak koşulu ile her bir ürün için ALICI'nın yerleşim yerinin uzaklığına bağlı olarak internet sitesinde ön bilgiler kısmında açıklanan süre zarfında ALICI veya gösterdiği adresteki kişi/kuruluşa teslim edilir.
-4.3. Ödeme, PayTR Ödeme ve Elektronik Para Kuruluşu A.Ş. ("PayTR") altyapısı üzerinden güvenli bir şekilde gerçekleştirilmektedir.
+4.3. Ödeme, iyzico Ödeme Hizmetleri A.Ş. ("iyzico") altyapısı üzerinden güvenli bir şekilde gerçekleştirilmektedir.
 
 ### 5. CAYMA HAKKI
 ALICI, sözleşme konusu ürünün kendisine veya gösterdiği adresteki kişi/kuruluşa tesliminden itibaren 14 (on dört) gün içinde hiçbir hukuki ve cezai sorumluluk üstlenmeksizin ve hiçbir gerekçe göstermeksizin malı reddederek sözleşmeden cayma hakkına sahiptir.
@@ -67,8 +67,8 @@ Siparişiniz kargoya verilmeden önce iptal talebinde bulunursanız, ödemeniz k
 ### Gizlilik Taahhüdü
 VANT ART olarak, müşterilerimizin kişisel verilerinin korunmasına büyük önem vermekteyiz. Kişisel verileriniz, yasal yükümlülükler dışında üçüncü şahıslarla paylaşılmamaktadır.
 
-### Ödeme Güvenliği ve PayTR
-Sitemizde kredi kartı işlemi için **PayTR Ödeme ve Elektronik Para Kuruluşu A.Ş.** altyapısı kullanılmaktadır.
+### Ödeme Güvenliği ve iyzico
+Sitemizde kredi kartı işlemi için **iyzico Ödeme Hizmetleri A.Ş.** altyapısı kullanılmaktadır.
 - Kredi kartı bilgileriniz sunucularımızda **kesinlikle saklanmamaktadır**.
 - Tüm ödeme işlemleri 256-bit SSL güvenlik sertifikası ile şifrelenerek doğrudan banka ve ödeme kuruluşu arasında gerçekleşir.
 - 3D Secure güvenli ödeme sistemi desteklenmektedir.
@@ -92,7 +92,7 @@ Değerli Müşterimiz,
 4. Talep etmeniz halinde kampanya ve duyurulardan haberdar edilmeniz.
 
 **Veri Aktarımı:**
-Kişisel verileriniz, sipariş teslimi için kargo şirketleri ve ödeme işlemleri için PayTR ve ilgili bankalar dışında, yasal zorunluluklar haricinde üçüncü kişilerle paylaşılmamaktadır.
+Kişisel verileriniz, sipariş teslimi için kargo şirketleri ve ödeme işlemleri için iyzico ve ilgili bankalar dışında, yasal zorunluluklar haricinde üçüncü kişilerle paylaşılmamaktadır.
 
 **Haklarınız:**
 KVKK'nın 11. maddesi uyarınca; verilerinizin işlenip işlenmediğini öğrenme, düzeltme, silinme talep etme ve kanuna aykırı işlenme nedeniyle zarara uğramanız halinde zararın giderilmesini talep etme hakkına sahipsiniz. Başvurularınızı iletisim@vantonline.com adresine iletebilirsiniz.
@@ -119,7 +119,7 @@ The subject of this agreement is the determination of the rights and obligations
 
 ### 3. GENERAL PROVISIONS
 4.1. The BUYER declares that they have read and informed about the preliminary information regarding the basic characteristics, sales price, payment method, and delivery of the product on the website.
-4.2. Payment is securely processed via **PayTR Payment and Electronic Money Institution**.
+4.2. Payment is securely processed via **iyzico Payment Services**.
 
 ### 5. RIGHT OF WITHDRAWAL
 The BUYER has the right to withdraw from the contract within 14 (fourteen) days without giving any reason and without paying any penalty.
@@ -155,7 +155,7 @@ You have the right to return products within 14 days of delivery. The product mu
 VANT ART values your privacy. Your personal data is not shared with third parties except for legal obligations.
 
 ### Payment Security
-We use **PayTR** infrastructure for payments.
+We use **iyzico** infrastructure for payments.
 - We **do not** store your credit card information.
 - All transactions are encrypted with 256-bit SSL.
 - 3D Secure is supported.
@@ -171,7 +171,7 @@ Your personal data (Name, Address, Phone, Email) is processed for:
 2. Invoicing and legal compliance.
 3. Customer support.
 
-Your data is shared only with shipping companies for delivery and PayTR/Banks for payment processing. You have the right to access, correct, or delete your data by contacting iletisim@vantonline.com.
+Your data is shared only with shipping companies for delivery and iyzico/Banks for payment processing. You have the right to access, correct, or delete your data by contacting iletisim@vantonline.com.
             `
         }
     }
